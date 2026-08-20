@@ -142,27 +142,29 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          APPDIR="${{ steps.strings.outputs.install-output-dir }}/keypr.AppDir"
+          APPDIR_BASE="${{ steps.strings.outputs.install-output-dir }}"
+          APPDIR="${APPDIR_BASE}/keypr.AppDir"
+          
           mkdir -p "$APPDIR/usr/bin"
           mkdir -p "$APPDIR/usr/lib"
           mkdir -p "$APPDIR/usr/share/applications"
           mkdir -p "$APPDIR/usr/share/icons/hicolor/512x512/apps"
 
           # Copy binary
-          cp "${{ steps.strings.outputs.install-output-dir }}/bin/qt_client" "$APPDIR/usr/bin/"
+          cp "${APPDIR_BASE}/bin/qt_client" "$APPDIR/usr/bin/"
 
           # Copy icon
-          cp resources/app_icon.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/"
+          cp resources/app_icon.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/app_icon.png"
 
           # Create .desktop file
-          cat > "$APPDIR/usr/share/applications/keypr.desktop" <<'EOF'
+          cat > "$APPDIR/usr/share/applications/keypr.desktop" <<'DESKTOPEOF'
           [Desktop Entry]
           Type=Application
           Name=keypr
           Exec=qt_client
           Icon=app_icon
           Categories=Utility;
-          EOF
+          DESKTOPEOF
 
           # Copy Qt libraries
           QT_LIB_PATH=$(qmake -query QT_INSTALL_LIBS)
@@ -179,13 +181,13 @@ jobs:
           cp -r "$QT_PLUGIN_PATH"/imageformats "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
 
           # Create AppRun script
-          cat > "$APPDIR/AppRun" <<'APPRUN'
+          cat > "$APPDIR/AppRun" <<'APPRUNEOF'
           #!/bin/bash
           APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
           export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
           export QT_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins"
           exec "$APPDIR/usr/bin/qt_client" "$@"
-          APPRUN
+          APPRUNEOF
           chmod +x "$APPDIR/AppRun"
 
       - name: Package Linux AppImage
@@ -193,10 +195,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          APPDIR="${{ steps.strings.outputs.install-output-dir }}/keypr.AppDir"
+          APPDIR_BASE="${{ steps.strings.outputs.install-output-dir }}"
+          APPDIR="${APPDIR_BASE}/keypr.AppDir"
+          ARCHIVE_PATH="${{ steps.strings.outputs.archive-path }}"
           
-          ./appimagetool -n "$APPDIR" "${{ steps.strings.outputs.archive-path }}"
-          chmod +x "${{ steps.strings.outputs.archive-path }}"
+          # Verify .desktop exists before packaging
+          if [ ! -f "$APPDIR/usr/share/applications/keypr.desktop" ]; then
+            echo "Error: .desktop file not found at $APPDIR/usr/share/applications/keypr.desktop"
+            exit 1
+          fi
+          
+          ./appimagetool -n "$APPDIR" "$ARCHIVE_PATH"
+          chmod +x "$ARCHIVE_PATH"
 
       - name: Package Windows artifact
         if: runner.os == 'Windows'
