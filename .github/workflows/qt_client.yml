@@ -39,6 +39,45 @@ jobs:
         with:
           version: "6.10.0"
 
+      - name: Generate Windows icon
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          choco install imagemagick --no-progress -y
+          magick resources/logo.png -define icon:auto-resize=16,24,32,48,64,128,256 resources/app_icon.ico
+
+      - name: Generate macOS icon
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ICONSET_DIR="resources/app_icon.iconset"
+
+          rm -rf "$ICONSET_DIR"
+          mkdir -p "$ICONSET_DIR"
+
+          for size in 16 32 128 256 512; do
+            sips -z "$size" "$size" \
+              resources/logo.png \
+              --out "$ICONSET_DIR/icon_${size}x${size}.png"
+
+            double_size=$((size * 2))
+
+            sips -z "$double_size" "$double_size" \
+              resources/logo.png \
+              --out "$ICONSET_DIR/icon_${size}x${size}@2x.png"
+          done
+
+          iconutil -c icns "$ICONSET_DIR" -o resources/app_icon.icns
+          rm -rf "$ICONSET_DIR"
+
+      - name: Prepare Linux icon
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp resources/logo.png resources/app_icon.png
+
       - name: Set reusable strings
         id: strings
         shell: bash
@@ -65,18 +104,28 @@ jobs:
           --config Release
           --prefix ${{ steps.strings.outputs.install-output-dir }}
 
+      - name: Install Linux icon alongside binary
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp resources/logo.png \
+            "${{ steps.strings.outputs.install-output-dir }}/bin/app_icon.png"
+
       - name: Deploy Qt dependencies (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           $env:PATH += ";${{ steps.strings.outputs.install-output-dir }}"
-          windeployqt --release --no-translations "${{ steps.strings.outputs.install-output-dir }}\bin\qt_client.exe"
+          windeployqt --release --no-translations `
+            "${{ steps.strings.outputs.install-output-dir }}\bin\qt_client.exe"
 
       - name: Deploy Qt dependencies (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          macdeployqt "${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
+          macdeployqt \
+            "${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
 
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
@@ -86,27 +135,38 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          tar -C "${{ steps.strings.outputs.install-output-dir }}" -czf "${{ steps.strings.outputs.archive-path }}" .
+          tar -C "${{ steps.strings.outputs.install-output-dir }}" \
+            -czf "${{ steps.strings.outputs.archive-path }}" .
 
       - name: Package Windows artifact
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive -Path "${{ steps.strings.outputs.install-output-dir }}\*" -DestinationPath "${{ steps.strings.outputs.archive-path }}" -Force
+          Compress-Archive `
+            -Path "${{ steps.strings.outputs.install-output-dir }}\*" `
+            -DestinationPath "${{ steps.strings.outputs.archive-path }}" `
+            -Force
 
       - name: Package macOS artifact
         if: runner.os == 'macOS'
         shell: bash
         run: |
           APP_PATH="${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
+
           if [ ! -d "$APP_PATH" ]; then
             echo "Expected app bundle not found at $APP_PATH"
             ls -la "${{ steps.strings.outputs.install-output-dir }}"
             exit 1
           fi
+
           codesign --force --deep --sign - "$APP_PATH"
           codesign --verify --deep --strict "$APP_PATH"
-          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "${{ steps.strings.outputs.archive-path }}"
+
+          ditto -c -k \
+            --sequesterRsrc \
+            --keepParent \
+            "$APP_PATH" \
+            "${{ steps.strings.outputs.archive-path }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -120,6 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -144,7 +205,6 @@ jobs:
             Commit : ${{ github.sha }}
           prerelease: true
           make_latest: false
-          # Écrase les fichiers/tag existants à chaque push
           fail_on_unmatched_files: true
           files: |
             ./dist/keypr-linux-x64/keypr-linux-x64.tar.gz
