@@ -159,13 +159,14 @@ jobs:
 
           # Create .desktop file
           cat > "$APPDIR/keypr.desktop" <<'DESKTOPEOF'
-[Desktop Entry]
-Type=Application
-Name=keypr
-Exec=qt_client
-Icon=app_icon
-Categories=Utility;
-DESKTOPEOF
+          [Desktop Entry]
+          Type=Application
+          Name=keypr
+          Exec=qt_client
+          Icon=app_icon
+          Categories=Utility;
+          DESKTOPEOF
+          
           cp "$APPDIR/keypr.desktop" "$APPDIR/usr/share/applications/keypr.desktop"
 
           # Copy Qt libraries
