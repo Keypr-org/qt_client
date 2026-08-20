@@ -166,26 +166,26 @@ jobs:
 
           # Copy Qt libraries
           QT_LIB_PATH=$(qmake -query QT_INSTALL_LIBS)
-          cp "$QT_LIB_PATH"/libQt6Core.so.6* "$APPDIR/usr/lib/" || true
-          cp "$QT_LIB_PATH"/libQt6Gui.so.6* "$APPDIR/usr/lib/" || true
-          cp "$QT_LIB_PATH"/libQt6Widgets.so.6* "$APPDIR/usr/lib/" || true
-          cp "$QT_LIB_PATH"/libQt6DBus.so.6* "$APPDIR/usr/lib/" || true
-          cp "$QT_LIB_PATH"/libQt6XcbQpa.so.6* "$APPDIR/usr/lib/" || true
+          cp "$QT_LIB_PATH"/libQt6Core.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
+          cp "$QT_LIB_PATH"/libQt6Gui.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
+          cp "$QT_LIB_PATH"/libQt6Widgets.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
+          cp "$QT_LIB_PATH"/libQt6DBus.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
+          cp "$QT_LIB_PATH"/libQt6XcbQpa.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
 
           # Copy plugins
           QT_PLUGIN_PATH=$(qmake -query QT_INSTALL_PLUGINS)
           mkdir -p "$APPDIR/usr/lib/qt6/plugins"
-          cp -r "$QT_PLUGIN_PATH"/platforms "$APPDIR/usr/lib/qt6/plugins/" || true
-          cp -r "$QT_PLUGIN_PATH"/imageformats "$APPDIR/usr/lib/qt6/plugins/" || true
+          cp -r "$QT_PLUGIN_PATH"/platforms "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
+          cp -r "$QT_PLUGIN_PATH"/imageformats "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
 
           # Create AppRun script
-          cat > "$APPDIR/AppRun" <<'EOF'
+          cat > "$APPDIR/AppRun" <<'APPRUN'
           #!/bin/bash
           APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
           export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
           export QT_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins"
           exec "$APPDIR/usr/bin/qt_client" "$@"
-          EOF
+          APPRUN
           chmod +x "$APPDIR/AppRun"
 
       - name: Package Linux AppImage
