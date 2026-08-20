@@ -155,9 +155,10 @@ jobs:
 
           # Copy icon
           cp resources/app_icon.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/app_icon.png"
+          cp resources/app_icon.png "$APPDIR/app_icon.png"
 
-          # Create .desktop file
-          cat > "$APPDIR/usr/share/applications/keypr.desktop" <<'DESKTOPEOF'
+          # Create .desktop file (AppImage expects it at AppDir root)
+          cat > "$APPDIR/keypr.desktop" <<'DESKTOPEOF'
           [Desktop Entry]
           Type=Application
           Name=keypr
@@ -165,6 +166,7 @@ jobs:
           Icon=app_icon
           Categories=Utility;
           DESKTOPEOF
+          cp "$APPDIR/keypr.desktop" "$APPDIR/usr/share/applications/keypr.desktop"
 
           # Copy Qt libraries
           QT_LIB_PATH=$(qmake -query QT_INSTALL_LIBS)
@@ -200,8 +202,8 @@ jobs:
           ARCHIVE_PATH="${{ steps.strings.outputs.archive-path }}"
           
           # Verify .desktop exists before packaging
-          if [ ! -f "$APPDIR/usr/share/applications/keypr.desktop" ]; then
-            echo "Error: .desktop file not found at $APPDIR/usr/share/applications/keypr.desktop"
+          if [ ! -f "$APPDIR/keypr.desktop" ]; then
+            echo "Error: .desktop file not found at $APPDIR/keypr.desktop"
             exit 1
           fi
           
