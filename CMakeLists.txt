@@ -24,17 +24,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
-# Define target properties for Android with Qt 6 as:
-#    set_property(TARGET qt_client APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
-#                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
-# For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
         add_library(qt_client SHARED
             ${PROJECT_SOURCES}
         )
-# Define properties for Android with Qt 5 after find_package() calls as:
-#    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(qt_client
             ${PROJECT_SOURCES}
@@ -42,14 +36,43 @@ else()
     endif()
 endif()
 
+if(WIN32)
+    set(APP_ICON_RC "${CMAKE_CURRENT_BINARY_DIR}/app_icon.rc")
+
+    file(
+        WRITE
+        "${APP_ICON_RC}"
+        "IDI_ICON1 ICON \"${CMAKE_SOURCE_DIR}/resources/app_icon.ico\"\n"
+    )
+
+    target_sources(qt_client PRIVATE "${APP_ICON_RC}")
+endif()
+
+if(APPLE)
+    set_source_files_properties(
+        "${CMAKE_SOURCE_DIR}/resources/app_icon.icns"
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources
+    )
+
+    target_sources(
+        qt_client
+        PRIVATE
+        "${CMAKE_SOURCE_DIR}/resources/app_icon.icns"
+    )
+
+    set_target_properties(
+        qt_client
+        PROPERTIES
+        MACOSX_BUNDLE_ICON_FILE app_icon.icns
+    )
+endif()
+
 target_link_libraries(qt_client PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
-# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
-# If you are developing for iOS or macOS you should consider setting an
-# explicit, fixed bundle identifier manually though.
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.qt_client)
 endif()
+
 set_target_properties(qt_client PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
@@ -59,6 +82,7 @@ set_target_properties(qt_client PROPERTIES
 )
 
 include(GNUInstallDirs)
+
 install(TARGETS qt_client
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
