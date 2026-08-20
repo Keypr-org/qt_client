@@ -65,6 +65,19 @@ jobs:
           --config Release
           --prefix ${{ steps.strings.outputs.install-output-dir }}
 
+      - name: Deploy Qt dependencies (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:PATH += ";${{ steps.strings.outputs.install-output-dir }}"
+          windeployqt --release --no-translations "${{ steps.strings.outputs.install-output-dir }}\keypr.exe"
+
+      - name: Deploy Qt dependencies (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          macdeployqt "${{ steps.strings.outputs.install-output-dir }}/keypr.app"
+
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config Release
