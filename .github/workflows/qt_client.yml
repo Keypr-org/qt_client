@@ -70,13 +70,13 @@ jobs:
         shell: pwsh
         run: |
           $env:PATH += ";${{ steps.strings.outputs.install-output-dir }}"
-          windeployqt --release --no-translations "${{ steps.strings.outputs.install-output-dir }}\keypr.exe"
+          windeployqt --release --no-translations "${{ steps.strings.outputs.install-output-dir }}\qt_client.exe"
 
       - name: Deploy Qt dependencies (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          macdeployqt "${{ steps.strings.outputs.install-output-dir }}/keypr.app"
+          macdeployqt "${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
 
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
