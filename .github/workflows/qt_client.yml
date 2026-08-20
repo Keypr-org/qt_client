@@ -128,7 +128,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y patchelf fuse libfuse2
+          sudo apt-get install -y patchelf fuse libfuse2 libicu-dev
 
       - name: Download appimagetool (Linux)
         if: runner.os == 'Linux'
@@ -157,15 +157,15 @@ jobs:
           cp resources/app_icon.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/app_icon.png"
           cp resources/app_icon.png "$APPDIR/app_icon.png"
 
-          # Create .desktop file (AppImage expects it at AppDir root)
+          # Create .desktop file
           cat > "$APPDIR/keypr.desktop" <<'DESKTOPEOF'
-          [Desktop Entry]
-          Type=Application
-          Name=keypr
-          Exec=qt_client
-          Icon=app_icon
-          Categories=Utility;
-          DESKTOPEOF
+[Desktop Entry]
+Type=Application
+Name=keypr
+Exec=qt_client
+Icon=app_icon
+Categories=Utility;
+DESKTOPEOF
           cp "$APPDIR/keypr.desktop" "$APPDIR/usr/share/applications/keypr.desktop"
 
           # Copy Qt libraries
@@ -176,20 +176,31 @@ jobs:
           cp "$QT_LIB_PATH"/libQt6DBus.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
           cp "$QT_LIB_PATH"/libQt6XcbQpa.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
 
+          # Copy ICU libraries (critical for Qt6)
+          cp /usr/lib/x86_64-linux-gnu/libicui18n.so* "$APPDIR/usr/lib/" 2>/dev/null || true
+          cp /usr/lib/x86_64-linux-gnu/libicuuc.so* "$APPDIR/usr/lib/" 2>/dev/null || true
+          cp /usr/lib/x86_64-linux-gnu/libicudata.so* "$APPDIR/usr/lib/" 2>/dev/null || true
+
+          # Copy other Qt dependencies
+          cp /usr/lib/x86_64-linux-gnu/libssl.so* "$APPDIR/usr/lib/" 2>/dev/null || true
+          cp /usr/lib/x86_64-linux-gnu/libcrypto.so* "$APPDIR/usr/lib/" 2>/dev/null || true
+
           # Copy plugins
           QT_PLUGIN_PATH=$(qmake -query QT_INSTALL_PLUGINS)
           mkdir -p "$APPDIR/usr/lib/qt6/plugins"
           cp -r "$QT_PLUGIN_PATH"/platforms "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
           cp -r "$QT_PLUGIN_PATH"/imageformats "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
+          cp -r "$QT_PLUGIN_PATH"/xcbglintegrations "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
 
           # Create AppRun script
           cat > "$APPDIR/AppRun" <<'APPRUNEOF'
-          #!/bin/bash
-          APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
-          export QT_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins"
-          exec "$APPDIR/usr/bin/qt_client" "$@"
-          APPRUNEOF
+#!/bin/bash
+APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
+export QT_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins"
+export QT_QPA_PLATFORM_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins/platforms"
+exec "$APPDIR/usr/bin/qt_client" "$@"
+APPRUNEOF
           chmod +x "$APPDIR/AppRun"
 
       - name: Package Linux AppImage
