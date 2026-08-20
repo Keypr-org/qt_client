@@ -195,15 +195,15 @@ jobs:
 
           # Create AppRun script
           cat > "$APPDIR/AppRun" <<'APPRUNEOF'
-#!/bin/bash
-APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
-export QT_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins"
-export QT_QPA_PLATFORM_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins/platforms"
-exec "$APPDIR/usr/bin/qt_client" "$@"
-APPRUNEOF
+          #!/bin/bash
+          APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+          export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
+          export QT_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins"
+          export QT_QPA_PLATFORM_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins/platforms"
+          exec "$APPDIR/usr/bin/qt_client" "$@"
+          APPRUNEOF
           chmod +x "$APPDIR/AppRun"
-
+          
       - name: Package Linux AppImage
         if: runner.os == 'Linux'
         shell: bash
@@ -221,7 +221,7 @@ APPRUNEOF
           
           ./appimagetool -n "$APPDIR" "$ARCHIVE_PATH"
           chmod +x "$ARCHIVE_PATH"
-
+          
       - name: Package Windows artifact
         if: runner.os == 'Windows'
         shell: pwsh
@@ -230,28 +230,28 @@ APPRUNEOF
             -Path "${{ steps.strings.outputs.install-output-dir }}\*" `
             -DestinationPath "${{ steps.strings.outputs.archive-path }}" `
             -Force
-
+          
       - name: Package macOS artifact
         if: runner.os == 'macOS'
         shell: bash
         run: |
           APP_PATH="${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
-
+          
           if [ ! -d "$APP_PATH" ]; then
             echo "Expected app bundle not found at $APP_PATH"
             ls -la "${{ steps.strings.outputs.install-output-dir }}"
             exit 1
           fi
-
+          
           codesign --force --deep --sign - "$APP_PATH"
           codesign --verify --deep --strict "$APP_PATH"
-
+          
           ditto -c -k \
             --sequesterRsrc \
             --keepParent \
             "$APP_PATH" \
             "${{ steps.strings.outputs.archive-path }}"
-
+          
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
