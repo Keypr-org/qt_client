@@ -85,7 +85,7 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          APP_PATH="${{ steps.strings.outputs.install-output-dir }}/keypr-macos-arm64.app"
+          APP_PATH="${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
           if [ ! -d "$APP_PATH" ]; then
             echo "Expected app bundle not found at $APP_PATH"
             ls -la "${{ steps.strings.outputs.install-output-dir }}"
