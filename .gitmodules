@@ -1,0 +1,3 @@
+[submodule "keypr-core"]
+	path = keypr-core
+	url = https://github.com/Keypr-org/core.git
