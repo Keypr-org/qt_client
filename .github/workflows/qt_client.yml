@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
             artifact_name: keypr-linux-x64
@@ -116,55 +116,13 @@ jobs:
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config Release
 
-      - name: Install linuxdeployqt dependencies (Linux)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fuse libfuse2 patchelf
-
-      - name: Download linuxdeployqt (Linux)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          wget -q "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O linuxdeployqt
-          chmod +x linuxdeployqt
-
-      - name: Deploy Qt dependencies (Linux)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          set -euo pipefail
-          INSTALL_DIR="${{ steps.strings.outputs.install-output-dir }}"
-
-          # linuxdeployqt a besoin d'un .desktop pour repérer le binaire principal
-          mkdir -p "$INSTALL_DIR/share/applications"
-          cat > "$INSTALL_DIR/share/applications/keypr.desktop" <<'DESKTOPEOF'
-          [Desktop Entry]
-          Type=Application
-          Name=keypr
-          Exec=qt_client
-          Icon=keypr
-          Categories=Utility;
-          DESKTOPEOF
-
-          export VERSION="${{ github.ref_name }}"
-
-          ./linuxdeployqt \
-            "$INSTALL_DIR/bin/qt_client" \
-            -bundle-non-qt-libs \
-            -no-translations \
-            -verbose=2
-
       - name: Package Linux artifact
         if: runner.os == 'Linux'
         shell: bash
         run: |
           set -euo pipefail
-          INSTALL_DIR="${{ steps.strings.outputs.install-output-dir }}"
-          ARCHIVE_PATH="${{ steps.strings.outputs.archive-path }}"
-
-          tar -C "$INSTALL_DIR" -czf "$ARCHIVE_PATH" .
+          tar -czvf "${{ steps.strings.outputs.archive-path }}" \
+            -C "${{ steps.strings.outputs.install-output-dir }}" .
 
       - name: Package Windows artifact
         if: runner.os == 'Windows'
