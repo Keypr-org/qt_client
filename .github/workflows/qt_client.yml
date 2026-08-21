@@ -36,6 +36,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive # checks out all submodules recursively
 
       # Installs Qt using a community-maintained third-party action
       - name: Install Qt

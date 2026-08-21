@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Test)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Test)
 
+add_subdirectory(keypr-core)
+
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
@@ -36,55 +38,11 @@ else()
     endif()
 endif()
 
-if(WIN32)
-    set(APP_ICON_ICO "${CMAKE_SOURCE_DIR}/resources/app_icon.ico")
-
-    if(EXISTS "${APP_ICON_ICO}")
-        set(APP_ICON_RC "${CMAKE_CURRENT_BINARY_DIR}/app_icon.rc")
-
-        file(
-            WRITE
-            "${APP_ICON_RC}"
-            "IDI_ICON1 ICON \"${APP_ICON_ICO}\"\n"
-        )
-
-        target_sources(qt_client PRIVATE "${APP_ICON_RC}")
-    else()
-        message(WARNING "app_icon.ico introuvable (${APP_ICON_ICO}), l'exécutable sera compilé sans icône personnalisée.")
-    endif()
-endif()
-
-if(APPLE)
-    set(APP_ICON_ICNS "${CMAKE_SOURCE_DIR}/resources/app_icon.icns")
-
-    if(EXISTS "${APP_ICON_ICNS}")
-        set_source_files_properties(
-            "${APP_ICON_ICNS}"
-            PROPERTIES MACOSX_PACKAGE_LOCATION Resources
-        )
-
-        target_sources(
-            qt_client
-            PRIVATE
-            "${APP_ICON_ICNS}"
-        )
-
-        set_target_properties(
-            qt_client
-            PROPERTIES
-            MACOSX_BUNDLE_ICON_FILE app_icon.icns
-        )
-    else()
-        message(WARNING "app_icon.icns introuvable (${APP_ICON_ICNS}), le bundle .app sera compilé sans icône personnalisée.")
-    endif()
-endif()
-
 target_link_libraries(qt_client PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.qt_client)
 endif()
-
 set_target_properties(qt_client PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
@@ -94,7 +52,6 @@ set_target_properties(qt_client PROPERTIES
 )
 
 include(GNUInstallDirs)
-
 install(TARGETS qt_client
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -104,21 +61,3 @@ install(TARGETS qt_client
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(qt_client)
 endif()
-
-# Tests
-
-enable_testing()
-
-add_executable(tst_example
-    tests/tst_simple_test.cpp
-)
-
-target_link_libraries(tst_example
-    PRIVATE
-        Qt${QT_VERSION_MAJOR}::Test
-)
-
-add_test(
-    NAME tst_example
-    COMMAND tst_example
-)
