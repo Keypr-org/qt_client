@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "vcpkg toolchain file")
+endif()
+
 project(qt_client VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
@@ -14,11 +19,14 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Test)
 
 add_subdirectory(keypr-core)
 
+# ============================================
+# Application principale (SANS tests)
+# ============================================
 set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
+    main.cpp
+    mainwindow.cpp
+    mainwindow.h
+    mainwindow.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -28,20 +36,20 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     )
 else()
     if(ANDROID)
-        add_library(qt_client SHARED
-            ${PROJECT_SOURCES}
-        )
+        add_library(qt_client SHARED ${PROJECT_SOURCES})
     else()
-        add_executable(qt_client
-            ${PROJECT_SOURCES}
-        )
+        add_executable(qt_client ${PROJECT_SOURCES})
     endif()
 endif()
 
-target_link_libraries(qt_client PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(qt_client 
+    PRIVATE 
+        Qt${QT_VERSION_MAJOR}::Widgets
+        keypr-core
+)
 
 if(${QT_VERSION} VERSION_LESS 6.1.0)
-  set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.qt_client)
+    set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.qt_client)
 endif()
 set_target_properties(qt_client PROPERTIES
     ${BUNDLE_ID_OPTION}
@@ -61,3 +69,34 @@ install(TARGETS qt_client
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(qt_client)
 endif()
+
+# ============================================
+# Tests
+# ============================================
+enable_testing()
+
+# Test simple
+add_executable(tst_example
+    tests/tst_simple_test.cpp
+)
+
+target_link_libraries(tst_example 
+    PRIVATE
+        Qt${QT_VERSION_MAJOR}::Test
+        keypr-core
+)
+
+add_test(NAME tst_example COMMAND tst_example)
+
+# Test crypto (EXÉCUTABLE SÉPARÉ)
+add_executable(tst_crypto
+    tests/tst_crypto_test.cpp
+)
+
+target_link_libraries(tst_crypto 
+    PRIVATE
+        Qt${QT_VERSION_MAJOR}::Test
+        keypr-core
+)
+
+add_test(NAME tst_crypto COMMAND tst_crypto)
