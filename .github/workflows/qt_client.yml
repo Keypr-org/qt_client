@@ -2,18 +2,21 @@ name: CMake on multiple platforms
 
 on:
   push:
-    branches: ["main"]
-    tags: ["v*"]
+    branches: ["main"] # on every push to the main branch
+    tags: ["v*"] # on every tag creation starting with "v" (e.g. v1.0.0)
   pull_request:
-    branches: ["main"]
-  workflow_dispatch:
+    branches: ["main"] # on every pull request targeting main
+  workflow_dispatch: # allows manually triggering the workflow from the GitHub UI
 
 jobs:
   build:
+    # The job runs on the OS dynamically defined by the matrix below
     runs-on: ${{ matrix.os }}
+
     strategy:
-      fail-fast: false
+      fail-fast: false # if one OS fails, the others keep running
       matrix:
+        # Defines 3 configurations that will run in parallel
         include:
           - os: ubuntu-latest
             c_compiler: gcc
@@ -32,13 +35,18 @@ jobs:
             archive_name: keypr-macos-arm64.zip
 
     steps:
+      # Checks out the repository code into the runner
       - uses: actions/checkout@v4
 
+      # Installs Qt using a community-maintained third-party action
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: "6.10.0"
 
+      # - Icon generation
+
+      # Windows: Converts logo.png into .ico files using ImageMagick
       - name: Generate Windows icon
         if: runner.os == 'Windows'
         shell: pwsh
@@ -46,6 +54,7 @@ jobs:
           choco install imagemagick --no-progress -y
           magick resources/logo.png -define icon:auto-resize=16,24,32,48,64,128,256 resources/app_icon.ico
 
+      # macOS: generates a .icns file
       - name: Generate macOS icon
         if: runner.os == 'macOS'
         shell: bash
@@ -56,6 +65,7 @@ jobs:
           rm -rf "$ICONSET_DIR"
           mkdir -p "$ICONSET_DIR"
 
+          # Generates every resolution required by the .iconset format
           for size in 16 32 128 256 512; do
             sips -z "$size" "$size" \
               resources/logo.png \
@@ -71,6 +81,7 @@ jobs:
           iconutil -c icns "$ICONSET_DIR" -o resources/app_icon.icns
           rm -rf "$ICONSET_DIR"
 
+      # Defines reusable path strings as step outputs to avoid repeating the same paths every time
       - name: Set reusable strings
         id: strings
         shell: bash
@@ -80,59 +91,73 @@ jobs:
           echo "cmake-source-dir=${{ github.workspace }}" >> "$GITHUB_OUTPUT"
           echo "archive-path=${{ github.workspace }}/${{ matrix.archive_name }}" >> "$GITHUB_OUTPUT"
 
+      # CMake configuration : generates build files
       - name: Configure CMake
         run: >
+          # Generates build files in a separate "build/" folder
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          # Specifies the C and C++ compilers to use
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          # Specifies the build type (Release or Debug)
           -DCMAKE_BUILD_TYPE=Release
+          # Specifies the output folder for the final installed binaries
           -S ${{ steps.strings.outputs.cmake-source-dir }}
 
+      # Compiles the project in Release mode
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
+      # Installs the compiled binaries into a clean "install/" folder
       - name: Install
         run: >
           cmake --install ${{ steps.strings.outputs.build-output-dir }}
           --config Release
           --prefix ${{ steps.strings.outputs.install-output-dir }}
 
+      # Deploying Qt dependencies
+
+      # windeployqt automatically copies the required Qt DLLs next to the Windows executable
       - name: Deploy Qt dependencies (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
+          # Adds the Qt bin/ folder to PATH so windeployqt can find the Qt DLLs
           $env:PATH += ";${{ steps.strings.outputs.install-output-dir }}"
-          windeployqt --release --no-translations `
-            "${{ steps.strings.outputs.install-output-dir }}\bin\qt_client.exe"
+          windeployqt --release --no-translations "${{ steps.strings.outputs.install-output-dir }}\bin\qt_client.exe"
 
+      # bundles the required Qt frameworks into the .app bundle so it can run on machines without Qt installed
       - name: Deploy Qt dependencies (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
-          macdeployqt \
-            "${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
+          macdeployqt "${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
 
+      # Runs the test suite via CTest
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config Release
 
+      # Bundling the installed app into an archive
+
+      # Linux: packages the install/ folder into a .tar.gz archive
       - name: Package Linux artifact
         if: runner.os == 'Linux'
         shell: bash
         run: |
+          # Stop the script on any error, treat unset variables as errors, and fail if any command in a pipeline fails
           set -euo pipefail
-          tar -czvf "${{ steps.strings.outputs.archive-path }}" \
-            -C "${{ steps.strings.outputs.install-output-dir }}" .
+          # Creates a .tar.gz archive of the install/ folder, preserving directory structure and file permissions
+          tar -czvf "${{ steps.strings.outputs.archive-path }}" -C "${{ steps.strings.outputs.install-output-dir }}" .
 
+      # Windows: packages the install/ folder into a .zip archive
       - name: Package Windows artifact
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive `
-            -Path "${{ steps.strings.outputs.install-output-dir }}\*" `
-            -DestinationPath "${{ steps.strings.outputs.archive-path }}" `
-            -Force
+          Compress-Archive -Path "${{ steps.strings.outputs.install-output-dir }}\*" -DestinationPath "${{ steps.strings.outputs.archive-path }}" -Force
 
+      # macOS: verifies the .app bundle exists, self-signs it then packages it into a .zip
       - name: Package macOS artifact
         if: runner.os == 'macOS'
         shell: bash
@@ -145,34 +170,38 @@ jobs:
             exit 1
           fi
 
+          # Self-signs the .app bundle with an ad-hoc signature
           codesign --force --deep --sign - "$APP_PATH"
+
+          # Verifies the signature is valid and the app bundle is not corrupted
           codesign --verify --deep --strict "$APP_PATH"
 
-          ditto -c -k \
-            --sequesterRsrc \
-            --keepParent \
-            "$APP_PATH" \
-            "${{ steps.strings.outputs.archive-path }}"
+          # Creates a .zip archive of the .app bundle, preserving metadata
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "${{ steps.strings.outputs.archive-path }}"
 
+      # Uploads the resulting archive as a GitHub Actions artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ steps.strings.outputs.archive-path }}
 
+  # creates a GitHub Release from the artifacts built above.
   release:
-    needs: build
-    if: github.event_name == 'push'
+    needs: build # waits for the build job on all OS variants to finish
+    if: github.event_name == 'push' # only runs on pushes, not on pull requests
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
+      # Downloads all artifacts uploaded by the build job's matrix runs into ./dist
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           path: dist
 
+      # check for fails early and if any expected archive is missing
       - name: Verify downloaded artifacts
         shell: bash
         run: |
@@ -180,6 +209,7 @@ jobs:
           test -f "./dist/keypr-windows-x64/keypr-windows-x64.zip"
           test -f "./dist/keypr-macos-arm64/keypr-macos-arm64.zip"
 
+      # Publishes/updates a pre-release for the main branch (overwrites the previous rolling release)
       - name: Publish rolling release (main)
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
@@ -187,8 +217,8 @@ jobs:
           tag_name: latest-main
           name: "Latest build (main)"
           body: |
-            Dernier build automatique de la branche `main`.
-            Commit : ${{ github.sha }}
+            Latest automatic build from the `main` branch.
+            Commit: ${{ github.sha }}
           prerelease: true
           make_latest: false
           fail_on_unmatched_files: true
@@ -197,6 +227,7 @@ jobs:
             ./dist/keypr-windows-x64/keypr-windows-x64.zip
             ./dist/keypr-macos-arm64/keypr-macos-arm64.zip
 
+      # Publishes an official versioned release when a "v*" tag is pushed
       - name: Publish versioned release (tags)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
