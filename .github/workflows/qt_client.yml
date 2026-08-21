@@ -35,7 +35,6 @@ jobs:
             archive_name: keypr-macos-arm64.zip
 
     steps:
-      # Checks out the repository code into the runner
       - uses: actions/checkout@v4
 
       # Installs Qt using a community-maintained third-party action
@@ -43,8 +42,6 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: "6.10.0"
-
-      # - Icon generation
 
       # Windows: Converts logo.png into .ico files using ImageMagick
       - name: Generate Windows icon
@@ -58,6 +55,7 @@ jobs:
       - name: Generate macOS icon
         if: runner.os == 'macOS'
         shell: bash
+        # Generates every resolution required by the .iconset format
         run: |
           set -euo pipefail
           ICONSET_DIR="resources/app_icon.iconset"
@@ -65,7 +63,6 @@ jobs:
           rm -rf "$ICONSET_DIR"
           mkdir -p "$ICONSET_DIR"
 
-          # Generates every resolution required by the .iconset format
           for size in 16 32 128 256 512; do
             sips -z "$size" "$size" \
               resources/logo.png \
@@ -91,38 +88,32 @@ jobs:
           echo "cmake-source-dir=${{ github.workspace }}" >> "$GITHUB_OUTPUT"
           echo "archive-path=${{ github.workspace }}/${{ matrix.archive_name }}" >> "$GITHUB_OUTPUT"
 
-      # CMake configuration : generates build files
+      # CMake configuration: generates build files in build/, using the compilers and build type specified by the matrix
       - name: Configure CMake
         run: >
-          # Generates build files in a separate "build/" folder
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          # Specifies the C and C++ compilers to use
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          # Specifies the build type (Release or Debug)
           -DCMAKE_BUILD_TYPE=Release
-          # Specifies the output folder for the final installed binaries
           -S ${{ steps.strings.outputs.cmake-source-dir }}
 
       # Compiles the project in Release mode
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
-      # Installs the compiled binaries into a clean "install/" folder
+      # Installs the compiled binaries into a clean install/ folder
       - name: Install
         run: >
           cmake --install ${{ steps.strings.outputs.build-output-dir }}
           --config Release
           --prefix ${{ steps.strings.outputs.install-output-dir }}
 
-      # Deploying Qt dependencies
-
       # windeployqt automatically copies the required Qt DLLs next to the Windows executable
       - name: Deploy Qt dependencies (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
+        # Adds the Qt bin/ folder to PATH so windeployqt can find the Qt DLLs
         run: |
-          # Adds the Qt bin/ folder to PATH so windeployqt can find the Qt DLLs
           $env:PATH += ";${{ steps.strings.outputs.install-output-dir }}"
           windeployqt --release --no-translations "${{ steps.strings.outputs.install-output-dir }}\bin\qt_client.exe"
 
@@ -138,16 +129,14 @@ jobs:
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config Release
 
-      # Bundling the installed app into an archive
-
       # Linux: packages the install/ folder into a .tar.gz archive
       - name: Package Linux artifact
         if: runner.os == 'Linux'
         shell: bash
+        # Stop the script on any error
+        # Creates a .tar.gz archive
         run: |
-          # Stop the script on any error, treat unset variables as errors, and fail if any command in a pipeline fails
           set -euo pipefail
-          # Creates a .tar.gz archive of the install/ folder, preserving directory structure and file permissions
           tar -czvf "${{ steps.strings.outputs.archive-path }}" -C "${{ steps.strings.outputs.install-output-dir }}" .
 
       # Windows: packages the install/ folder into a .zip archive
@@ -161,6 +150,9 @@ jobs:
       - name: Package macOS artifact
         if: runner.os == 'macOS'
         shell: bash
+        # Self-signs the .app bundle with an ad-hoc signature
+        # Verifies the signature is valid and the app bundle is not corrupted
+        # Creates a .zip archive of the .app bundle, preserving metadata
         run: |
           APP_PATH="${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
 
@@ -170,13 +162,9 @@ jobs:
             exit 1
           fi
 
-          # Self-signs the .app bundle with an ad-hoc signature
           codesign --force --deep --sign - "$APP_PATH"
-
-          # Verifies the signature is valid and the app bundle is not corrupted
           codesign --verify --deep --strict "$APP_PATH"
 
-          # Creates a .zip archive of the .app bundle, preserving metadata
           ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "${{ steps.strings.outputs.archive-path }}"
 
       # Uploads the resulting archive as a GitHub Actions artifact
@@ -186,7 +174,6 @@ jobs:
           name: ${{ matrix.artifact_name }}
           path: ${{ steps.strings.outputs.archive-path }}
 
-  # creates a GitHub Release from the artifacts built above.
   release:
     needs: build # waits for the build job on all OS variants to finish
     if: github.event_name == 'push' # only runs on pushes, not on pull requests
