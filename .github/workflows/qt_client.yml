@@ -19,7 +19,7 @@ jobs:
             c_compiler: gcc
             cpp_compiler: g++
             artifact_name: keypr-linux-x64
-            archive_name: keypr-linux-x64.AppImage
+            archive_name: keypr-linux-x64.tar.gz
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
@@ -71,13 +71,6 @@ jobs:
           iconutil -c icns "$ICONSET_DIR" -o resources/app_icon.icns
           rm -rf "$ICONSET_DIR"
 
-      - name: Prepare Linux icon
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp resources/logo.png resources/app_icon.png
-
       - name: Set reusable strings
         id: strings
         shell: bash
@@ -123,105 +116,56 @@ jobs:
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config Release
 
-      - name: Install appimagetool dependencies (Linux)
+      - name: Install linuxdeployqt dependencies (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install -y patchelf fuse libfuse2 libicu-dev
+          sudo apt-get install -y fuse libfuse2 patchelf
 
-      - name: Download appimagetool (Linux)
+      - name: Download linuxdeployqt (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          wget -q "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" -O appimagetool
-          chmod +x appimagetool
+          wget -q "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O linuxdeployqt
+          chmod +x linuxdeployqt
 
-      - name: Prepare AppDir structure (Linux)
+      - name: Deploy Qt dependencies (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           set -euo pipefail
-          APPDIR_BASE="${{ steps.strings.outputs.install-output-dir }}"
-          APPDIR="${APPDIR_BASE}/keypr.AppDir"
-          
-          mkdir -p "$APPDIR/usr/bin"
-          mkdir -p "$APPDIR/usr/lib"
-          mkdir -p "$APPDIR/usr/share/applications"
-          mkdir -p "$APPDIR/usr/share/icons/hicolor/512x512/apps"
+          INSTALL_DIR="${{ steps.strings.outputs.install-output-dir }}"
 
-          # Copy binary
-          cp "${APPDIR_BASE}/bin/qt_client" "$APPDIR/usr/bin/"
-
-          # Copy icon
-          cp resources/app_icon.png "$APPDIR/usr/share/icons/hicolor/512x512/apps/app_icon.png"
-          cp resources/app_icon.png "$APPDIR/app_icon.png"
-
-          # Create .desktop file
-          cat > "$APPDIR/keypr.desktop" <<'DESKTOPEOF'
+          # linuxdeployqt a besoin d'un .desktop pour repérer le binaire principal
+          mkdir -p "$INSTALL_DIR/share/applications"
+          cat > "$INSTALL_DIR/share/applications/keypr.desktop" <<'DESKTOPEOF'
           [Desktop Entry]
           Type=Application
           Name=keypr
           Exec=qt_client
-          Icon=app_icon
+          Icon=keypr
           Categories=Utility;
           DESKTOPEOF
-          
-          cp "$APPDIR/keypr.desktop" "$APPDIR/usr/share/applications/keypr.desktop"
 
-          # Copy Qt libraries
-          QT_LIB_PATH=$(qmake -query QT_INSTALL_LIBS)
-          cp "$QT_LIB_PATH"/libQt6Core.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
-          cp "$QT_LIB_PATH"/libQt6Gui.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
-          cp "$QT_LIB_PATH"/libQt6Widgets.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
-          cp "$QT_LIB_PATH"/libQt6DBus.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
-          cp "$QT_LIB_PATH"/libQt6XcbQpa.so.6* "$APPDIR/usr/lib/" 2>/dev/null || true
+          export VERSION="${{ github.ref_name }}"
 
-          # Copy ICU libraries (critical for Qt6)
-          cp /usr/lib/x86_64-linux-gnu/libicui18n.so* "$APPDIR/usr/lib/" 2>/dev/null || true
-          cp /usr/lib/x86_64-linux-gnu/libicuuc.so* "$APPDIR/usr/lib/" 2>/dev/null || true
-          cp /usr/lib/x86_64-linux-gnu/libicudata.so* "$APPDIR/usr/lib/" 2>/dev/null || true
+          ./linuxdeployqt \
+            "$INSTALL_DIR/bin/qt_client" \
+            -bundle-non-qt-libs \
+            -no-translations \
+            -verbose=2
 
-          # Copy other Qt dependencies
-          cp /usr/lib/x86_64-linux-gnu/libssl.so* "$APPDIR/usr/lib/" 2>/dev/null || true
-          cp /usr/lib/x86_64-linux-gnu/libcrypto.so* "$APPDIR/usr/lib/" 2>/dev/null || true
-
-          # Copy plugins
-          QT_PLUGIN_PATH=$(qmake -query QT_INSTALL_PLUGINS)
-          mkdir -p "$APPDIR/usr/lib/qt6/plugins"
-          cp -r "$QT_PLUGIN_PATH"/platforms "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
-          cp -r "$QT_PLUGIN_PATH"/imageformats "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
-          cp -r "$QT_PLUGIN_PATH"/xcbglintegrations "$APPDIR/usr/lib/qt6/plugins/" 2>/dev/null || true
-
-          # Create AppRun script
-          cat > "$APPDIR/AppRun" <<'APPRUNEOF'
-          #!/bin/bash
-          APPDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
-          export QT_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins"
-          export QT_QPA_PLATFORM_PLUGIN_PATH="$APPDIR/usr/lib/qt6/plugins/platforms"
-          exec "$APPDIR/usr/bin/qt_client" "$@"
-          APPRUNEOF
-          chmod +x "$APPDIR/AppRun"
-          
-      - name: Package Linux AppImage
+      - name: Package Linux artifact
         if: runner.os == 'Linux'
         shell: bash
         run: |
           set -euo pipefail
-          APPDIR_BASE="${{ steps.strings.outputs.install-output-dir }}"
-          APPDIR="${APPDIR_BASE}/keypr.AppDir"
+          INSTALL_DIR="${{ steps.strings.outputs.install-output-dir }}"
           ARCHIVE_PATH="${{ steps.strings.outputs.archive-path }}"
-          
-          # Verify .desktop exists before packaging
-          if [ ! -f "$APPDIR/keypr.desktop" ]; then
-            echo "Error: .desktop file not found at $APPDIR/keypr.desktop"
-            exit 1
-          fi
-          
-          ./appimagetool -n "$APPDIR" "$ARCHIVE_PATH"
-          chmod +x "$ARCHIVE_PATH"
-          
+
+          tar -C "$INSTALL_DIR" -czf "$ARCHIVE_PATH" .
+
       - name: Package Windows artifact
         if: runner.os == 'Windows'
         shell: pwsh
@@ -230,28 +174,28 @@ jobs:
             -Path "${{ steps.strings.outputs.install-output-dir }}\*" `
             -DestinationPath "${{ steps.strings.outputs.archive-path }}" `
             -Force
-          
+
       - name: Package macOS artifact
         if: runner.os == 'macOS'
         shell: bash
         run: |
           APP_PATH="${{ steps.strings.outputs.install-output-dir }}/qt_client.app"
-          
+
           if [ ! -d "$APP_PATH" ]; then
             echo "Expected app bundle not found at $APP_PATH"
             ls -la "${{ steps.strings.outputs.install-output-dir }}"
             exit 1
           fi
-          
+
           codesign --force --deep --sign - "$APP_PATH"
           codesign --verify --deep --strict "$APP_PATH"
-          
+
           ditto -c -k \
             --sequesterRsrc \
             --keepParent \
             "$APP_PATH" \
             "${{ steps.strings.outputs.archive-path }}"
-          
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -274,7 +218,7 @@ jobs:
       - name: Verify downloaded artifacts
         shell: bash
         run: |
-          test -f "./dist/keypr-linux-x64/keypr-linux-x64.AppImage"
+          test -f "./dist/keypr-linux-x64/keypr-linux-x64.tar.gz"
           test -f "./dist/keypr-windows-x64/keypr-windows-x64.zip"
           test -f "./dist/keypr-macos-arm64/keypr-macos-arm64.zip"
 
@@ -291,7 +235,7 @@ jobs:
           make_latest: false
           fail_on_unmatched_files: true
           files: |
-            ./dist/keypr-linux-x64/keypr-linux-x64.AppImage
+            ./dist/keypr-linux-x64/keypr-linux-x64.tar.gz
             ./dist/keypr-windows-x64/keypr-windows-x64.zip
             ./dist/keypr-macos-arm64/keypr-macos-arm64.zip
 
@@ -305,6 +249,6 @@ jobs:
           make_latest: true
           fail_on_unmatched_files: true
           files: |
-            ./dist/keypr-linux-x64/keypr-linux-x64.AppImage
+            ./dist/keypr-linux-x64/keypr-linux-x64.tar.gz
             ./dist/keypr-windows-x64/keypr-windows-x64.zip
             ./dist/keypr-macos-arm64/keypr-macos-arm64.zip
