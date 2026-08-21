@@ -2,6 +2,40 @@
 
 > Repository containing the code of the desktop application.
 
+## Cloning/Updating the repository and its submodules
+
+### First time cloning the repository
+
+```bash
+# HTTPS
+git clone --recurse-submodules https://github.com/Keypr-org/core.git
+# SSH
+git clone --recurse-submodules git@github.com:Keypr-org/core.git
+```
+
+### Updating the repository and its submodules
+
+```bash
+git pull --recurse-submodules
+git submodule update --init --recursive
+```
+
+### Automatically updating the submodules when pulling
+
+You can alternatively configure git to automatically update the submodules when pulling:
+
+```bash
+git config --global submodule.recurse true
+```
+## Updating the submodules in the repository
+
+```bash
+git submodule update --remote --merge
+git add keypr-core # Assuming the submodule is located in the keypr-core folder
+git commit -m "[Fix]: Update submodule keypr-core" 
+git push
+```
+
 ## Contributions and Workflow
 
 ### Contributing
