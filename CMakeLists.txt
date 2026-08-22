@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
 
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING "vcpkg toolchain file")
+    if(DEFINED ENV{VCPKG_ROOT})
+        set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+            CACHE STRING "vcpkg toolchain file")
+    else()
+        set(CMAKE_TOOLCHAIN_FILE "$ENV{HOME}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            CACHE STRING "vcpkg toolchain file")
+    endif()
 endif()
 
 project(qt_client VERSION 0.1 LANGUAGES CXX)

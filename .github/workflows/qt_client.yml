@@ -45,6 +45,32 @@ jobs:
         with:
           version: "6.10.0"
 
+      # libsodium (pulled in via keypr-core's vcpkg manifest) is built from
+      # source by vcpkg on Linux/macOS, which needs an autotools toolchain
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf \
+            autoconf-archive \
+            automake \
+            libtool \
+            pkg-config
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install autoconf autoconf-archive automake libtool pkg-config
+
+      # No additional dependencies required for Windows
+
+      - name: Install vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+
       # Windows: Converts logo.png into .ico files using ImageMagick
       - name: Generate Windows icon
         if: runner.os == 'Windows'
@@ -97,6 +123,7 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
           -S ${{ steps.strings.outputs.cmake-source-dir }}
 
       # Compiles the project in Release mode
