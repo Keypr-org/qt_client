@@ -39,7 +39,7 @@ jobs:
         with:
           submodules: recursive # checks out all submodules recursively
 
-      # Installs Qt using a community-maintained third-party action
+      # Installs Qt
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -70,6 +70,7 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+          vcpkgGitCommitId: "7f3781e19cc7d4e4882a4caec01668c6f7b5c163"
 
       # Windows: Converts logo.png into .ico files using ImageMagick
       - name: Generate Windows icon
