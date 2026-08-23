@@ -32,7 +32,6 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: "6.10.0"
-          modules: "qttest"
 
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
