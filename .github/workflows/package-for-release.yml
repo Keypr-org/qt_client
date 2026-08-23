@@ -166,8 +166,9 @@ jobs:
           set -euo pipefail
 
           mkdir -p AppDir/usr/bin
-
           cp install/bin/qt_client AppDir/usr/bin/qt_client
+
+          cp resources/logo.png AppDir/qt_client.png
 
           cat > AppDir/qt_client.desktop <<'EOF'
           [Desktop Entry]
@@ -178,14 +179,6 @@ jobs:
           Categories=Utility;
           EOF
 
-          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-
-          # Optional: only if this file exists in your repository
-          if [ -f resources/logo.png ]; then
-            cp resources/logo.png \
-              AppDir/usr/share/icons/hicolor/256x256/apps/qt_client.png
-          fi
-
           wget -q \
             https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
             -O linuxdeploy.AppImage
@@ -194,14 +187,17 @@ jobs:
             https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage \
             -O linuxdeploy-plugin-qt.AppImage
 
-          chmod +x linuxdeploy.AppImage linuxdeploy-plugin-qt.AppImage
+          chmod +x linuxdeploy*.AppImage
 
           ./linuxdeploy.AppImage \
             --appdir AppDir \
+            --executable install/bin/qt_client \
+            --desktop-file AppDir/qt_client.desktop \
+            --icon-file AppDir/qt_client.png \
             --plugin qt \
             --output appimage
 
-          mv Keypr*.AppImage keypr-linux-x64.AppImage
+          mv Keypr-x86_64.AppImage keypr-linux-x64.AppImage
 
       # Windows: packages the install/ folder into a .zip archive
       - name: Package Windows artifact
