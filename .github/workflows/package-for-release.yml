@@ -22,7 +22,7 @@ jobs:
             c_compiler: gcc
             cpp_compiler: g++
             artifact_name: keypr-linux-x64
-            archive_name: keypr-linux-x64.tar.gz
+            archive_name: keypr-linux-x64.AppImage
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
@@ -159,15 +159,49 @@ jobs:
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config Release
 
-      # Linux: packages the install/ folder into a .tar.gz archive
-      - name: Package Linux artifact
+      - name: Create Linux AppImage
         if: runner.os == 'Linux'
         shell: bash
-        # Stop the script on any error
-        # Creates a .tar.gz archive
         run: |
           set -euo pipefail
-          tar -czvf "${{ steps.strings.outputs.archive-path }}" -C "${{ steps.strings.outputs.install-output-dir }}" .
+
+          mkdir -p AppDir/usr/bin
+
+          cp install/bin/qt_client AppDir/usr/bin/qt_client
+
+          cat > AppDir/qt_client.desktop <<'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Keypr
+          Exec=qt_client
+          Icon=qt_client
+          Categories=Utility;
+          EOF
+
+          mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
+
+          # Optional: only if this file exists in your repository
+          if [ -f resources/logo.png ]; then
+            cp resources/logo.png \
+              AppDir/usr/share/icons/hicolor/256x256/apps/qt_client.png
+          fi
+
+          wget -q \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage \
+            -O linuxdeploy.AppImage
+
+          wget -q \
+            https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage \
+            -O linuxdeploy-plugin-qt.AppImage
+
+          chmod +x linuxdeploy.AppImage linuxdeploy-plugin-qt.AppImage
+
+          ./linuxdeploy.AppImage \
+            --appdir AppDir \
+            --plugin qt \
+            --output appimage
+
+          mv Keypr*.AppImage keypr-linux-x64.AppImage
 
       # Windows: packages the install/ folder into a .zip archive
       - name: Package Windows artifact
@@ -222,7 +256,7 @@ jobs:
       - name: Verify downloaded artifacts
         shell: bash
         run: |
-          test -f "./dist/keypr-linux-x64/keypr-linux-x64.tar.gz"
+          test -f "./dist/keypr-linux-x64/keypr-linux-x64.AppImage"
           test -f "./dist/keypr-windows-x64/keypr-windows-x64.zip"
           test -f "./dist/keypr-macos-arm64/keypr-macos-arm64.zip"
 
@@ -240,7 +274,7 @@ jobs:
           make_latest: false
           fail_on_unmatched_files: true
           files: |
-            ./dist/keypr-linux-x64/keypr-linux-x64.tar.gz
+            ./dist/keypr-linux-x64/keypr-linux-x64.AppImage
             ./dist/keypr-windows-x64/keypr-windows-x64.zip
             ./dist/keypr-macos-arm64/keypr-macos-arm64.zip
 
@@ -255,6 +289,6 @@ jobs:
           make_latest: true
           fail_on_unmatched_files: true
           files: |
-            ./dist/keypr-linux-x64/keypr-linux-x64.tar.gz
+            ./dist/keypr-linux-x64/keypr-linux-x64.AppImage
             ./dist/keypr-windows-x64/keypr-windows-x64.zip
             ./dist/keypr-macos-arm64/keypr-macos-arm64.zip
