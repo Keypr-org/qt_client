@@ -33,6 +33,25 @@ jobs:
         with:
           version: "6.10.0"
 
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            autoconf \
+            autoconf-archive \
+            automake \
+            libtool \
+            pkg-config
+
+      - name: Install macOS dependencies
+        if: runner.os == 'macOS'
+        run: |
+          brew update
+          brew install autoconf autoconf-archive automake libtool pkg-config
+
+      # No additionnal dependencies required for Windows
+
       - name: Install vcpkg
         uses: lukka/run-vcpkg@v11
         with:
