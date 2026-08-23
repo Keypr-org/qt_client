@@ -118,7 +118,8 @@ jobs:
           echo "archive-path=${{ github.workspace }}/${{ matrix.archive_name }}" >> "$GITHUB_OUTPUT"
 
       # CMake configuration: generates build files in build/, using the compilers and build type specified by the matrix
-      - name: Configure CMake
+      - name: Configure CMake for Linux and MacOs
+        if: runner.os != 'Windows'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
@@ -126,6 +127,17 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
           -S ${{ steps.strings.outputs.cmake-source-dir }}
+
+      - name: Configure CMake for Windows
+        if: runner.os == 'Windows'
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -S ${{ steps.strings.outputs.cmake-source-dir }}
+          -DVCPKG_TARGET_TRIPLET=x64-windows-static
 
       # Compiles the project in Release mode
       - name: Build
