@@ -44,7 +44,7 @@ Contributions are welcome! Please read our contribution guidelines before submit
 
 ### Workflow of the project
 
-For the development of this specific repository, we will use [this](.github/workflows/qt_client.yml) workflow.
+For the development of this specific repository, we will use [this](.github/workflows/package-for-release.yml) workflow.
 
 **What it does :**
 
