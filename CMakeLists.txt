@@ -4,6 +4,7 @@ project(qt_client VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Widgets Test)
 
@@ -17,7 +18,8 @@ qt_add_executable(qt_client
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    )
+    resources.qrc
+)
 
 target_link_libraries(qt_client
     PRIVATE
