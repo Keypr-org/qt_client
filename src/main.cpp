@@ -1,4 +1,4 @@
-#include "component/linetextinput.h"
+#include "mainContent/viewentries.h"
 #include "mainwindow.h"
 
 #include <QApplication>
@@ -7,13 +7,11 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
+    /*MainWindow w;
     w.setWindowTitle("Keypr | Your local password manager");
-    w.show();
+    w.show();*/
 
-    /*LineTextInput u;
-    u.setLabelText("Maman");
-    u.setInputPlaceholder("I'm a placeholder");
-    u.show();*/
+    ViewEntries u;
+    u.show();
     return QApplication::exec();
 }

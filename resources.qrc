@@ -9,5 +9,12 @@
         <file>icons/alert-triangle.png</file>
         <file>icons/chevron-down.png</file>
         <file>icons/icon-plus.png</file>
+        <file>icons/icon-search.png</file>
+        <file>icons/icon-globe.png</file>
+        <file>icons/icon-credit-card-purple.png</file>
+        <file>icons/icon-credit-card.png</file>
+        <file>icons/icon-globe-purple.png</file>
+        <file>icons/icon-wifi-purple.png</file>
+        <file>icons/icon-wifi.png</file>
     </qresource>
 </RCC>
