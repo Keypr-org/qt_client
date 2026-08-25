@@ -1,7 +1,10 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "CryptoService.h"
+#include "mainContent/novaultselected.h"
+#include "sideBar/vaultselection.h"
 #include <QDebug>
+#include <QTransform>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,12 +15,20 @@ MainWindow::MainWindow(QWidget *parent)
     try {
         // Test d'intégration keypr-core / libsodium
         CryptoService crypto;
-        qDebug() << "keypr-core chargé avec succès depuis qt_client !";
-        qDebug() << "libsodium initialisée avec succès";
     } catch (const std::exception& e) {
         qWarning() << "Erreur lors de l'initialisation :" << e.what();
     }
+
+    auto vaultSelection = new VaultSelection(this);
+    auto noVaultSelected = new NoVaultSelected(this);
+
+    ui->sideBar->addWidget(vaultSelection);
+    ui->sideBar->setCurrentWidget(vaultSelection);
+
+    ui->mainContent->addWidget(noVaultSelected);
+    ui->mainContent->setCurrentWidget(noVaultSelected);
 }
+
 
 MainWindow::~MainWindow()
 {

@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/icon-logo.png</file>
+        <file>icons/icon-lock.png</file>
+        <file>icons/icon-lock-red.png</file>
+        <file>icons/icon-shield.png</file>
+        <file>icons/icon-eye.png</file>
+        <file>icons/icon-container.png</file>
+        <file>icons/alert-triangle.png</file>
+        <file>icons/chevron-down.png</file>
+        <file>icons/icon-plus.png</file>
+    </qresource>
+</RCC>
