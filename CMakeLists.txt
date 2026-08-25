@@ -22,6 +22,8 @@ qt_add_executable(qt_client
     src/sideBar/vaultselection.h src/sideBar/vaultselection.cpp src/sideBar/vaultselection.ui
     src/utils/clickablewidget.h src/utils/clickablewidget.cpp
     src/mainContent/novaultselected.h src/mainContent/novaultselected.cpp src/mainContent/novaultselected.ui
+    src/mainContent/unlockvaultmodal.h src/mainContent/unlockvaultmodal.cpp src/mainContent/unlockvaultmodal.ui
+
 )
 
 target_include_directories(qt_client PRIVATE
