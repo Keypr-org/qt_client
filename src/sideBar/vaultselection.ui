@@ -175,7 +175,7 @@ background-color: #2a2a4e;
      <property name="styleSheet">
       <string notr="true">#createVault {
   background-color: #21193C;
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid #A91FE4;
   padding: 8px;
 }</string>

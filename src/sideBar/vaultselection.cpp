@@ -14,6 +14,11 @@ VaultSelection::VaultSelection(QWidget *parent)
         updateArrowIcon(!isVisible);
     });
 
+    connect(ui->createVault, &QPushButton::clicked, this, [this]() {
+        emit createVaultRequested();
+    });
+
+
     ui->listVaults->setVisible(true);
     updateArrowIcon(true);
 
