@@ -26,6 +26,7 @@ qt_add_executable(qt_client
     src/component/passwordinput.h src/component/passwordinput.cpp src/component/passwordinput.ui
     src/component/linetextinput.h src/component/linetextinput.cpp src/component/linetextinput.ui
     src/component/textinput.h src/component/textinput.cpp src/component/textinput.ui
+    src/formOverlay/createvaultoverlay.h src/formOverlay/createvaultoverlay.cpp src/formOverlay/createvaultoverlay.ui
 )
 
 target_include_directories(qt_client PRIVATE

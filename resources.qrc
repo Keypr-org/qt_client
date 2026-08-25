@@ -9,5 +9,6 @@
         <file>icons/alert-triangle.png</file>
         <file>icons/chevron-down.png</file>
         <file>icons/icon-plus.png</file>
+        <file>icons/shield-icon-container.png</file>
     </qresource>
 </RCC>

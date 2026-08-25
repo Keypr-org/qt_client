@@ -1,10 +1,22 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "CryptoService.h"
-#include "mainContent/novaultselected.h"
-#include "sideBar/vaultselection.h"
+
 #include <QDebug>
 #include <QTransform>
+#include <QPushButton>
+#include <QResizeEvent>
+
+// Crypto
+#include "CryptoService.h"
+
+// Sidebar imports
+#include "sideBar/vaultselection.h"
+
+// FormOverlay imports
+#include "formOverlay/createvaultoverlay.h"
+
+// Main Content imports
+#include "mainContent/novaultselected.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,20 +25,47 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     try {
-        // Test d'intégration keypr-core / libsodium
+        // Integration test keypr-core / libsodium
         CryptoService crypto;
     } catch (const std::exception& e) {
         qWarning() << "Erreur lors de l'initialisation :" << e.what();
     }
 
-    auto vaultSelection = new VaultSelection(this);
-    auto noVaultSelected = new NoVaultSelected(this);
+    m_createVaultOverlay = new CreateVaultOverlay(this);
+    m_createVaultOverlay->setGeometry(this->rect());
+    m_createVaultOverlay->hide();
 
+    connect(m_createVaultOverlay, &CreateVaultOverlay::vaultCreated, this, [this](const QString &name, const QString &password) {
+        qDebug() << "Vault to be created :" << name;
+        // Calling keypr-core here
+    });
+
+    connect(m_createVaultOverlay, &CreateVaultOverlay::cancelled, this, [this]() {
+        // rien de spécial, déjà caché dans l'overlay
+    });
+
+    auto vaultSelection = new VaultSelection(this);
     ui->sideBar->addWidget(vaultSelection);
     ui->sideBar->setCurrentWidget(vaultSelection);
 
+    connect(vaultSelection, &VaultSelection::createVaultRequested, this, [this]() {
+        m_createVaultOverlay->setGeometry(this->rect());
+        m_createVaultOverlay->raise();
+        m_createVaultOverlay->show();
+    });
+
+    auto noVaultSelected = new NoVaultSelected(this);
     ui->mainContent->addWidget(noVaultSelected);
     ui->mainContent->setCurrentWidget(noVaultSelected);
+
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QMainWindow::resizeEvent(event);
+    if (m_createVaultOverlay) {
+        m_createVaultOverlay->setGeometry(this->rect());
+    }
 }
 
 

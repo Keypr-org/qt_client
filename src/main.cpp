@@ -1,4 +1,4 @@
-#include "component/linetextinput.h"
+#include "formOverlay/createvaultoverlay.h"
 #include "mainwindow.h"
 
 #include <QApplication>
@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     w.setWindowTitle("Keypr | Your local password manager");
     w.show();
 
-    /*LineTextInput u;
+    /*CreateVaultOverlay u;
     u.setLabelText("Maman");
     u.setInputPlaceholder("I'm a placeholder");
     u.show();*/
