@@ -19,10 +19,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    void updateArrowIcon(bool expanded);
-
-protected:
-    bool eventFilter(QObject *watched, QEvent *event) override;
 
 };
 #endif // MAINWINDOW_H

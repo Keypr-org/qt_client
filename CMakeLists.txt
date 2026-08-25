@@ -14,11 +14,18 @@ add_subdirectory(keypr-core)
 
 qt_add_executable(qt_client
     WIN32 MACOSX_BUNDLE
-    main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
+    src/main.cpp
+    src/mainwindow.cpp
+    src/mainwindow.h
+    src/mainwindow.ui
     resources.qrc
+    src/sideBar/vaultselection.h src/sideBar/vaultselection.cpp src/sideBar/vaultselection.ui
+    src/utils/clickablewidget.h src/utils/clickablewidget.cpp
+    src/mainContent/novaultselected.h src/mainContent/novaultselected.cpp src/mainContent/novaultselected.ui
+)
+
+target_include_directories(qt_client PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 target_link_libraries(qt_client
