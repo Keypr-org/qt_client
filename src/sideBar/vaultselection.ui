@@ -181,7 +181,17 @@ background-color: #2a2a4e;
 }</string>
      </property>
      <property name="text">
-      <string>+ Create Vault</string>
+      <string> Create Vault</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../resources.qrc">
+       <normaloff>:/icons/icons/icon-plus.png</normaloff>:/icons/icons/icon-plus.png</iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>14</width>
+       <height>14</height>
+      </size>
      </property>
     </widget>
    </item>

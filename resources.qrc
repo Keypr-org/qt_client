@@ -8,5 +8,6 @@
         <file>icons/icon-container.png</file>
         <file>icons/alert-triangle.png</file>
         <file>icons/chevron-down.png</file>
+        <file>icons/icon-plus.png</file>
     </qresource>
 </RCC>
