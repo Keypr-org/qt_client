@@ -22,16 +22,12 @@ MainWindow::MainWindow(QWidget *parent)
         qWarning() << "Erreur lors de l'initialisation :" << e.what();
     }
 
-    QListWidgetItem *item_1 = new QListWidgetItem(QIcon(":/icons/icons/icon-lock.png"), "Vault1");
-    ui->listVaults->addItem(item_1);
-    QListWidgetItem *item_2 = new QListWidgetItem(QIcon(":/icons/icons/icon-lock.png"), "Vault2");
-    ui->listVaults->addItem(item_2);
-    QListWidgetItem *item_3 = new QListWidgetItem(QIcon(":/icons/icons/icon-lock.png"), "Vault3");
-    ui->listVaults->addItem(item_3);
-    QListWidgetItem *item_4 = new QListWidgetItem(QIcon(":/icons/icons/icon-lock.png"), "Vault4");
-    ui->listVaults->addItem(item_4);
-    QListWidgetItem *item_5 = new QListWidgetItem(QIcon(":/icons/icons/icon-lock.png"), "Vault5");
-    ui->listVaults->addItem(item_5);
+    QIcon lockIcon(":/icons/icons/icon-lock.png");
+
+    for (int i = 1; i <= 5; ++i) {
+        QListWidgetItem *item = new QListWidgetItem(lockIcon, QString("Vault%1").arg(i));
+        ui->listVaults->addItem(item);
+    }
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event)
