@@ -22,3 +22,8 @@ void PasswordInput::on_toggleButton_clicked()
         ui->input->setEchoMode(QLineEdit::Password);
 }
 
+void PasswordInput::setLabelText(const QString &text)
+{
+    ui->passwordLabel->setText(text);
+}
+

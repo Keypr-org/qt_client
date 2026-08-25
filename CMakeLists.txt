@@ -24,6 +24,8 @@ qt_add_executable(qt_client
     src/mainContent/novaultselected.h src/mainContent/novaultselected.cpp src/mainContent/novaultselected.ui
     src/mainContent/unlockvaultmodal.h src/mainContent/unlockvaultmodal.cpp src/mainContent/unlockvaultmodal.ui
     src/component/passwordinput.h src/component/passwordinput.cpp src/component/passwordinput.ui
+    src/component/linetextinput.h src/component/linetextinput.cpp src/component/linetextinput.ui
+    src/component/textinput.h src/component/textinput.cpp src/component/textinput.ui
 )
 
 target_include_directories(qt_client PRIVATE

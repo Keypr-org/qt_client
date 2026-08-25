@@ -13,6 +13,9 @@ class PasswordInput : public QWidget
 
 public:
     explicit PasswordInput(QWidget *parent = nullptr);
+
+    void setLabelText(const QString &text);
+
     ~PasswordInput();
 
 private slots:

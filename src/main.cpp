@@ -1,8 +1,8 @@
+#include "component/linetextinput.h"
 #include "mainwindow.h"
 
 #include <QApplication>
 
-#include "mainContent/unlockvaultmodal.h"
 
 int main(int argc, char *argv[])
 {
@@ -11,7 +11,9 @@ int main(int argc, char *argv[])
     //w.setWindowTitle("Keypr | Your local password manager");
     //w.show();
 
-    unlockvaultmodal u;
+    LineTextInput u;
+    u.setLabelText("Maman");
+    u.setInputPlaceholder("I'm a placeholder");
     u.show();
     return QApplication::exec();
 }
