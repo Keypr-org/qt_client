@@ -75,14 +75,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto viewEntries = new ViewEntries(this);
     ui->mainContent->addWidget(viewEntries);
+    viewEntries->setStyleSheet("background-color: #111827;");
 
     connect(unlockVaultModal, &unlockvaultmodal::vaultUnlocked, this, [this, viewEntries, categoriesSelection](){
         ui->sideBar->setCurrentWidget(categoriesSelection);
+        ui->mainContent->setProperty("openEntries", true);
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
     connect(categoriesSelection, &CategoriesSelection::lockVaultRequested, this, [this, vaultSelection, noVaultSelected](){
         ui->sideBar->setCurrentWidget(vaultSelection);
+        ui->mainContent->setProperty("openEntries", false);
         ui->mainContent->setCurrentWidget(noVaultSelected);
     });
 
