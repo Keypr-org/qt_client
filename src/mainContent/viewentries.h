@@ -2,6 +2,7 @@
 #define VIEWENTRIES_H
 
 #include <QWidget>
+#include <QtWidgets/qlistwidget.h>
 
 namespace Ui {
 class ViewEntries;
@@ -14,6 +15,9 @@ class ViewEntries : public QWidget
 public:
     explicit ViewEntries(QWidget *parent = nullptr);
     ~ViewEntries();
+
+private slots:
+    void on_entriesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
 
 private:
     Ui::ViewEntries *ui;

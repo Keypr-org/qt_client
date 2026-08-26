@@ -7,11 +7,11 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    /*MainWindow w;
+    MainWindow w;
     w.setWindowTitle("Keypr | Your local password manager");
-    w.show();*/
+    w.show();
 
-    ViewEntries u;
-    u.show();
+    /*ViewEntries u;
+    u.show();*/
     return QApplication::exec();
 }

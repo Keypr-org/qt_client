@@ -11,7 +11,6 @@ ViewEntries::ViewEntries(QWidget *parent)
 
     auto item1 = new EntrieItem(this);
     item1->setIcon(EntrieItem::IconType::WebSite);
-    item1->setSelected(true);
     item1->setPrimaryInfo("GitHub");
     item1->setSecondaryInfo("KeypingSafe");
 
@@ -36,7 +35,6 @@ ViewEntries::ViewEntries(QWidget *parent)
     ui->entriesList->setItemWidget(item11, item1);
     ui->entriesList->setItemWidget(item22, item2);
     ui->entriesList->setItemWidget(item33, item3);
-    // Ne fonctionne pas correctement d'ajouter à la liste
 
 }
 
@@ -44,3 +42,29 @@ ViewEntries::~ViewEntries()
 {
     delete ui;
 }
+
+void ViewEntries::on_entriesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    if (previous) {
+        EntrieItem *previousItem =
+            qobject_cast<EntrieItem *>(
+                ui->entriesList->itemWidget(previous)
+                );
+
+        if (previousItem) {
+            previousItem->setSelected(false);
+        }
+    }
+
+    if (current) {
+        EntrieItem *newItem =
+            qobject_cast<EntrieItem *>(
+                ui->entriesList->itemWidget(current)
+                );
+
+        if (newItem) {
+            newItem->setSelected(true);
+        }
+    }
+}
+

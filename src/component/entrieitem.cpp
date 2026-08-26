@@ -51,17 +51,23 @@ void EntrieItem::setSelected(bool selected)
             break;
         }
 
-        this->setStyleSheet(
+        ui->item->setStyleSheet(
             "background: #1F2937;"
-            "border-bottom: 1px solid #A91EE4;"
+            "border: 1px solid #A91EE4;"
+            "border-radius: 8px;"
             );
         ui->entrieIcon->setStyleSheet(
             "background-color: #2F274A;"
             "border: 1px solid #A91EE4;"
-            "border-radius: 6px;"
             );
         ui->secondaryInfo->setStyleSheet(
             "color: #A91EE4;"
+            "border: none;"
+            );
+        ui->entrieInfo->setStyleSheet(
+            "border: none;"
+            );
+        ui->lastUpdateLabel->setStyleSheet(
             "border: none;"
             );
     }
@@ -82,17 +88,22 @@ void EntrieItem::setSelected(bool selected)
             break;
         }
 
-        this->setStyleSheet(
+        ui->item->setStyleSheet(
             "background: transparent;"
             "border-bottom: 1px solid #1F2937;"
             );
         ui->entrieIcon->setStyleSheet(
             "background-color: #0F0F0A;"
             "border: 1px solid #1F2937;"
-            "border-radius: 6px;"
             );
         ui->secondaryInfo->setStyleSheet(
             "color: #9CA3AF;"
+            );
+        ui->entrieInfo->setStyleSheet(
+            "border: none;"
+            );
+        ui->lastUpdateLabel->setStyleSheet(
+            "border: none;"
             );
     }
 

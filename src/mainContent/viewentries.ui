@@ -25,6 +25,12 @@
   <layout class="QHBoxLayout" name="horizontalLayout" stretch="3,7">
    <item>
     <widget class="QWidget" name="entries" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>300</width>
+       <height>0</height>
+      </size>
+     </property>
      <property name="styleSheet">
       <string notr="true">#newItemButton {
 	background: #A91FE4;
@@ -45,9 +51,17 @@
 
 #entriesList {
 	background: transparent;
+}
+
+QListWidget::item:selected {
+        background: transparent;
+        color: inherit;
 }</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="spacing">
+       <number>20</number>
+      </property>
       <item>
        <widget class="QWidget" name="searchEntries" native="true">
         <property name="maximumSize">
