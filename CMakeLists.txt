@@ -29,6 +29,7 @@ qt_add_executable(qt_client
     src/mainContent/viewentries.h src/mainContent/viewentries.cpp src/mainContent/viewentries.ui
     src/component/entrieitem.h src/component/entrieitem.cpp src/component/entrieitem.ui
     src/formOverlay/createvaultoverlay.h src/formOverlay/createvaultoverlay.cpp src/formOverlay/createvaultoverlay.ui
+    src/sideBar/categoriesselection.h src/sideBar/categoriesselection.cpp src/sideBar/categoriesselection.ui
 )
 
 target_include_directories(qt_client PRIVATE

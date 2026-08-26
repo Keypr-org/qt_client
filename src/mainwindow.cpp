@@ -11,6 +11,7 @@
 
 // Sidebar imports
 #include "sideBar/vaultselection.h"
+#include "sideBar/categoriesselection.h"
 
 // FormOverlay imports
 #include "formOverlay/createvaultoverlay.h"
@@ -45,7 +46,9 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     auto vaultSelection = new VaultSelection(this);
+    auto categoriesSelection = new CategoriesSelection(this);
     ui->sideBar->addWidget(vaultSelection);
+    ui->sideBar->addWidget(categoriesSelection);
     ui->sideBar->setCurrentWidget(vaultSelection);
 
     connect(vaultSelection, &VaultSelection::createVaultRequested, this, [this]() {

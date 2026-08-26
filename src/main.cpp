@@ -1,5 +1,6 @@
-#include "mainContent/viewentries.h"
+#include "sideBar/categoriesselection.h"
 #include "mainwindow.h"
+#include "sideBar/vaultselection.h"
 
 #include <QApplication>
 
@@ -11,7 +12,7 @@ int main(int argc, char *argv[])
     w.setWindowTitle("Keypr | Your local password manager");
     w.show();
 
-    /*ViewEntries u;
-    u.show();*/
+    //CategoriesSelection u;
+    //u.show();
     return QApplication::exec();
 }
