@@ -15,6 +15,9 @@ public:
     explicit VaultSelection(QWidget *parent = nullptr);
     ~VaultSelection();
 
+signals:
+    void createVaultRequested();
+
 private:
     Ui::VaultSelection *ui;
     void updateArrowIcon(bool expanded);

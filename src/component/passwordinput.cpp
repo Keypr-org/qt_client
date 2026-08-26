@@ -15,7 +15,6 @@ PasswordInput::~PasswordInput()
 
 void PasswordInput::on_toggleButton_clicked()
 {
-    qDebug() << "test";
     if(ui->input->echoMode() == QLineEdit::Password)
         ui->input->setEchoMode(QLineEdit::Normal);
     else

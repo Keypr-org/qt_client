@@ -28,6 +28,7 @@ qt_add_executable(qt_client
     src/component/textinput.h src/component/textinput.cpp src/component/textinput.ui
     src/mainContent/viewentries.h src/mainContent/viewentries.cpp src/mainContent/viewentries.ui
     src/component/entrieitem.h src/component/entrieitem.cpp src/component/entrieitem.ui
+    src/formOverlay/createvaultoverlay.h src/formOverlay/createvaultoverlay.cpp src/formOverlay/createvaultoverlay.ui
 )
 
 target_include_directories(qt_client PRIVATE

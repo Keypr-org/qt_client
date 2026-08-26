@@ -16,5 +16,6 @@
         <file>icons/icon-globe-purple.png</file>
         <file>icons/icon-wifi-purple.png</file>
         <file>icons/icon-wifi.png</file>
+        <file>icons/shield-icon-container.png</file>
     </qresource>
 </RCC>
