@@ -2,7 +2,7 @@
 #include "ui_categoriesselection.h"
 
 const int LIST_MIN_HEIGHT = 0;
-const int LIST_MAX_HEIGHT = 200;
+const int LIST_MAX_HEIGHT = 300;
 
 const QString FOLDER_ICON_WHITE = ":/icons/icons/icon-folder.png";
 const QString FOLDER_ICON_COLOR = ":/icons/icons/icon-open-folder.png";
@@ -17,6 +17,10 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
         bool isVisible = ui->listCategories->isVisible();
         ui->listCategories->setVisible(!isVisible);
         updateArrowIcon(!isVisible);
+    });
+
+    connect(ui->lockVault, &QPushButton::clicked, this, [this](){
+        emit lockVaultRequested();
     });
 
     connect(ui->listCategories->model(),
@@ -44,12 +48,6 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
     ui->listCategories->item(0)->setSelected(true);
 }
 
-CategoriesSelection::~CategoriesSelection()
-{
-    delete ui;
-}
-
-
 void CategoriesSelection::adjustListHeight()
 {
     int height = 0;
@@ -73,6 +71,7 @@ void CategoriesSelection::updateArrowIcon(bool expanded)
     }
     ui->iconArrow->setPixmap(pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
+
 void CategoriesSelection::on_listCategories_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
     if (previous) {
@@ -84,3 +83,7 @@ void CategoriesSelection::on_listCategories_currentItemChanged(QListWidgetItem *
     }
 }
 
+CategoriesSelection::~CategoriesSelection()
+{
+    delete ui;
+}

@@ -15,6 +15,14 @@ public:
     explicit unlockvaultmodal(QWidget *parent = nullptr);
     ~unlockvaultmodal();
 
+    void setVaultName(const QString &name);
+
+signals:
+    void vaultUnlocked(); // emitted when the user successfully unlocks the vault
+
+private slots:
+    void onUnlockClicked();
+
 private:
     Ui::unlockvaultmodal *ui;
 };

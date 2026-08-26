@@ -16,6 +16,9 @@ public:
     explicit ViewEntries(QWidget *parent = nullptr);
     ~ViewEntries();
 
+signals:
+    void newEntry();
+
 private slots:
     void on_entriesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
 

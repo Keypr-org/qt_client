@@ -30,6 +30,8 @@ qt_add_executable(qt_client
     src/component/entrieitem.h src/component/entrieitem.cpp src/component/entrieitem.ui
     src/formOverlay/createvaultoverlay.h src/formOverlay/createvaultoverlay.cpp src/formOverlay/createvaultoverlay.ui
     src/sideBar/categoriesselection.h src/sideBar/categoriesselection.cpp src/sideBar/categoriesselection.ui
+    src/formOverlay/newentryoverlay.h src/formOverlay/newentryoverlay.cpp src/formOverlay/newentryoverlay.ui
+    src/utils/hoverwidget.h src/utils/hoverwidget.cpp
 )
 
 target_include_directories(qt_client PRIVATE

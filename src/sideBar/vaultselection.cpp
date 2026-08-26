@@ -14,10 +14,13 @@ VaultSelection::VaultSelection(QWidget *parent)
         updateArrowIcon(!isVisible);
     });
 
+    connect(ui->listVaults, &QListWidget::itemClicked, this, [this](QListWidgetItem *item) {
+        emit vaultSelected(item->text());
+    });
+
     connect(ui->createVault, &QPushButton::clicked, this, [this]() {
         emit createVaultRequested();
     });
-
 
     ui->listVaults->setVisible(true);
     updateArrowIcon(true);
@@ -28,7 +31,6 @@ VaultSelection::VaultSelection(QWidget *parent)
         QListWidgetItem *item = new QListWidgetItem(lockIcon, QString("Vault%1").arg(i));
         ui->listVaults->addItem(item);
     }
-
 }
 
 void VaultSelection::updateArrowIcon(bool expanded)

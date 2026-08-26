@@ -2,6 +2,7 @@
 #define VAULTSELECTION_H
 
 #include <QWidget>
+#include <QListWidgetItem>
 
 namespace Ui {
 class VaultSelection;
@@ -17,9 +18,11 @@ public:
 
 signals:
     void createVaultRequested();
+    void vaultSelected(const QString &vaultName); // emitted when a vault item is clicked
 
 private:
     Ui::VaultSelection *ui;
+
     void updateArrowIcon(bool expanded);
 };
 

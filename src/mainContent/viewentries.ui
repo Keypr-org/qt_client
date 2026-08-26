@@ -128,7 +128,7 @@ QListWidget::item:selected {
          </size>
         </property>
         <property name="text">
-         <string>+ Add New Item</string>
+         <string>+ Add New Entry</string>
         </property>
        </widget>
       </item>
