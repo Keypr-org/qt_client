@@ -1,4 +1,4 @@
-#include "formOverlay/createvaultoverlay.h"
+#include "mainContent/viewentries.h"
 #include "mainwindow.h"
 
 #include <QApplication>
@@ -11,9 +11,7 @@ int main(int argc, char *argv[])
     w.setWindowTitle("Keypr | Your local password manager");
     w.show();
 
-    /*CreateVaultOverlay u;
-    u.setLabelText("Maman");
-    u.setInputPlaceholder("I'm a placeholder");
+    /*ViewEntries u;
     u.show();*/
     return QApplication::exec();
 }
