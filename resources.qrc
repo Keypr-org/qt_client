@@ -17,5 +17,8 @@
         <file>icons/icon-wifi-purple.png</file>
         <file>icons/icon-wifi.png</file>
         <file>icons/shield-icon-container.png</file>
+        <file>icons/icon-personas.png</file>
+        <file>icons/icon-folder.png</file>
+        <file>icons/icon-open-folder.png</file>
     </qresource>
 </RCC>
