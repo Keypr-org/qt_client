@@ -10,8 +10,6 @@ CreateVaultOverlay::CreateVaultOverlay(QWidget *parent)
     ui->masterPassword->setLabelText("MASTER PASSWORD");
     ui->confirmMasterPassword->setLabelText("CONFIRM MASTER PASSWORD");
 
-    //setAttribute(Qt::WA_StyledBackground, true);
-
     // By default, hide the overlay
     hide();
 

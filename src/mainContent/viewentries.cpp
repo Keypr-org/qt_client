@@ -36,6 +36,10 @@ ViewEntries::ViewEntries(QWidget *parent)
     ui->entriesList->setItemWidget(item22, item2);
     ui->entriesList->setItemWidget(item33, item3);
 
+    connect(ui->newItemButton, &QPushButton::clicked, this, [this](){
+        emit newEntry();
+    });
+
 }
 
 ViewEntries::~ViewEntries()

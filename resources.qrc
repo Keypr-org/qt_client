@@ -20,7 +20,12 @@
         <file>icons/icon-personas.png</file>
         <file>icons/icon-folder.png</file>
         <file>icons/icon-open-folder.png</file>
-        <file>icons/icon-pencil.png</file>
         <file>icons/icon-trash.png</file>
+        <file>icons/icon-pencil.png</file>
+        <file>icons/icon-persona.png</file>
+        <file>icons/icon-persona-purple.png</file>
+        <file>icons/icon-check-green.png</file>
+        <file>icons/icon-copy-green.png</file>
+        <file>icons/icon-email-purple.png</file>
     </qresource>
 </RCC>

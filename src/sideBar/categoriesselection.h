@@ -16,6 +16,9 @@ public:
     explicit CategoriesSelection(QWidget *parent = nullptr);
     ~CategoriesSelection();
 
+signals:
+    void lockVaultRequested();
+
 private slots:
     void adjustListHeight();
 

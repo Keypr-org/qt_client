@@ -213,18 +213,14 @@ background-color: #2a2a4e;
      </property>
      <property name="styleSheet">
       <string notr="true">#createCategory {
-  background-color: #21193C;
+  background-color: #A91FE4;
   border-radius: 6px;
   border: 1px solid #A91FE4;
   padding: 8px;
 }</string>
      </property>
      <property name="text">
-      <string> New Category</string>
-     </property>
-     <property name="icon">
-      <iconset resource="../../resources.qrc">
-       <normaloff>:/icons/icons/icon-plus.png</normaloff>:/icons/icons/icon-plus.png</iconset>
+      <string>+ New Category</string>
      </property>
      <property name="iconSize">
       <size>
