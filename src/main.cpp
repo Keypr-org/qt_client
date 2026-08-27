@@ -1,6 +1,5 @@
-#include "sideBar/categoriesselection.h"
+#include "mainContent/entries/wifientry.h"
 #include "mainwindow.h"
-#include "sideBar/vaultselection.h"
 
 #include <QApplication>
 
@@ -8,11 +7,11 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    MainWindow w;
+    /*MainWindow w;
     w.setWindowTitle("Keypr | Your local password manager");
-    w.show();
+    w.show();*/
 
-    //CategoriesSelection u;
-    //u.show();
+    WifiEntry u;
+    u.show();
     return QApplication::exec();
 }
