@@ -18,6 +18,7 @@ public:
 
 signals:
     void newEntry();
+    void openEntry();
 
 private slots:
     void on_entriesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);

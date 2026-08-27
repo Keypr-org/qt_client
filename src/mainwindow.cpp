@@ -21,6 +21,7 @@
 #include "mainContent/novaultselected.h"
 #include "mainContent/viewentries.h"
 #include "mainContent/unlockvaultmodal.h"
+#include "mainContent/addwebsiteform.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -99,6 +100,9 @@ MainWindow::MainWindow(QWidget *parent)
         newEntryOverlay->show();
     });
 
+    auto addWebsiteForm = new AddWebsiteForm(this);
+    ui->mainContent->addWidget(addWebsiteForm);
+
     connect(newEntryOverlay, &NewEntryOverlay::newWifiEntryRequested, this, [this, newEntryOverlay](){
         newEntryOverlay->hide();
     });
@@ -107,8 +111,17 @@ MainWindow::MainWindow(QWidget *parent)
         newEntryOverlay->hide();
     });
 
-    connect(newEntryOverlay, &NewEntryOverlay::newWebsiteCredentialsEntryRequested, this, [this, newEntryOverlay](){
+    connect(newEntryOverlay, &NewEntryOverlay::newWebsiteCredentialsEntryRequested, this, [this, newEntryOverlay, addWebsiteForm](){
         newEntryOverlay->hide();
+        ui->mainContent->setCurrentWidget(addWebsiteForm);
+    });
+
+    connect(addWebsiteForm, &AddWebsiteForm::cancelNewWebEntry, this, [this, viewEntries](){
+        ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
+    connect(addWebsiteForm, &AddWebsiteForm::createWebsiteEntry, this, [this, viewEntries](){
+        ui->mainContent->setCurrentWidget(viewEntries);
     });
 
 }
