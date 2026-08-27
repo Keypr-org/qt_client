@@ -30,6 +30,11 @@ qt_add_executable(qt_client
     src/component/entrieitem.h src/component/entrieitem.cpp src/component/entrieitem.ui
     src/formOverlay/createvaultoverlay.h src/formOverlay/createvaultoverlay.cpp src/formOverlay/createvaultoverlay.ui
     src/sideBar/categoriesselection.h src/sideBar/categoriesselection.cpp src/sideBar/categoriesselection.ui
+    src/component/card.h src/component/card.cpp src/component/card.ui
+    src/utils/cardnumberutils.h src/utils/cardnumberutils.cpp
+    src/mainContent/creditcardform.h src/mainContent/creditcardform.cpp src/mainContent/creditcardform.ui
+    src/component/cardnumberinput.h src/component/cardnumberinput.cpp src/component/cardnumberinput.ui
+    src/mainContent/entries/creditcardentry.h src/mainContent/entries/creditcardentry.cpp src/mainContent/entries/creditcardentry.ui
 )
 
 target_include_directories(qt_client PRIVATE
