@@ -19,6 +19,12 @@ public:
 
     ~LineTextInput();
 
+signals:
+    void textChanged(QString text);
+
+private slots:
+    void on_input_textEdited(const QString &arg1);
+
 private:
     Ui::LineTextInput *ui;
 };
