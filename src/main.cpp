@@ -11,8 +11,8 @@ int main(int argc, char *argv[])
     w.setWindowTitle("Keypr | Your local password manager");
     w.show();
 
-    WebsiteEntry f;
-    f.show();
+    WebsiteEntry z;
+    z.show();
 
     return QApplication::exec();
 }

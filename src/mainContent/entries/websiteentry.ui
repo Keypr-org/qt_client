@@ -341,7 +341,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <property name="spacing">
-       <number>0</number>
+       <number>-1</number>
       </property>
       <property name="leftMargin">
        <number>0</number>
@@ -356,13 +356,34 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="LineTextInput" name="usernameInput" native="true"/>
+       <widget class="LineTextInput" name="usernameInput" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="PasswordInput" name="passwordInput" native="true"/>
+       <widget class="PasswordInput" name="passwordInput" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="LineTextInput" name="urlInput" native="true"/>
+       <widget class="LineTextInput" name="urlInput" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
@@ -418,7 +439,7 @@
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>150</height>
+       <height>110</height>
       </size>
      </property>
      <property name="styleSheet">
@@ -601,6 +622,9 @@
                 <height>30</height>
                </size>
               </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
               <property name="styleSheet">
                <string notr="true">#changeLink {
 	background: transparent;
@@ -628,6 +652,9 @@
                 <height>30</height>
                </size>
               </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
               <property name="styleSheet">
                <string notr="true">#unlinkLink {
 	background: transparent;
@@ -652,7 +679,7 @@
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>30</height>
+          <height>20</height>
          </size>
         </property>
         <property name="frameShape">
@@ -724,6 +751,12 @@
       <size>
        <width>0</width>
        <height>150</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>170</height>
       </size>
      </property>
      <property name="styleSheet">
@@ -870,6 +903,9 @@
              <bold>true</bold>
             </font>
            </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
            <property name="styleSheet">
             <string notr="true">#generateAliasButton {
 	background-color: #A91EE4;
@@ -888,6 +924,9 @@
              <width>130</width>
              <height>30</height>
             </size>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
            </property>
            <property name="styleSheet">
             <string notr="true">#deleteAliasButton {
@@ -915,6 +954,12 @@
          <size>
           <width>0</width>
           <height>30</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>45</height>
          </size>
         </property>
         <property name="styleSheet">

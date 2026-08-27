@@ -80,7 +80,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="spacing">
-       <number>0</number>
+       <number>-1</number>
       </property>
       <property name="leftMargin">
        <number>32</number>
@@ -126,13 +126,13 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>80</height>
+          <height>60</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>80</height>
+          <height>70</height>
          </size>
         </property>
        </widget>
@@ -142,13 +142,13 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>80</height>
+          <height>60</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>80</height>
+          <height>70</height>
          </size>
         </property>
        </widget>
@@ -185,13 +185,13 @@
            <property name="minimumSize">
             <size>
              <width>0</width>
-             <height>80</height>
+             <height>60</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>16777215</width>
-             <height>80</height>
+             <height>50</height>
             </size>
            </property>
           </widget>
@@ -216,7 +216,7 @@
            <property name="maximumSize">
             <size>
              <width>70</width>
-             <height>16777215</height>
+             <height>70</height>
             </size>
            </property>
            <property name="font">
@@ -232,7 +232,7 @@
             <string notr="true">#generatePasswordButton {
 	border-radius: 8px;
 	margin-top: 28px;
-	margin-bottom: 5px;
+	margin-bottom: 2px;
 	border: 1px solid #9CA3AF;
 	color: #9CA3AF;
 	background-color: #1A2232;
@@ -251,22 +251,36 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>80</height>
+          <height>60</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>16777215</width>
-          <height>80</height>
+          <height>70</height>
          </size>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="TextInput" name="notesInput" native="true"/>
+       <widget class="TextInput" name="notesInput" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>100</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="TextInput" name="descriptionInput" native="true"/>
+       <widget class="TextInput" name="descriptionInput" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>100</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QFrame" name="frame">

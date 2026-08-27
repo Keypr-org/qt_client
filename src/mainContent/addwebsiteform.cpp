@@ -8,7 +8,7 @@ AddWebsiteForm::AddWebsiteForm(QWidget *parent)
     ui->setupUi(this);
 
     ui->websiteNameInput->setLabelText("WEBSITE NAME");
-    ui->usernameEmailInput->setLabelText("WEBSITE NAME");
+    ui->usernameEmailInput->setLabelText("USERNAME/EMAIL");
     ui->passwordInput->setLabelText("PASSWORD");
     ui->urlInput->setLabelText("WEBSITE URL");
     ui->notesInput->setLabelText("NOTES (OPTIONAL)");
