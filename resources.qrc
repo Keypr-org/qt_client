@@ -20,5 +20,7 @@
         <file>icons/icon-personas.png</file>
         <file>icons/icon-folder.png</file>
         <file>icons/icon-open-folder.png</file>
+        <file>icons/icon-pencil.png</file>
+        <file>icons/icon-trash.png</file>
     </qresource>
 </RCC>

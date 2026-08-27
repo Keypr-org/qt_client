@@ -34,6 +34,7 @@ qt_add_executable(qt_client
     src/utils/cardnumberutils.h src/utils/cardnumberutils.cpp
     src/mainContent/creditcardform.h src/mainContent/creditcardform.cpp src/mainContent/creditcardform.ui
     src/component/cardnumberinput.h src/component/cardnumberinput.cpp src/component/cardnumberinput.ui
+    src/mainContent/entries/creditcardentry.h src/mainContent/entries/creditcardentry.cpp src/mainContent/entries/creditcardentry.ui
 )
 
 target_include_directories(qt_client PRIVATE
