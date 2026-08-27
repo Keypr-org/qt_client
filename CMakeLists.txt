@@ -35,6 +35,8 @@ qt_add_executable(qt_client
     src/mainContent/creditcardform.h src/mainContent/creditcardform.cpp src/mainContent/creditcardform.ui
     src/component/cardnumberinput.h src/component/cardnumberinput.cpp src/component/cardnumberinput.ui
     src/mainContent/entries/creditcardentry.h src/mainContent/entries/creditcardentry.cpp src/mainContent/entries/creditcardentry.ui
+    src/mainContent/wifiform.h src/mainContent/wifiform.cpp src/mainContent/wifiform.ui
+    src/mainContent/entries/wifientry.h src/mainContent/entries/wifientry.cpp src/mainContent/entries/wifientry.ui
 )
 
 target_include_directories(qt_client PRIVATE
