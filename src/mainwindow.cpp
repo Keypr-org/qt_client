@@ -175,6 +175,10 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(personaDisplay);
     });
 
+    connect(categoriesSelection, &CategoriesSelection::categorySelected, this, [this, viewEntries](){
+        ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

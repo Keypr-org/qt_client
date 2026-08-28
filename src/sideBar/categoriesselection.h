@@ -19,6 +19,7 @@ public:
 signals:
     void lockVaultRequested();
     void setPersonaFrame();
+    void categorySelected();
 
 private slots:
     void adjustListHeight();

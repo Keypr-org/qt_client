@@ -48,6 +48,7 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
     ui->listCategories->item(0)->setSelected(true);
 
     connect(ui->personasButton, &QPushButton::clicked, this, [this](){
+        ui->listCategories->setCurrentItem(nullptr);
         emit setPersonaFrame();
     });
 }
@@ -84,6 +85,7 @@ void CategoriesSelection::on_listCategories_currentItemChanged(QListWidgetItem *
 
     if (current) {
         current->setIcon(QIcon(FOLDER_ICON_COLOR));
+        emit categorySelected();
     }
 }
 
