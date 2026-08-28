@@ -169,7 +169,7 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <property name="spacing">
-          <number>0</number>
+          <number>-1</number>
          </property>
          <property name="leftMargin">
           <number>0</number>
@@ -222,7 +222,7 @@
            <property name="font">
             <font>
              <pointsize>12</pointsize>
-             <bold>false</bold>
+             <bold>true</bold>
             </font>
            </property>
            <property name="cursor">
@@ -291,6 +291,15 @@
          <enum>QFrame::Shadow::Raised</enum>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout">
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
          <item>
           <widget class="QPushButton" name="cancelButton">
            <property name="cursor">
@@ -301,6 +310,7 @@
 	background: none;
 	border: none;
 	color: #9CA3AF;
+	margin-left: 3px;
 }</string>
            </property>
            <property name="text">

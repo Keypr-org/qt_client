@@ -27,6 +27,11 @@ AddWebsiteForm::AddWebsiteForm(QWidget *parent)
     });
 }
 
+void AddWebsiteForm::setPassword(const QString &password)
+{
+    ui->passwordInput->setText(password);
+}
+
 AddWebsiteForm::~AddWebsiteForm()
 {
     delete ui;

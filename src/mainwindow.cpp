@@ -22,6 +22,9 @@
 #include "mainContent/viewentries.h"
 #include "mainContent/unlockvaultmodal.h"
 #include "mainContent/addwebsiteform.h"
+#include "mainContent/creditcardform.h"
+#include "mainContent/wifiform.h"
+#include "mainContent/passwordgenerator.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -103,12 +106,20 @@ MainWindow::MainWindow(QWidget *parent)
     auto addWebsiteForm = new AddWebsiteForm(this);
     ui->mainContent->addWidget(addWebsiteForm);
 
-    connect(newEntryOverlay, &NewEntryOverlay::newWifiEntryRequested, this, [this, newEntryOverlay](){
+    auto creditCardForm = new CreditCardForm(this);
+    ui->mainContent->addWidget(creditCardForm);
+
+    auto wifiForm = new WifiForm(this);
+    ui->mainContent->addWidget(wifiForm);
+
+    connect(newEntryOverlay, &NewEntryOverlay::newWifiEntryRequested, this, [this, newEntryOverlay, wifiForm](){
         newEntryOverlay->hide();
+        ui->mainContent->setCurrentWidget(wifiForm);
     });
 
-    connect(newEntryOverlay, &NewEntryOverlay::newCreditCardEntryRequested, this, [this, newEntryOverlay](){
+    connect(newEntryOverlay, &NewEntryOverlay::newCreditCardEntryRequested, this, [this, newEntryOverlay, creditCardForm](){
         newEntryOverlay->hide();
+        ui->mainContent->setCurrentWidget(creditCardForm);
     });
 
     connect(newEntryOverlay, &NewEntryOverlay::newWebsiteCredentialsEntryRequested, this, [this, newEntryOverlay, addWebsiteForm](){
@@ -120,8 +131,40 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
+    connect(creditCardForm, &CreditCardForm::cancelRequested, this, [this, viewEntries](){
+        ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
+    connect(wifiForm, &WifiForm::cancelRequested, this, [this, viewEntries](){
+        ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
     connect(addWebsiteForm, &AddWebsiteForm::createWebsiteEntry, this, [this, viewEntries](){
         ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
+    connect(creditCardForm, &CreditCardForm::createCreditCardEntry, this, [this, viewEntries](){
+        ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
+    connect(wifiForm, &WifiForm::createNewWifiEntry, this, [this, viewEntries](){
+        ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
+    auto passwordGeneratorOverlay = new PasswordGenerator(this);
+    ui->mainContent->addWidget(passwordGeneratorOverlay);
+
+    connect(addWebsiteForm, &AddWebsiteForm::generatePassword, this, [this, passwordGeneratorOverlay](){
+        ui->mainContent->setCurrentWidget(passwordGeneratorOverlay);
+    });
+
+    connect(passwordGeneratorOverlay, &PasswordGenerator::usePasswordEvent, this, [this, addWebsiteForm](const QString password){
+        addWebsiteForm->setPassword(password);
+        ui->mainContent->setCurrentWidget(addWebsiteForm);
+    });
+
+    connect(passwordGeneratorOverlay, &PasswordGenerator::cancelRequested, this, [this, addWebsiteForm](){
+        ui->mainContent->setCurrentWidget(addWebsiteForm);
     });
 
 }

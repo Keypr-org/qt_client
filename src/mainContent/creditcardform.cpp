@@ -24,6 +24,14 @@ CreditCardForm::CreditCardForm(QWidget *parent)
     ui->cvvInput->setLabelText("cvv");
     ui->notesInput->setLabelText("notes (optional)");
     ui->notesInput->setInputPlaceholder("Enter notes here...");
+
+    connect(ui->cancelButton, &QPushButton::clicked, this, [this](){
+        emit cancelRequested();
+    });
+
+    connect(ui->saveButton, &QPushButton::clicked, this, [this](){
+        emit createCreditCardEntry();
+    });
 }
 
 CreditCardForm::~CreditCardForm()
