@@ -27,5 +27,7 @@
         <file>icons/icon-check-green.png</file>
         <file>icons/icon-copy-green.png</file>
         <file>icons/icon-email-purple.png</file>
+        <file>icons/icon-copy.png</file>
+        <file>icons/icon-regenerate.png</file>
     </qresource>
 </RCC>

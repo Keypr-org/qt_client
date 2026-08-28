@@ -15,6 +15,8 @@ public:
     explicit AddWebsiteForm(QWidget *parent = nullptr);
     ~AddWebsiteForm();
 
+    void setPassword(const QString &password);
+
 signals:
     void generatePassword();
     void createWebsiteEntry();

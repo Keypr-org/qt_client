@@ -11,6 +11,14 @@ WifiForm::WifiForm(QWidget *parent)
     ui->passwordInput->setLabelText("password");
     ui->notesInput->setLabelText("notes (optional");
     ui->notesInput->setInputPlaceholder("Enter notes here...");
+
+    connect(ui->cancelButton, &QPushButton::clicked, this, [this](){
+        emit cancelRequested();
+    });
+
+    connect(ui->saveButton, &QPushButton::clicked, this, [this](){
+        emit createNewWifiEntry();
+    });
 }
 
 WifiForm::~WifiForm()

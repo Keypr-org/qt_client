@@ -41,6 +41,8 @@ qt_add_executable(qt_client
     src/mainContent/entries/creditcardentry.h src/mainContent/entries/creditcardentry.cpp src/mainContent/entries/creditcardentry.ui
     src/mainContent/wifiform.h src/mainContent/wifiform.cpp src/mainContent/wifiform.ui
     src/mainContent/entries/wifientry.h src/mainContent/entries/wifientry.cpp src/mainContent/entries/wifientry.ui
+    src/mainContent/passwordgenerator.h src/mainContent/passwordgenerator.cpp src/mainContent/passwordgenerator.ui
+    src/component/toggleswitch.h src/component/toggleswitch.cpp
 )
 
 target_include_directories(qt_client PRIVATE

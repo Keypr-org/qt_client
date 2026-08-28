@@ -15,6 +15,10 @@ public:
     explicit CreditCardForm(QWidget *parent = nullptr);
     ~CreditCardForm();
 
+signals:
+    void cancelRequested();
+    void createCreditCardEntry();
+
 private:
     Ui::CreditCardForm *ui;
 };

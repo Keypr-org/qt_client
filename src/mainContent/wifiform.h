@@ -15,6 +15,10 @@ public:
     explicit WifiForm(QWidget *parent = nullptr);
     ~WifiForm();
 
+signals:
+    void cancelRequested();
+    void createNewWifiEntry();
+
 private:
     Ui::WifiForm *ui;
 };
