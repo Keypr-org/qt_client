@@ -46,6 +46,10 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
 
     ui->listCategories->setCurrentRow(0);
     ui->listCategories->item(0)->setSelected(true);
+
+    connect(ui->personasButton, &QPushButton::clicked, this, [this](){
+        emit setPersonaFrame();
+    });
 }
 
 void CategoriesSelection::adjustListHeight()

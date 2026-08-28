@@ -18,6 +18,7 @@ public:
 
 signals:
     void lockVaultRequested();
+    void setPersonaFrame();
 
 private slots:
     void adjustListHeight();

@@ -43,6 +43,8 @@ qt_add_executable(qt_client
     src/mainContent/entries/wifientry.h src/mainContent/entries/wifientry.cpp src/mainContent/entries/wifientry.ui
     src/mainContent/passwordgenerator.h src/mainContent/passwordgenerator.cpp src/mainContent/passwordgenerator.ui
     src/component/toggleswitch.h src/component/toggleswitch.cpp
+    src/mainContent/personadisplay.h src/mainContent/personadisplay.cpp src/mainContent/personadisplay.ui
+    src/component/personaitem.h src/component/personaitem.cpp src/component/personaitem.ui
 )
 
 target_include_directories(qt_client PRIVATE

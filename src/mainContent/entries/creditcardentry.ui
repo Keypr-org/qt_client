@@ -268,15 +268,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>Card</class>
+   <class>PasswordInput</class>
    <extends>QWidget</extends>
-   <header>component/card.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>CardNumberInput</class>
-   <extends>QWidget</extends>
-   <header>component/cardnumberinput.h</header>
+   <header>component/passwordinput.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -286,15 +280,21 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>PasswordInput</class>
-   <extends>QWidget</extends>
-   <header>component/passwordinput.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>TextInput</class>
    <extends>QWidget</extends>
    <header>component/textinput.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Card</class>
+   <extends>QWidget</extends>
+   <header>component/card.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CardNumberInput</class>
+   <extends>QWidget</extends>
+   <header>component/cardnumberinput.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

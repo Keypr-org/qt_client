@@ -25,6 +25,7 @@
 #include "mainContent/creditcardform.h"
 #include "mainContent/wifiform.h"
 #include "mainContent/passwordgenerator.h"
+#include "mainContent/personadisplay.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -165,6 +166,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(passwordGeneratorOverlay, &PasswordGenerator::cancelRequested, this, [this, addWebsiteForm](){
         ui->mainContent->setCurrentWidget(addWebsiteForm);
+    });
+
+    auto personaDisplay = new PersonaDisplay(this);
+    ui->mainContent->addWidget(personaDisplay);
+
+    connect(categoriesSelection, &CategoriesSelection::setPersonaFrame, this, [this, personaDisplay](){
+        ui->mainContent->setCurrentWidget(personaDisplay);
     });
 
 }
