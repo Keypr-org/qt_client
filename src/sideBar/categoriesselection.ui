@@ -14,6 +14,18 @@
    <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
+   <property name="leftMargin">
+    <number>20</number>
+   </property>
+   <property name="topMargin">
+    <number>20</number>
+   </property>
+   <property name="rightMargin">
+    <number>20</number>
+   </property>
+   <property name="bottomMargin">
+    <number>20</number>
+   </property>
    <item>
     <widget class="QWidget" name="logoWrapper" native="true">
      <property name="maximumSize">
@@ -23,6 +35,18 @@
       </size>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>24</number>
+      </property>
       <item>
        <widget class="QLabel" name="keyprLogo">
         <property name="enabled">
@@ -80,6 +104,18 @@
       </size>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
       <item>
        <widget class="QLabel" name="iconShield">
         <property name="text">
@@ -205,6 +241,7 @@ background-color: #2a2a4e;
     <widget class="QPushButton" name="createCategory">
      <property name="font">
       <font>
+       <pointsize>14</pointsize>
        <bold>true</bold>
       </font>
      </property>
@@ -220,7 +257,10 @@ background-color: #2a2a4e;
 }</string>
      </property>
      <property name="text">
-      <string>+ New Category</string>
+      <string>New Category</string>
+     </property>
+     <property name="icon">
+      <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
      </property>
      <property name="iconSize">
       <size>
@@ -234,7 +274,8 @@ background-color: #2a2a4e;
     <widget class="QPushButton" name="lockVault">
      <property name="font">
       <font>
-       <bold>true</bold>
+       <pointsize>14</pointsize>
+       <bold>false</bold>
       </font>
      </property>
      <property name="cursor">
@@ -257,8 +298,8 @@ background-color: #2a2a4e;
      </property>
      <property name="iconSize">
       <size>
-       <width>40</width>
-       <height>40</height>
+       <width>30</width>
+       <height>30</height>
       </size>
      </property>
     </widget>

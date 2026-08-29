@@ -26,6 +26,7 @@
 #include "mainContent/wifiform.h"
 #include "mainContent/passwordgenerator.h"
 #include "mainContent/personadisplay.h"
+#include "mainContent/newpersonaform.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -179,6 +180,20 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
+    auto personaForm = new NewPersonaForm(this);
+    ui->mainContent->addWidget(personaForm);
+
+    connect(personaDisplay, &PersonaDisplay::createPersona, this, [this, personaForm](){
+        ui->mainContent->setCurrentWidget(personaForm);
+    });
+
+    connect(personaForm, &NewPersonaForm::cancelSignal, this, [this, personaDisplay](){
+        ui->mainContent->setCurrentWidget(personaDisplay);
+    });
+
+    connect(personaForm, &NewPersonaForm::usePersonaSignal, this, [this, personaDisplay](){
+        ui->mainContent->setCurrentWidget(personaDisplay);
+    });
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)

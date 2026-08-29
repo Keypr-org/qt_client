@@ -15,6 +15,9 @@ public:
     explicit PersonaDisplay(QWidget *parent = nullptr);
     ~PersonaDisplay();
 
+signals:
+    void createPersona();
+
 private:
     Ui::PersonaDisplay *ui;
 };
