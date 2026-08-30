@@ -29,5 +29,6 @@
         <file>icons/icon-email-purple.png</file>
         <file>icons/icon-copy.png</file>
         <file>icons/icon-regenerate.png</file>
+        <file>icons/icon-personas-purple.png</file>
     </qresource>
 </RCC>

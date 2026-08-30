@@ -16,6 +16,8 @@ public:
     explicit VaultSelection(QWidget *parent = nullptr);
     ~VaultSelection();
 
+    void addVault(const QString &name);
+
 signals:
     void createVaultRequested();
     void vaultSelected(const QString &vaultName); // emitted when a vault item is clicked

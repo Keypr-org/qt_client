@@ -2,6 +2,9 @@
 #define CREDITCARDFORM_H
 
 #include <QWidget>
+#include <memory>
+
+#include "model/creditcardentrydata.h"
 
 namespace Ui {
 class CreditCardForm;
@@ -15,9 +18,11 @@ public:
     explicit CreditCardForm(QWidget *parent = nullptr);
     ~CreditCardForm();
 
+    void clearForm();
+
 signals:
     void cancelRequested();
-    void createCreditCardEntry();
+    void createCreditCardEntry(std::shared_ptr<CreditCardEntryData> entry);
 
 private:
     Ui::CreditCardForm *ui;

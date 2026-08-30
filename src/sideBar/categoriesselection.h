@@ -16,11 +16,14 @@ public:
     explicit CategoriesSelection(QWidget *parent = nullptr);
     ~CategoriesSelection();
 
+    void addCategory(const QString &name);
+
 signals:
     void lockVaultRequested();
     void setPersonaFrame();
     void categorySelected();
     void categoryReselected();
+    void createCategoryRequested();
 
 private slots:
     void adjustListHeight();
@@ -31,6 +34,7 @@ private:
     Ui::CategoriesSelection *ui;
     QListWidgetItem *m_lastClickedCategory = nullptr;
     void updateArrowIcon(bool expanded);
+    void setPersonaSelected(bool selected);
 };
 
 #endif // CATEGORIESSELECTION_H

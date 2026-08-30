@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "model/persona.h"
+
 namespace Ui {
 class PersonaItem;
 }
@@ -14,6 +16,8 @@ class PersonaItem : public QWidget
 public:
     explicit PersonaItem(QWidget *parent = nullptr);
     ~PersonaItem();
+
+    void setPersona(const PersonaData &persona);
 
 protected:
     void paintEvent(QPaintEvent *event) override;

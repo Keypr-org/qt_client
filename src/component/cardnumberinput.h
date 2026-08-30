@@ -16,6 +16,7 @@ public:
     ~CardNumberInput();
 
     void setCardNumber(const QString &cardNumber);
+    QString cardNumber() const;
 
 signals:
     void visibilityButtonClicked(bool visible);

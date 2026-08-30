@@ -51,6 +51,7 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
     connect(ui->personasButton, &QPushButton::clicked, this, [this](){
         ui->listCategories->setCurrentItem(nullptr);
         m_lastClickedCategory = nullptr;
+        setPersonaSelected(true);
         emit setPersonaFrame();
     });
 
@@ -62,6 +63,44 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
             emit categoryReselected();
         }
     });
+
+    connect(ui->createCategory, &QPushButton::clicked, this, [this](){
+        emit createCategoryRequested();
+    });
+}
+
+void CategoriesSelection::addCategory(const QString &name)
+{
+    auto *item = new QListWidgetItem(QIcon(FOLDER_ICON_WHITE), name);
+    ui->listCategories->addItem(item);
+}
+
+void CategoriesSelection::setPersonaSelected(bool selected)
+{
+    if (selected) {
+        ui->personasButton->setIcon(QIcon(":/icons/icons/icon-personas-purple.png"));
+        ui->personasButton->setStyleSheet(
+            "#personasButton {"
+            "text-align: left;"
+            "padding: 10px 12px;"
+            "background: #23193C;"
+            "border: none;"
+            "border-radius: 6px;"
+            "color: #A91EE4;"
+            "}"
+            );
+    } else {
+        ui->personasButton->setIcon(QIcon(":/icons/icons/icon-personas.png"));
+        ui->personasButton->setStyleSheet(
+            "#personasButton {"
+            "text-align: left;"
+            "padding: 10px 12px;"
+            "background: transparent;"
+            "border: none;"
+            "color: #9CA3AF;"
+            "}"
+            );
+    }
 }
 
 void CategoriesSelection::adjustListHeight()
@@ -96,6 +135,7 @@ void CategoriesSelection::on_listCategories_currentItemChanged(QListWidgetItem *
 
     if (current) {
         current->setIcon(QIcon(FOLDER_ICON_COLOR));
+        setPersonaSelected(false);
         emit categorySelected();
     }
 }

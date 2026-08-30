@@ -2,6 +2,9 @@
 #define WIFIFORM_H
 
 #include <QWidget>
+#include <memory>
+
+#include "model/wifientrydata.h"
 
 namespace Ui {
 class WifiForm;
@@ -15,9 +18,11 @@ public:
     explicit WifiForm(QWidget *parent = nullptr);
     ~WifiForm();
 
+    void clearForm();
+
 signals:
     void cancelRequested();
-    void createNewWifiEntry();
+    void createNewWifiEntry(std::shared_ptr<WifiEntryData> entry);
 
 private:
     Ui::WifiForm *ui;
