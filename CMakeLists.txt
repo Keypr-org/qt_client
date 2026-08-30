@@ -46,6 +46,11 @@ qt_add_executable(qt_client
     src/mainContent/personadisplay.h src/mainContent/personadisplay.cpp src/mainContent/personadisplay.ui
     src/component/personaitem.h src/component/personaitem.cpp src/component/personaitem.ui
     src/mainContent/newpersonaform.h src/mainContent/newpersonaform.cpp src/mainContent/newpersonaform.ui
+    src/model/entry.h
+    src/model/websiteentrydata.h
+    src/model/wifientrydata.h
+    src/model/creditcardentrydata.h
+    src/model/entryrepository.h src/model/entryrepository.cpp
 )
 
 target_include_directories(qt_client PRIVATE

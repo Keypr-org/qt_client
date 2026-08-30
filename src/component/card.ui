@@ -66,6 +66,9 @@ QLabel {
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <widget class="QWidget" name="leftInfoWidget" native="true">
+        <property name="styleSheet">
+         <string notr="true">background: none;</string>
+        </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
           <widget class="QLabel" name="titleLabel">
@@ -144,6 +147,9 @@ QLabel {
       </item>
       <item>
        <widget class="QWidget" name="rightInfoWidget" native="true">
+        <property name="styleSheet">
+         <string notr="true">background: none;</string>
+        </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <spacer name="verticalSpacer">

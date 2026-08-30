@@ -180,6 +180,11 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
+    connect(categoriesSelection, &CategoriesSelection::categoryReselected, this, [this, viewEntries](){
+        viewEntries->clearSelection();
+        ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
     auto personaForm = new NewPersonaForm(this);
     ui->mainContent->addWidget(personaForm);
 

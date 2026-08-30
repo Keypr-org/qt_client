@@ -20,6 +20,7 @@ signals:
     void lockVaultRequested();
     void setPersonaFrame();
     void categorySelected();
+    void categoryReselected();
 
 private slots:
     void adjustListHeight();
@@ -28,6 +29,7 @@ private slots:
 
 private:
     Ui::CategoriesSelection *ui;
+    QListWidgetItem *m_lastClickedCategory = nullptr;
     void updateArrowIcon(bool expanded);
 };
 

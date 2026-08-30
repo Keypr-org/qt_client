@@ -23,3 +23,13 @@ void TextInput::setInputPlaceholder(const QString &text)
 {
     ui->textEdit->setPlaceholderText(text);
 }
+
+void TextInput::setText(const QString &text)
+{
+    ui->textEdit->setPlainText(text);
+}
+
+QString TextInput::text() const
+{
+    return ui->textEdit->toPlainText();
+}

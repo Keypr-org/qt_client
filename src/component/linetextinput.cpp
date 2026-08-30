@@ -22,6 +22,17 @@ void LineTextInput::setInputPlaceholder(const QString &text)
 {
     ui->input->setPlaceholderText(text);
 }
+
+void LineTextInput::setText(const QString &text)
+{
+    ui->input->setText(text);
+}
+
+QString LineTextInput::text() const
+{
+    return ui->input->text();
+}
+
 void LineTextInput::on_input_textEdited(const QString &text)
 {
     emit textChanged(text);

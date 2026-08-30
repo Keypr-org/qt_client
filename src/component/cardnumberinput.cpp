@@ -62,3 +62,11 @@ void CardNumberInput::on_input_textEdited(const QString &cardNumber)
     emit cardNumberChanged(cardNumber);
 }
 
+void CardNumberInput::setCardNumber(const QString &cardNumber)
+{
+    inputText = cardNumber;
+    isVisible = false;
+    ui->input->setText(CardNumberUtils::mask(inputText));
+    emit cardNumberChanged(inputText);
+}
+

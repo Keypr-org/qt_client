@@ -46,10 +46,21 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
 
     ui->listCategories->setCurrentRow(0);
     ui->listCategories->item(0)->setSelected(true);
+    m_lastClickedCategory = ui->listCategories->item(0);
 
     connect(ui->personasButton, &QPushButton::clicked, this, [this](){
         ui->listCategories->setCurrentItem(nullptr);
+        m_lastClickedCategory = nullptr;
         emit setPersonaFrame();
+    });
+
+    connect(ui->listCategories, &QListWidget::itemClicked, this, [this](QListWidgetItem *item){
+        const bool isReselect = (item == m_lastClickedCategory);
+        m_lastClickedCategory = item;
+
+        if (isReselect) {
+            emit categoryReselected();
+        }
     });
 }
 

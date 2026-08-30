@@ -15,6 +15,8 @@ public:
     explicit CardNumberInput(QWidget *parent = nullptr);
     ~CardNumberInput();
 
+    void setCardNumber(const QString &cardNumber);
+
 signals:
     void visibilityButtonClicked(bool visible);
     void cardNumberChanged(QString cardNumber);
