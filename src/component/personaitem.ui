@@ -235,6 +235,9 @@ background-color: #24292E;</string>
                 <height>30</height>
                </size>
               </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
               <property name="styleSheet">
                <string notr="true">background-color: #1F2937;
 border:none;
@@ -262,6 +265,9 @@ border-radius: 6px;</string>
                 <width>30</width>
                 <height>30</height>
                </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
               </property>
               <property name="styleSheet">
                <string notr="true">background-color: #271925;
