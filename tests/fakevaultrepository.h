@@ -4,6 +4,7 @@
 #include <memory>
 #include <stdexcept>
 #include "VaultRepository.h"
+#include "fakevaultsession.h"
 
 
 
@@ -12,19 +13,30 @@
  */
 class FakeVaultRepository : public VaultRepository {
 public:
-    FakeVaultRepository(bool fileExists, bool parsingSuccess)
-        : fileExists(fileExists), parsingSuccess(parsingSuccess) {
+    FakeVaultRepository(bool fileExistsOrGoodPassword, bool parsingSuccess)
+        : fileExistsOrGoodPassword(fileExistsOrGoodPassword), parsingSuccess(parsingSuccess) {
     };
 
     bool vaultExists(const std::string &vaultName) const override {
-        if (fileExists && parsingSuccess) {
+        if (fileExistsOrGoodPassword && parsingSuccess) {
             return true;
         } else {
             return false;
         }
     }
 
+    std::unique_ptr<VaultSession> unlockVault(const std::string &masterpass,
+        const std::string &filename) const override {
+        if (fileExistsOrGoodPassword && parsingSuccess) {
+            return std::make_unique<FakeVaultSession>();
+        } else if (!fileExistsOrGoodPassword) {
+            return nullptr;
+        } else {
+            throw UnlockVaultError("Failed to unlock vault.");
+        }
+    }
+
 private:
-    bool fileExists;
+    bool fileExistsOrGoodPassword;
     bool parsingSuccess;
 };
