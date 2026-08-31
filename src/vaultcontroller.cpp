@@ -2,10 +2,6 @@
 
 #include <exception>
 
-VaultController::VaultController()
-    : repository(nullptr) {
-}
-
 VaultController::VaultController(VaultRepository &repository)
     : repository(&repository) {
 }
