@@ -50,6 +50,7 @@ private:
     void populateList();
     void showEntryDetails(const std::shared_ptr<Entry> &entry);
     void handleDeleteRequested(const QString &id);
+    void handleEntryUpdated(const QString &id);
 };
 
 #endif // VIEWENTRIES_H

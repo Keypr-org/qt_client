@@ -47,6 +47,7 @@ qt_add_executable(qt_client
     src/mainContent/personadisplay.h src/mainContent/personadisplay.cpp src/mainContent/personadisplay.ui
     src/component/personaitem.h src/component/personaitem.cpp src/component/personaitem.ui
     src/mainContent/newpersonaform.h src/mainContent/newpersonaform.cpp src/mainContent/newpersonaform.ui
+    src/formOverlay/editpersonaoverlay.h src/formOverlay/editpersonaoverlay.cpp src/formOverlay/editpersonaoverlay.ui
     src/model/persona.h
     src/model/entry.h
     src/model/websiteentrydata.h

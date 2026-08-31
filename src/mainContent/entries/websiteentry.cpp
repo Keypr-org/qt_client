@@ -1,6 +1,8 @@
 #include "websiteentry.h"
 #include "ui_websiteentry.h"
 
+#include <QDateTime>
+
 WebsiteEntry::WebsiteEntry(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::WebsiteEntry)
@@ -17,7 +19,28 @@ WebsiteEntry::WebsiteEntry(QWidget *parent)
     ui->notesInput->setInputPlaceholder("Enter notes here...");
 
     connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
-        emit deleteRequested(m_entryId);
+        if (!m_entry) {
+            return;
+        }
+        emit deleteRequested(m_entry->id);
+    });
+
+    connect(ui->applyButton, &QPushButton::clicked, this, [this](){
+        if (!m_entry) {
+            return;
+        }
+
+        m_entry->username = ui->usernameInput->text();
+        m_entry->password = ui->passwordInput->text();
+        m_entry->url = ui->urlInput->text();
+        m_entry->description = ui->descriptionInput->text();
+        m_entry->notes = ui->notesInput->text();
+        m_entry->secondaryInfo = m_entry->username;
+        m_entry->lastUpdated = QDateTime::currentDateTime();
+
+        ui->subtitle->setText(m_entry->url);
+
+        emit entryUpdated(m_entry->id);
     });
 }
 
@@ -32,7 +55,7 @@ void WebsiteEntry::setEntry(const std::shared_ptr<WebsiteEntryData> &entry)
         return;
     }
 
-    m_entryId = entry->id;
+    m_entry = entry;
 
     ui->title->setText(entry->primaryInfo);
     ui->subtitle->setText(entry->url);

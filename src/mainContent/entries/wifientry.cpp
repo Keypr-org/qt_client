@@ -1,6 +1,8 @@
 #include "wifientry.h"
 #include "ui_wifientry.h"
 
+#include <QDateTime>
+
 WifiEntry::WifiEntry(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::WifiEntry)
@@ -13,7 +15,26 @@ WifiEntry::WifiEntry(QWidget *parent)
     ui->notesInput->setInputPlaceholder("Enter notes here...");
 
     connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
-        emit deleteRequested(m_entryId);
+        if (!m_entry) {
+            return;
+        }
+        emit deleteRequested(m_entry->id);
+    });
+
+    connect(ui->applyButton, &QPushButton::clicked, this, [this](){
+        if (!m_entry) {
+            return;
+        }
+
+        m_entry->ssid = ui->nameInput->text();
+        m_entry->password = ui->passwordInput->text();
+        m_entry->notes = ui->notesInput->text();
+        m_entry->primaryInfo = m_entry->ssid;
+        m_entry->lastUpdated = QDateTime::currentDateTime();
+
+        ui->titleLabel->setText(m_entry->ssid);
+
+        emit entryUpdated(m_entry->id);
     });
 }
 
@@ -28,7 +49,7 @@ void WifiEntry::setEntry(const std::shared_ptr<WifiEntryData> &entry)
         return;
     }
 
-    m_entryId = entry->id;
+    m_entry = entry;
 
     ui->titleLabel->setText(entry->ssid);
     ui->nameInput->setText(entry->ssid);

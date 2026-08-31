@@ -26,9 +26,21 @@ void PersonaDisplay::addPersona(const PersonaData &persona)
     auto *item = new PersonaItem(ui->personasScrollContent);
     item->setPersona(persona);
 
+    connect(item, &PersonaItem::modifyRequested, this, [this](PersonaData persona){
+        emit modifyPersonaRequested(persona);
+    });
+
     const int row = m_personaCount / GRID_COLUMNS;
     const int column = m_personaCount % GRID_COLUMNS;
     ui->gridLayout->addWidget(item, row, column);
 
+    m_personaItems.insert(persona.id, item);
     ++m_personaCount;
+}
+
+void PersonaDisplay::updatePersona(const PersonaData &persona)
+{
+    if (auto *item = m_personaItems.value(persona.id)) {
+        item->setPersona(persona);
+    }
 }

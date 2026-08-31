@@ -78,6 +78,18 @@ ViewEntries::ViewEntries(QWidget *parent)
     connect(m_creditCardEntryView, &CreditCardEntry::deleteRequested, this, [this](const QString &id){
         handleDeleteRequested(id);
     });
+
+    connect(m_websiteEntryView, &WebsiteEntry::entryUpdated, this, [this](const QString &id){
+        handleEntryUpdated(id);
+    });
+
+    connect(m_wifiEntryView, &WifiEntry::entryUpdated, this, [this](const QString &id){
+        handleEntryUpdated(id);
+    });
+
+    connect(m_creditCardEntryView, &CreditCardEntry::entryUpdated, this, [this](const QString &id){
+        handleEntryUpdated(id);
+    });
 }
 
 ViewEntries::~ViewEntries()
@@ -148,6 +160,19 @@ void ViewEntries::handleDeleteRequested(const QString &id)
     m_repository->removeEntry(id);
     refresh();
     clearSelection();
+}
+
+void ViewEntries::handleEntryUpdated(const QString &id)
+{
+    populateList();
+
+    for (int i = 0; i < ui->entriesList->count(); ++i) {
+        QListWidgetItem *item = ui->entriesList->item(i);
+        if (item->data(Qt::UserRole).toString() == id) {
+            ui->entriesList->setCurrentItem(item);
+            break;
+        }
+    }
 }
 
 void ViewEntries::on_entriesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)

@@ -22,10 +22,11 @@ public:
 
 signals:
     void deleteRequested(QString id);
+    void entryUpdated(QString id);
 
 private:
     Ui::CreditCardEntry *ui;
-    QString m_entryId;
+    std::shared_ptr<CreditCardEntryData> m_entry;
 };
 
 #endif // CREDITCARDENTRY_H

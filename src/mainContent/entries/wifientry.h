@@ -22,10 +22,11 @@ public:
 
 signals:
     void deleteRequested(QString id);
+    void entryUpdated(QString id);
 
 private:
     Ui::WifiEntry *ui;
-    QString m_entryId;
+    std::shared_ptr<WifiEntryData> m_entry;
 };
 
 #endif // WIFIENTRY_H

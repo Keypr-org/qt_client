@@ -9,6 +9,14 @@ PersonaItem::PersonaItem(QWidget *parent)
     , ui(new Ui::PersonaItem)
 {
     ui->setupUi(this);
+
+    connect(ui->modifyButton, &QPushButton::clicked, this, [this](){
+        emit modifyRequested(m_persona);
+    });
+
+    connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
+        emit deleteRequested(m_persona.id);
+    });
 }
 
 PersonaItem::~PersonaItem()
@@ -24,8 +32,15 @@ void PersonaItem::paintEvent(QPaintEvent *)
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 }
 
+const PersonaData &PersonaItem::persona() const
+{
+    return m_persona;
+}
+
 void PersonaItem::setPersona(const PersonaData &persona)
 {
+    m_persona = persona;
+
     ui->name->setText(persona.firstName + " " + persona.lastName);
 
     QString initials;
