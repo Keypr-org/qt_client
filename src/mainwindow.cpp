@@ -30,6 +30,9 @@
 #include "mainContent/personadisplay.h"
 #include "mainContent/newpersonaform.h"
 
+// Model imports
+#include "model/personarepository.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow) {
@@ -83,9 +86,12 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(unlockVaultModal);
         });
 
+    auto personaRepository = new PersonaRepository(this);
+
     auto viewEntries = new ViewEntries(this);
     ui->mainContent->addWidget(viewEntries);
     viewEntries->setStyleSheet("background-color: #111827;");
+    viewEntries->setPersonaRepository(personaRepository);
 
     connect(unlockVaultModal, &unlockvaultmodal::vaultUnlocked, this, [this, viewEntries, categoriesSelection](const QString &name) {
         categoriesSelection->setVaultName(name);
@@ -210,8 +216,9 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(personaDisplay);
         });
 
-    connect(personaForm, &NewPersonaForm::usePersonaSignal, this, [this, personaDisplay](const PersonaData &persona) {
+    connect(personaForm, &NewPersonaForm::usePersonaSignal, this, [this, personaDisplay, personaRepository](const PersonaData &persona) {
         ui->mainContent->setCurrentWidget(personaDisplay);
+        personaRepository->addPersona(persona);
         personaDisplay->addPersona(persona);
         });
 
@@ -226,12 +233,16 @@ MainWindow::MainWindow(QWidget *parent)
         editPersonaOverlay->show();
         });
 
-    connect(editPersonaOverlay, &EditPersonaOverlay::personaModified, this, [personaDisplay](const PersonaData &persona) {
+    connect(editPersonaOverlay, &EditPersonaOverlay::personaModified, this, [personaDisplay, personaRepository](const PersonaData &persona) {
+        personaRepository->updatePersona(persona);
         personaDisplay->updatePersona(persona);
         NotificationTooltip::showSuccessToast(personaDisplay, "Persona updated successfully.");
     });
 
-    connect(personaDisplay, &PersonaDisplay::deletePersonaRequested, this, [personaDisplay](const QString &id){
+    connect(personaDisplay, &PersonaDisplay::deletePersonaRequested, this, [personaDisplay, personaRepository, viewEntries](const QString &id){
+        viewEntries->repository()->unlinkPersonaFromEntries(id);
+        viewEntries->refreshCurrentEntryDetails();
+        personaRepository->removePersona(id);
         personaDisplay->removePersona(id);
         NotificationTooltip::showSuccessToast(personaDisplay, "Persona deleted successfully.");
     });

@@ -50,6 +50,7 @@ qt_add_executable(qt_client
     src/mainContent/newpersonaform.h src/mainContent/newpersonaform.cpp src/mainContent/newpersonaform.ui
     src/formOverlay/editpersonaoverlay.h src/formOverlay/editpersonaoverlay.cpp src/formOverlay/editpersonaoverlay.ui
     src/model/persona.h
+    src/model/personarepository.h src/model/personarepository.cpp
     src/model/entry.h
     src/model/websiteentrydata.h
     src/model/wifientrydata.h

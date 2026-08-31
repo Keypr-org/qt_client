@@ -121,9 +121,27 @@ EntryRepository *ViewEntries::repository() const
     return m_repository;
 }
 
+void ViewEntries::setPersonaRepository(PersonaRepository *repository)
+{
+    m_websiteEntryView->setPersonaRepository(repository);
+}
+
 void ViewEntries::refresh()
 {
     populateList();
+}
+
+void ViewEntries::refreshCurrentEntryDetails()
+{
+    QListWidgetItem *current = ui->entriesList->currentItem();
+    if (!current) {
+        return;
+    }
+
+    const QString id = current->data(Qt::UserRole).toString();
+    if (auto entry = m_repository->findById(id)) {
+        showEntryDetails(entry);
+    }
 }
 
 void ViewEntries::clearSelection()

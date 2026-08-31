@@ -3,7 +3,10 @@
 
 #include "component/notificationtooltip.h"
 
+#include <QAction>
 #include <QDateTime>
+#include <QMenu>
+#include <QPoint>
 
 WebsiteEntry::WebsiteEntry(QWidget *parent)
     : QWidget(parent)
@@ -19,6 +22,16 @@ WebsiteEntry::WebsiteEntry(QWidget *parent)
 
     ui->descriptionInput->setInputPlaceholder("Enter description here...");
     ui->notesInput->setInputPlaceholder("Enter notes here...");
+
+    ui->selectedPersonaName->setText("No persona linked");
+
+    connect(ui->changeLink, &QPushButton::clicked, this, [this](){
+        openPersonaPicker();
+    });
+
+    connect(ui->unlinkLink, &QPushButton::clicked, this, [this](){
+        unlinkPersona();
+    });
 
     connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
         if (!m_entry) {
@@ -73,4 +86,72 @@ void WebsiteEntry::setEntry(const std::shared_ptr<WebsiteEntryData> &entry)
     ui->urlInput->setText(entry->url);
     ui->descriptionInput->setText(entry->description);
     ui->notesInput->setText(entry->notes);
+
+    refreshPersonaDisplay();
+}
+
+void WebsiteEntry::setPersonaRepository(PersonaRepository *repository)
+{
+    m_personaRepository = repository;
+}
+
+void WebsiteEntry::refreshPersonaDisplay()
+{
+    if (!m_entry) {
+        return;
+    }
+
+    PersonaData persona;
+    const bool linked = !m_entry->personaId.isEmpty()
+        && m_personaRepository
+        && m_personaRepository->findById(m_entry->personaId, persona);
+
+    if (linked) {
+        ui->selectedPersonaName->setText(persona.firstName + " " + persona.lastName);
+    } else {
+        m_entry->personaId.clear();
+        ui->selectedPersonaName->setText("No persona linked");
+    }
+}
+
+void WebsiteEntry::openPersonaPicker()
+{
+    if (!m_entry) {
+        return;
+    }
+
+    if (!m_personaRepository || m_personaRepository->personas().isEmpty()) {
+        NotificationTooltip::showErrorToast(this, "No persona available. Create one first.");
+        return;
+    }
+
+    QMenu menu(this);
+    for (const auto &persona : m_personaRepository->personas()) {
+        QAction *action = menu.addAction(persona.firstName + " " + persona.lastName);
+        connect(action, &QAction::triggered, this, [this, persona](){
+            m_entry->personaId = persona.id;
+            refreshPersonaDisplay();
+            emit entryUpdated(m_entry->id);
+            NotificationTooltip::showSuccessToast(this, "Persona linked successfully.");
+        });
+    }
+
+    menu.exec(ui->changeLink->mapToGlobal(QPoint(0, ui->changeLink->height())));
+}
+
+void WebsiteEntry::unlinkPersona()
+{
+    if (!m_entry) {
+        return;
+    }
+
+    if (m_entry->personaId.isEmpty()) {
+        NotificationTooltip::showErrorToast(this, "No persona linked to unlink.");
+        return;
+    }
+
+    m_entry->personaId.clear();
+    refreshPersonaDisplay();
+    emit entryUpdated(m_entry->id);
+    NotificationTooltip::showSuccessToast(this, "Persona unlinked successfully.");
 }
