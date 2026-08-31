@@ -1,7 +1,6 @@
 
 qt_add_executable(tst_vaultcontroller
     fakevaultrepository.h
-    fakevaultsession.h
     tst_vaultcontroller.cpp
     ../src/vaultcontroller.cpp ../src/vaultcontroller.h
 )
