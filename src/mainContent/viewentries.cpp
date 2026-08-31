@@ -1,50 +1,153 @@
 #include "viewentries.h"
 #include "component/entrieitem.h"
+#include "mainContent/entries/websiteentry.h"
+#include "mainContent/entries/wifientry.h"
+#include "mainContent/entries/creditcardentry.h"
+#include "model/websiteentrydata.h"
+#include "model/wifientrydata.h"
+#include "model/creditcardentrydata.h"
 #include "ui_viewentries.h"
 
+#include <QLabel>
+#include <QVBoxLayout>
+
+EntrieItem::IconType iconForType(EntryType type)
+{
+    switch (type) {
+    case EntryType::Website:
+        return EntrieItem::IconType::WebSite;
+    case EntryType::Wifi:
+        return EntrieItem::IconType::Wifi;
+    case EntryType::CreditCard:
+        return EntrieItem::IconType::CreditCard;
+    }
+
+    return EntrieItem::IconType::WebSite;
+}
 
 ViewEntries::ViewEntries(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ViewEntries)
+    , m_repository(new EntryRepository(this))
 {
     ui->setupUi(this);
 
-    auto item1 = new EntrieItem(this);
-    item1->setIcon(EntrieItem::IconType::WebSite);
-    item1->setPrimaryInfo("GitHub");
-    item1->setSecondaryInfo("KeypingSafe");
+    m_emptyDetailPage = new QWidget(this);
+    auto *emptyLayout = new QVBoxLayout(m_emptyDetailPage);
+    auto *emptyLabel = new QLabel("Select an entry to view its details", m_emptyDetailPage);
+    emptyLabel->setAlignment(Qt::AlignCenter);
+    emptyLabel->setStyleSheet("color: #9CA3AF; font-size: 14px;");
+    emptyLayout->addWidget(emptyLabel);
 
-    auto item2 = new EntrieItem(this);
-    item2->setIcon(EntrieItem::IconType::Wifi);
-    item2->setPrimaryInfo("Sunrise");
-    item2->setSecondaryInfo("");
+    m_websiteEntryView = new WebsiteEntry(this);
+    m_wifiEntryView = new WifiEntry(this);
+    m_creditCardEntryView = new CreditCardEntry(this);
 
-    auto item3 = new EntrieItem(this);
-    item3->setIcon(EntrieItem::IconType::CreditCard);
-    item3->setPrimaryInfo("VISA");
-    item3->setSecondaryInfo("Alex Morgan");
+    m_detailStack = new QStackedWidget(ui->oneEntryPage);
+    m_detailStack->addWidget(m_emptyDetailPage);
+    m_detailStack->addWidget(m_websiteEntryView);
+    m_detailStack->addWidget(m_wifiEntryView);
+    m_detailStack->addWidget(m_creditCardEntryView);
+    m_detailStack->setCurrentWidget(m_emptyDetailPage);
 
-    QListWidgetItem *item11 = new QListWidgetItem(ui->entriesList);
-    QListWidgetItem *item22 = new QListWidgetItem(ui->entriesList);
-    QListWidgetItem *item33 = new QListWidgetItem(ui->entriesList);
+    auto *detailLayout = new QVBoxLayout(ui->oneEntryPage);
+    detailLayout->setContentsMargins(0, 0, 0, 0);
+    detailLayout->addWidget(m_detailStack);
 
-    item11->setSizeHint(item1->sizeHint());
-    item22->setSizeHint(item2->sizeHint());
-    item33->setSizeHint(item3->sizeHint());
-
-    ui->entriesList->setItemWidget(item11, item1);
-    ui->entriesList->setItemWidget(item22, item2);
-    ui->entriesList->setItemWidget(item33, item3);
+    populateList();
 
     connect(ui->newItemButton, &QPushButton::clicked, this, [this](){
         emit newEntry();
     });
 
+    connect(ui->entriesList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item){
+        const QString id = item->data(Qt::UserRole).toString();
+        if (auto entry = m_repository->findById(id)) {
+            showEntryDetails(entry);
+        }
+    });
+
+    connect(m_websiteEntryView, &WebsiteEntry::deleteRequested, this, [this](const QString &id){
+        handleDeleteRequested(id);
+    });
+
+    connect(m_wifiEntryView, &WifiEntry::deleteRequested, this, [this](const QString &id){
+        handleDeleteRequested(id);
+    });
+
+    connect(m_creditCardEntryView, &CreditCardEntry::deleteRequested, this, [this](const QString &id){
+        handleDeleteRequested(id);
+    });
 }
 
 ViewEntries::~ViewEntries()
 {
     delete ui;
+}
+
+EntryRepository *ViewEntries::repository() const
+{
+    return m_repository;
+}
+
+void ViewEntries::refresh()
+{
+    populateList();
+}
+
+void ViewEntries::clearSelection()
+{
+    ui->entriesList->setCurrentItem(nullptr);
+    m_detailStack->setCurrentWidget(m_emptyDetailPage);
+}
+
+void ViewEntries::populateList()
+{
+    while (ui->entriesList->count() > 0) {
+        QListWidgetItem *item = ui->entriesList->item(0);
+        delete ui->entriesList->itemWidget(item);
+        delete ui->entriesList->takeItem(0);
+    }
+
+    for (const auto &entry : m_repository->entries()) {
+        auto *itemWidget = new EntrieItem(this);
+        itemWidget->setIcon(iconForType(entry->type));
+        itemWidget->setPrimaryInfo(entry->primaryInfo);
+        itemWidget->setSecondaryInfo(entry->secondaryInfo);
+
+        auto *listItem = new QListWidgetItem(ui->entriesList);
+        listItem->setData(Qt::UserRole, entry->id);
+        listItem->setSizeHint(itemWidget->sizeHint());
+
+        ui->entriesList->setItemWidget(listItem, itemWidget);
+    }
+}
+
+void ViewEntries::showEntryDetails(const std::shared_ptr<Entry> &entry)
+{
+    switch (entry->type) {
+    case EntryType::Website:
+        m_websiteEntryView->setEntry(std::static_pointer_cast<WebsiteEntryData>(entry));
+        m_detailStack->setCurrentWidget(m_websiteEntryView);
+        break;
+
+    case EntryType::Wifi:
+        m_wifiEntryView->setEntry(std::static_pointer_cast<WifiEntryData>(entry));
+        m_detailStack->setCurrentWidget(m_wifiEntryView);
+        break;
+
+    case EntryType::CreditCard:
+        m_creditCardEntryView->setEntry(std::static_pointer_cast<CreditCardEntryData>(entry));
+        m_detailStack->setCurrentWidget(m_creditCardEntryView);
+        break;
+    }
+}
+
+void ViewEntries::handleDeleteRequested(const QString &id)
+{
+    m_repository->removeEntry(id);
+    refresh();
+    clearSelection();
 }
 
 void ViewEntries::on_entriesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
@@ -71,4 +174,3 @@ void ViewEntries::on_entriesList_currentItemChanged(QListWidgetItem *current, QL
         }
     }
 }
-

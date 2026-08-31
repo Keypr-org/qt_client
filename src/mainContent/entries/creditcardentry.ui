@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>736</width>
+    <width>892</width>
     <height>786</height>
    </rect>
   </property>
@@ -41,12 +41,6 @@
     border-radius: 6px;
 }
 
-#headerWidget, #line {
-	background: transparent;
-	border-bottom: 1px solid #1F2937;
-	margin: 0 12px;
-}
-
 #card, #cardNumberInput, #nameInput, #expiresInput, #cvvInput, #notesInput {
 	background: purple;
 }</string>
@@ -70,52 +64,57 @@
    <item>
     <widget class="QWidget" name="layoutWidget" native="true">
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>-1</number>
+      </property>
+      <property name="leftMargin">
+       <number>24</number>
+      </property>
+      <property name="topMargin">
+       <number>24</number>
+      </property>
+      <property name="rightMargin">
+       <number>24</number>
+      </property>
+      <property name="bottomMargin">
+       <number>24</number>
+      </property>
       <item>
        <widget class="QWidget" name="headerWidget" native="true">
-        <layout class="QHBoxLayout" name="horizontalLayout">
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
          <property name="leftMargin">
-          <number>12</number>
+          <number>0</number>
          </property>
          <property name="topMargin">
           <number>0</number>
          </property>
          <property name="rightMargin">
-          <number>12</number>
+          <number>0</number>
          </property>
          <property name="bottomMargin">
-          <number>12</number>
+          <number>0</number>
          </property>
          <item>
-          <widget class="QLabel" name="creditCardIcon">
+          <widget class="QFrame" name="headWrapper">
            <property name="minimumSize">
             <size>
-             <width>35</width>
-             <height>35</height>
+             <width>0</width>
+             <height>50</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>35</width>
-             <height>35</height>
+             <width>16777215</width>
+             <height>50</height>
             </size>
            </property>
-           <property name="text">
-            <string/>
+           <property name="frameShape">
+            <enum>QFrame::Shape::NoFrame</enum>
            </property>
-           <property name="pixmap">
-            <pixmap resource="../../../resources.qrc">:/icons/icons/icon-credit-card.png</pixmap>
+           <property name="frameShadow">
+            <enum>QFrame::Shadow::Raised</enum>
            </property>
-           <property name="alignment">
-            <set>Qt::AlignmentFlag::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QWidget" name="vLayoutWidget" native="true">
-           <layout class="QVBoxLayout" name="verticalLayout_3">
-            <property name="spacing">
-             <number>0</number>
-            </property>
+           <layout class="QHBoxLayout" name="horizontalLayout">
             <property name="leftMargin">
              <number>0</number>
             </property>
@@ -129,80 +128,194 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QLabel" name="titleLabel">
-              <property name="font">
-               <font>
-                <pointsize>14</pointsize>
-                <bold>true</bold>
-               </font>
+             <widget class="QLabel" name="creditCardIcon">
+              <property name="minimumSize">
+               <size>
+                <width>50</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>50</width>
+                <height>50</height>
+               </size>
               </property>
               <property name="text">
-               <string>Credit Card</string>
+               <string/>
+              </property>
+              <property name="pixmap">
+               <pixmap resource="../../../resources.qrc">:/icons/icons/icon-credit-card.png</pixmap>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignmentFlag::AlignCenter</set>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="nameHeader">
-              <property name="font">
-               <font>
-                <pointsize>11</pointsize>
-               </font>
+             <widget class="QWidget" name="vLayoutWidget" native="true">
+              <property name="styleSheet">
+               <string notr="true"/>
               </property>
-              <property name="text">
-               <string>Alex Morgan</string>
-              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QLabel" name="titleLabel">
+                 <property name="font">
+                  <font>
+                   <pointsize>22</pointsize>
+                   <bold>true</bold>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Credit Card</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLabel" name="nameHeader">
+                 <property name="font">
+                  <font>
+                   <pointsize>13</pointsize>
+                  </font>
+                 </property>
+                 <property name="text">
+                  <string>Alex Morgan</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
            </layout>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="applyButton">
-           <property name="minimumSize">
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
             <size>
-             <width>0</width>
-             <height>30</height>
+             <width>40</width>
+             <height>20</height>
             </size>
            </property>
-           <property name="maximumSize">
-            <size>
-             <width>100</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Apply</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../resources.qrc">
-             <normaloff>:/icons/icons/icon-pencil.png</normaloff>:/icons/icons/icon-pencil.png</iconset>
-           </property>
-          </widget>
+          </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="deleteButton">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>30</height>
-            </size>
-           </property>
+          <widget class="QFrame" name="frame">
            <property name="maximumSize">
             <size>
-             <width>100</width>
-             <height>16777215</height>
+             <width>16777215</width>
+             <height>40</height>
             </size>
            </property>
-           <property name="text">
-            <string>Delete</string>
+           <property name="frameShape">
+            <enum>QFrame::Shape::NoFrame</enum>
            </property>
-           <property name="icon">
-            <iconset resource="../../../resources.qrc">
-             <normaloff>:/icons/icons/icon-trash.png</normaloff>:/icons/icons/icon-trash.png</iconset>
+           <property name="frameShadow">
+            <enum>QFrame::Shadow::Raised</enum>
            </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QPushButton" name="applyButton">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="text">
+               <string>Apply</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../../resources.qrc">
+                <normaloff>:/icons/icons/icon-pencil.png</normaloff>:/icons/icons/icon-pencil.png</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="deleteButton">
+              <property name="minimumSize">
+               <size>
+                <width>100</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>100</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
+              <property name="text">
+               <string>Delete</string>
+              </property>
+              <property name="icon">
+               <iconset resource="../../../resources.qrc">
+                <normaloff>:/icons/icons/icon-trash.png</normaloff>:/icons/icons/icon-trash.png</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
         </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_2">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>1</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: #1F2937;</string>
+        </property>
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
        </widget>
       </item>
       <item>
@@ -210,16 +323,39 @@
       </item>
       <item>
        <widget class="Line" name="line">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>1</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: #1F2937;</string>
+        </property>
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="CardNumberInput" name="cardNumberInput" native="true"/>
+       <widget class="CardNumberInput" name="cardNumberInput" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="LineTextInput" name="nameInput" native="true"/>
+       <widget class="LineTextInput" name="nameInput" native="true">
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>70</height>
+         </size>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QWidget" name="hLayoutWidget" native="true">
@@ -237,10 +373,24 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="LineTextInput" name="expiresInput" native="true"/>
+          <widget class="LineTextInput" name="expiresInput" native="true">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>70</height>
+            </size>
+           </property>
+          </widget>
          </item>
          <item>
-          <widget class="PasswordInput" name="cvvInput" native="true"/>
+          <widget class="PasswordInput" name="cvvInput" native="true">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>70</height>
+            </size>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>

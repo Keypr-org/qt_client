@@ -24,13 +24,13 @@ VaultSelection::VaultSelection(QWidget *parent)
 
     ui->listVaults->setVisible(true);
     updateArrowIcon(true);
+}
 
+void VaultSelection::addVault(const QString &name)
+{
     QIcon lockIcon(":/icons/icons/icon-lock.png");
-
-    for (int i = 1; i <= 5; ++i) {
-        QListWidgetItem *item = new QListWidgetItem(lockIcon, QString("Vault%1").arg(i));
-        ui->listVaults->addItem(item);
-    }
+    QListWidgetItem *item = new QListWidgetItem(lockIcon, name);
+    ui->listVaults->addItem(item);
 }
 
 void VaultSelection::updateArrowIcon(bool expanded)

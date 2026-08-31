@@ -31,6 +31,7 @@ qt_add_executable(qt_client
     src/formOverlay/createvaultoverlay.h src/formOverlay/createvaultoverlay.cpp src/formOverlay/createvaultoverlay.ui
     src/sideBar/categoriesselection.h src/sideBar/categoriesselection.cpp src/sideBar/categoriesselection.ui
     src/formOverlay/newentryoverlay.h src/formOverlay/newentryoverlay.cpp src/formOverlay/newentryoverlay.ui
+    src/formOverlay/createcategoryoverlay.h src/formOverlay/createcategoryoverlay.cpp src/formOverlay/createcategoryoverlay.ui
     src/utils/hoverwidget.h src/utils/hoverwidget.cpp
     src/mainContent/addwebsiteform.h src/mainContent/addwebsiteform.cpp src/mainContent/addwebsiteform.ui
     src/mainContent/entries/websiteentry.h src/mainContent/entries/websiteentry.cpp src/mainContent/entries/websiteentry.ui
@@ -46,6 +47,12 @@ qt_add_executable(qt_client
     src/mainContent/personadisplay.h src/mainContent/personadisplay.cpp src/mainContent/personadisplay.ui
     src/component/personaitem.h src/component/personaitem.cpp src/component/personaitem.ui
     src/mainContent/newpersonaform.h src/mainContent/newpersonaform.cpp src/mainContent/newpersonaform.ui
+    src/model/persona.h
+    src/model/entry.h
+    src/model/websiteentrydata.h
+    src/model/wifientrydata.h
+    src/model/creditcardentrydata.h
+    src/model/entryrepository.h src/model/entryrepository.cpp
 )
 
 target_include_directories(qt_client PRIVATE

@@ -24,9 +24,35 @@ CreditCardEntry::CreditCardEntry(QWidget *parent)
     ui->cvvInput->setLabelText("cvv");
     ui->notesInput->setLabelText("notes (optional)");
     ui->notesInput->setInputPlaceholder("Enter notes here...");
+
+    connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
+        emit deleteRequested(m_entryId);
+    });
 }
 
 CreditCardEntry::~CreditCardEntry()
 {
     delete ui;
+}
+
+void CreditCardEntry::setEntry(const std::shared_ptr<CreditCardEntryData> &entry)
+{
+    if (!entry) {
+        return;
+    }
+
+    m_entryId = entry->id;
+
+    ui->titleLabel->setText(entry->cardLabel);
+    ui->nameHeader->setText(entry->ownerName);
+
+    ui->cardNumberInput->setCardNumber(entry->cardNumber);
+    ui->nameInput->setText(entry->ownerName);
+    ui->expiresInput->setText(entry->expiration);
+    ui->cvvInput->setText(entry->cvv);
+    ui->notesInput->setText(entry->notes);
+
+    ui->card->setCardNumber(entry->cardNumber);
+    ui->card->setOwnerName(entry->ownerName);
+    ui->card->setExpiration(entry->expiration);
 }

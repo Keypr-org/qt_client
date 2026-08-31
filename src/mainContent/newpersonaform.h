@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+#include "model/persona.h"
+
 namespace Ui {
 class NewPersonaForm;
 }
@@ -15,10 +17,12 @@ public:
     explicit NewPersonaForm(QWidget *parent = nullptr);
     ~NewPersonaForm();
 
+    void clearForm();
+
 signals:
     void cancelSignal();
     void generatePersonaSignal();
-    void usePersonaSignal();
+    void usePersonaSignal(PersonaData persona);
 
 private:
     Ui::NewPersonaForm *ui;

@@ -205,7 +205,98 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="LineTextInput" name="expiresInput" native="true"/>
+          <widget class="QFrame" name="expiresFrame">
+           <property name="frameShape">
+            <enum>QFrame::Shape::NoFrame</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Shadow::Raised</enum>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_expires">
+            <property name="spacing">
+             <number>1</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="expiresLabel">
+              <property name="font">
+               <font>
+                <pointsize>11</pointsize>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">color: #9CA3AF;</string>
+              </property>
+              <property name="text">
+               <string>EXPIRATION DATE</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QDateEdit" name="expiresInput">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QDateEdit {
+    background-color: #0F0F0A;
+    border: 1px solid #1F2937;
+    border-radius: 6px;
+    color: #e0e0e0;
+	padding-left: 6px;
+}
+
+QDateEdit::drop-down {
+    border: none;
+image: url(:/icons/icons/chevron-down.png);
+    width: 30px;
+}
+
+QCalendarWidget {
+    background-color: #1a1f2e;
+    color: white;
+}
+
+QCalendarWidget QToolButton {
+    background-color: #1a1f2e;
+    color: white;
+    icon-size: 16px;
+}
+
+QCalendarWidget QAbstractItemView:enabled {
+    background-color: #0f1420;
+    selection-background-color: #6c2bd9;
+    color: white;
+}</string>
+              </property>
+              <property name="calendarPopup">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
          </item>
          <item>
           <widget class="PasswordInput" name="cvvInput" native="true"/>

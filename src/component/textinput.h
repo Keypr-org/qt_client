@@ -17,6 +17,9 @@ public:
     void setLabelText(const QString &text);
     void setInputPlaceholder(const QString &text);
 
+    void setText(const QString &text);
+    QString text() const;
+
     ~TextInput();
 
 private:

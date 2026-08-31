@@ -15,6 +15,8 @@ public:
     explicit CreateVaultOverlay(QWidget *parent = nullptr);
     ~CreateVaultOverlay();
 
+    void clearForm();
+
 signals:
     void cancelled();
     void vaultCreated(const QString &name, const QString &password);

@@ -2,6 +2,9 @@
 #define ADDWEBSITEFORM_H
 
 #include <QWidget>
+#include <memory>
+
+#include "model/websiteentrydata.h"
 
 namespace Ui {
 class AddWebsiteForm;
@@ -16,10 +19,11 @@ public:
     ~AddWebsiteForm();
 
     void setPassword(const QString &password);
+    void clearForm();
 
 signals:
     void generatePassword();
-    void createWebsiteEntry();
+    void createWebsiteEntry(std::shared_ptr<WebsiteEntryData> entry);
     void cancelNewWebEntry();
 
 private:

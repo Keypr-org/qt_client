@@ -1,6 +1,8 @@
 #include "newpersonaform.h"
 #include "ui_newpersonaform.h"
 
+#include <QUuid>
+
 NewPersonaForm::NewPersonaForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::NewPersonaForm)
@@ -12,7 +14,7 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
 
     QSet<QString> countries;
     for (const QLocale &locale : allLocales) {
-        countries.insert(QLocale::countryToString(locale.country()));
+        countries.insert(QLocale::territoryToString(locale.territory()));
     }
 
     QStringList sortedCountries = countries.values();
@@ -31,6 +33,7 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
     ui->addressInput->setInputPlaceholder("e.g. 221B Baker Street, London, UK");
 
     connect(ui->cancelButton, &QPushButton::clicked, this, [this](){
+        clearForm();
         emit cancelSignal();
     });
 
@@ -39,8 +42,27 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
     });
 
     connect(ui->savePersonaButton, &QPushButton::clicked, this, [this](){
-        emit usePersonaSignal();
+        PersonaData persona;
+        persona.id = QUuid::createUuid().toString();
+        persona.firstName = ui->firstName->text();
+        persona.lastName = ui->lastName->text();
+        persona.birthday = ui->dateSelect->date();
+        persona.gender = ui->genderSelect->currentIndex() >= 0 ? ui->genderSelect->currentText() : QString();
+        persona.country = ui->countrySelect->currentIndex() > 0 ? ui->countrySelect->currentText() : QString();
+
+        emit usePersonaSignal(persona);
+        clearForm();
     });
+}
+
+void NewPersonaForm::clearForm()
+{
+    ui->firstName->setText("");
+    ui->lastName->setText("");
+    ui->addressInput->setText("");
+    ui->dateSelect->setDate(QDate::currentDate());
+    ui->genderSelect->setCurrentIndex(-1);
+    ui->countrySelect->setCurrentIndex(0);
 }
 
 NewPersonaForm::~NewPersonaForm()

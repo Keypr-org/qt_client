@@ -26,7 +26,6 @@ void CardNumberInput::on_toggleButton_clicked()
         isVisible = false;
     }
     else {
-        //ui->input->setText(CardNumberUtils::format(inputText));
         ui->input->setText(inputText);
         isVisible = true;
     }
@@ -54,11 +53,23 @@ bool CardNumberInput::eventFilter(QObject *obj, QEvent *event)
 
     }
 
-    // Laisse Qt continuer à gérer l'événement normalement
     return QWidget::eventFilter(obj, event);
 }
 void CardNumberInput::on_input_textEdited(const QString &cardNumber)
 {
     emit cardNumberChanged(cardNumber);
+}
+
+void CardNumberInput::setCardNumber(const QString &cardNumber)
+{
+    inputText = cardNumber;
+    isVisible = false;
+    ui->input->setText(CardNumberUtils::mask(inputText));
+    emit cardNumberChanged(inputText);
+}
+
+QString CardNumberInput::cardNumber() const
+{
+    return inputText;
 }
 

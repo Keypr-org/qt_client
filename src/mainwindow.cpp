@@ -16,6 +16,7 @@
 // FormOverlay imports
 #include "formOverlay/createvaultoverlay.h"
 #include "formOverlay/newentryoverlay.h"
+#include "formOverlay/createcategoryoverlay.h"
 
 // Main Content imports
 #include "mainContent/novaultselected.h"
@@ -41,25 +42,35 @@ MainWindow::MainWindow(QWidget *parent)
         qWarning() << "Erreur lors de l'initialisation :" << e.what();
     }
 
-    m_createVaultOverlay = new CreateVaultOverlay(this);
-    m_createVaultOverlay->setGeometry(this->rect());
-    m_createVaultOverlay->hide();
-
-    connect(m_createVaultOverlay, &CreateVaultOverlay::vaultCreated, this, [this](const QString &name, const QString &password) {
-        qDebug() << "Vault to be created :" << name;
-        // Calling keypr-core here
-    });
-
-    connect(m_createVaultOverlay, &CreateVaultOverlay::cancelled, this, [this]() {
-        // rien de spécial, déjà caché dans l'overlay
-    });
-
     auto vaultSelection = new VaultSelection(this);
     ui->sideBar->addWidget(vaultSelection);
     ui->sideBar->setCurrentWidget(vaultSelection);
 
+    m_createVaultOverlay = new CreateVaultOverlay(this);
+    m_createVaultOverlay->setGeometry(this->rect());
+    m_createVaultOverlay->hide();
+
+    connect(m_createVaultOverlay, &CreateVaultOverlay::vaultCreated, this, [vaultSelection](const QString &name, const QString &password) {
+        // Calling keypr-core here
+        vaultSelection->addVault(name);
+    });
+
     auto categoriesSelection = new CategoriesSelection(this);
     ui->sideBar->addWidget(categoriesSelection);
+
+    auto createCategoryOverlay = new CreateCategoryOverlay(this);
+    createCategoryOverlay->setGeometry(this->rect());
+    createCategoryOverlay->hide();
+
+    connect(categoriesSelection, &CategoriesSelection::createCategoryRequested, this, [this, createCategoryOverlay](){
+        createCategoryOverlay->setGeometry(this->rect());
+        createCategoryOverlay->raise();
+        createCategoryOverlay->show();
+    });
+
+    connect(createCategoryOverlay, &CreateCategoryOverlay::categoryCreated, this, [categoriesSelection](const QString &name){
+        categoriesSelection->addCategory(name);
+    });
 
     connect(vaultSelection, &VaultSelection::createVaultRequested, this, [this]() {
         m_createVaultOverlay->setGeometry(this->rect());
@@ -141,15 +152,21 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
-    connect(addWebsiteForm, &AddWebsiteForm::createWebsiteEntry, this, [this, viewEntries](){
+    connect(addWebsiteForm, &AddWebsiteForm::createWebsiteEntry, this, [this, viewEntries](std::shared_ptr<WebsiteEntryData> entry){
+        viewEntries->repository()->addEntry(entry);
+        viewEntries->refresh();
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
-    connect(creditCardForm, &CreditCardForm::createCreditCardEntry, this, [this, viewEntries](){
+    connect(creditCardForm, &CreditCardForm::createCreditCardEntry, this, [this, viewEntries](std::shared_ptr<CreditCardEntryData> entry){
+        viewEntries->repository()->addEntry(entry);
+        viewEntries->refresh();
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
-    connect(wifiForm, &WifiForm::createNewWifiEntry, this, [this, viewEntries](){
+    connect(wifiForm, &WifiForm::createNewWifiEntry, this, [this, viewEntries](std::shared_ptr<WifiEntryData> entry){
+        viewEntries->repository()->addEntry(entry);
+        viewEntries->refresh();
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
@@ -180,6 +197,11 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(viewEntries);
     });
 
+    connect(categoriesSelection, &CategoriesSelection::categoryReselected, this, [this, viewEntries](){
+        viewEntries->clearSelection();
+        ui->mainContent->setCurrentWidget(viewEntries);
+    });
+
     auto personaForm = new NewPersonaForm(this);
     ui->mainContent->addWidget(personaForm);
 
@@ -191,8 +213,24 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(personaDisplay);
     });
 
-    connect(personaForm, &NewPersonaForm::usePersonaSignal, this, [this, personaDisplay](){
+    connect(personaForm, &NewPersonaForm::usePersonaSignal, this, [this, personaDisplay](const PersonaData &persona){
         ui->mainContent->setCurrentWidget(personaDisplay);
+        personaDisplay->addPersona(persona);
+    });
+
+    // Resolves a strange timing issue bug with the Stacked Widget component.
+    connect(ui->mainContent, &QStackedWidget::currentChanged, this, [this](int){
+        auto *current = ui->mainContent->currentWidget();
+        for (int i = 0; i < ui->mainContent->count(); ++i) {
+            QWidget *page = ui->mainContent->widget(i);
+            if (page != current) {
+                page->hide();
+            }
+        }
+        if (current) {
+            current->show();
+            current->update();
+        }
     });
 }
 
@@ -201,6 +239,17 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
     if (m_createVaultOverlay) {
         m_createVaultOverlay->setGeometry(this->rect());
+    }
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    QMainWindow::changeEvent(event);
+
+    if (event->type() == QEvent::ActivationChange && isActiveWindow()) {
+        if (auto *current = ui->mainContent->currentWidget()) {
+            current->update();
+        }
     }
 }
 

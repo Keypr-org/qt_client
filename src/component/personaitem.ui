@@ -90,6 +90,9 @@
           <height>50</height>
          </size>
         </property>
+        <property name="styleSheet">
+         <string notr="true">background: none;</string>
+        </property>
         <property name="frameShape">
          <enum>QFrame::Shape::NoFrame</enum>
         </property>
@@ -139,7 +142,7 @@
                </size>
               </property>
               <property name="styleSheet">
-               <string notr="true">border-radius: 40px;
+               <string notr="true">border-radius: 25px;
 background-color: #24292E;</string>
               </property>
               <property name="frameShape">
@@ -159,13 +162,13 @@ background-color: #24292E;</string>
                  </property>
                  <property name="maximumSize">
                   <size>
-                   <width>20</width>
+                   <width>40</width>
                    <height>20</height>
                   </size>
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>20</pointsize>
+                   <pointsize>15</pointsize>
                    <bold>true</bold>
                   </font>
                  </property>
@@ -307,6 +310,9 @@ border-radius: 6px;</string>
           <height>100</height>
          </size>
         </property>
+        <property name="styleSheet">
+         <string notr="true">background: none;</string>
+        </property>
         <property name="frameShape">
          <enum>QFrame::Shape::NoFrame</enum>
         </property>
@@ -334,6 +340,9 @@ border-radius: 6px;</string>
              <height>90</height>
             </size>
            </property>
+           <property name="styleSheet">
+            <string notr="true">background: none;</string>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Shape::NoFrame</enum>
            </property>
@@ -360,6 +369,9 @@ border-radius: 6px;</string>
                 <width>16777215</width>
                 <height>30</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background: none;</string>
               </property>
               <property name="frameShape">
                <enum>QFrame::Shape::NoFrame</enum>
@@ -421,6 +433,9 @@ border-radius: 6px;</string>
                 <height>30</height>
                </size>
               </property>
+              <property name="styleSheet">
+               <string notr="true">background: none;</string>
+              </property>
               <property name="frameShape">
                <enum>QFrame::Shape::NoFrame</enum>
               </property>
@@ -481,6 +496,9 @@ border-radius: 6px;</string>
              <height>90</height>
             </size>
            </property>
+           <property name="styleSheet">
+            <string notr="true">background: none;</string>
+           </property>
            <property name="frameShape">
             <enum>QFrame::Shape::NoFrame</enum>
            </property>
@@ -507,6 +525,9 @@ border-radius: 6px;</string>
                 <width>16777215</width>
                 <height>30</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background: none;</string>
               </property>
               <property name="frameShape">
                <enum>QFrame::Shape::NoFrame</enum>
@@ -564,6 +585,9 @@ border-radius: 6px;</string>
                 <width>16777215</width>
                 <height>30</height>
                </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background: none;</string>
               </property>
               <property name="frameShape">
                <enum>QFrame::Shape::NoFrame</enum>
