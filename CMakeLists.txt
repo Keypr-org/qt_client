@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(qt_client VERSION 0.1 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
@@ -55,6 +55,7 @@ qt_add_executable(qt_client
     src/model/wifientrydata.h
     src/model/creditcardentrydata.h
     src/model/entryrepository.h src/model/entryrepository.cpp
+    src/vaultcontroller.h src/vaultcontroller.cpp
 )
 
 target_include_directories(qt_client PRIVATE

@@ -1,24 +1,14 @@
-qt_add_executable(tst_example
-    tst_simple_test.cpp
+
+qt_add_executable(tst_vaultcontroller
+    fakevaultrepository.h
+    tst_vaultcontroller.cpp
+    ../src/vaultcontroller.cpp ../src/vaultcontroller.h
 )
 
-target_link_libraries(tst_example
+target_link_libraries(tst_vaultcontroller
     PRIVATE
         Qt6::Test
         keypr-core
 )
 
-add_test(NAME tst_example COMMAND tst_example)
-
-
-qt_add_executable(tst_crypto
-    tst_crypto_test.cpp
-)
-
-target_link_libraries(tst_crypto
-    PRIVATE
-        Qt6::Test
-        keypr-core
-)
-
-add_test(NAME tst_crypto COMMAND tst_crypto)
+add_test(NAME tst_vaultcontroller COMMAND tst_vaultcontroller)
