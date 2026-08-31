@@ -17,6 +17,7 @@
 #include "formOverlay/createvaultoverlay.h"
 #include "formOverlay/newentryoverlay.h"
 #include "formOverlay/createcategoryoverlay.h"
+#include "formOverlay/editpersonaoverlay.h"
 
 // Main Content imports
 #include "mainContent/novaultselected.h"
@@ -216,6 +217,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(personaForm, &NewPersonaForm::usePersonaSignal, this, [this, personaDisplay](const PersonaData &persona){
         ui->mainContent->setCurrentWidget(personaDisplay);
         personaDisplay->addPersona(persona);
+    });
+
+    auto editPersonaOverlay = new EditPersonaOverlay(this);
+    editPersonaOverlay->setGeometry(this->rect());
+    editPersonaOverlay->hide();
+
+    connect(personaDisplay, &PersonaDisplay::modifyPersonaRequested, this, [this, editPersonaOverlay](const PersonaData &persona){
+        editPersonaOverlay->setPersona(persona);
+        editPersonaOverlay->setGeometry(this->rect());
+        editPersonaOverlay->raise();
+        editPersonaOverlay->show();
+    });
+
+    connect(editPersonaOverlay, &EditPersonaOverlay::personaModified, this, [personaDisplay](const PersonaData &persona){
+        personaDisplay->updatePersona(persona);
     });
 
     // Resolves a strange timing issue bug with the Stacked Widget component.

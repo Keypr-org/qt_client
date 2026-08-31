@@ -1,9 +1,12 @@
 #ifndef PERSONADISPLAY_H
 #define PERSONADISPLAY_H
 
+#include <QMap>
 #include <QWidget>
 
 #include "model/persona.h"
+
+class PersonaItem;
 
 namespace Ui {
 class PersonaDisplay;
@@ -18,15 +21,18 @@ public:
     ~PersonaDisplay();
 
     void addPersona(const PersonaData &persona);
+    void updatePersona(const PersonaData &persona);
 
 signals:
     void createPersona();
+    void modifyPersonaRequested(PersonaData persona);
 
 private:
     Ui::PersonaDisplay *ui;
 
     static const int GRID_COLUMNS = 2;
     int m_personaCount = 0;
+    QMap<QString, PersonaItem *> m_personaItems;
 };
 
 #endif // PERSONADISPLAY_H
