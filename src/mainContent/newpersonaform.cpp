@@ -14,7 +14,7 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
 
     QSet<QString> countries;
     for (const QLocale &locale : allLocales) {
-        countries.insert(QLocale::countryToString(locale.country()));
+        countries.insert(QLocale::territoryToString(locale.territory()));
     }
 
     QStringList sortedCountries = countries.values();
