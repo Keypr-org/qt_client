@@ -15,12 +15,22 @@ public:
      */
     explicit VaultController(std::unique_ptr<VaultRepository> repository);
 
+    bool isVaultUnlocked() const;
+
     /**
      * @brief Check if a vault exists.
      * @param vaultName The name of the vault to check.
      * @return true if the vault exists, false otherwise.
      */
     bool vaultExists(const std::string &vaultName) const;
+
+    /**
+     * @brief Unlock a vault.
+     * @param masterPassword The master password.
+     * @param vaultName The name of the vault to unlock.
+     * @return true if the vault is unlocked, false otherwise.
+     */
+    bool unlockVault(const std::string &masterPassword, const std::string &vaultName);
 
 private:
     std::unique_ptr<VaultRepository> repository;
