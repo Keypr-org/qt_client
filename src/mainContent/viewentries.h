@@ -47,7 +47,10 @@ private:
     WifiEntry *m_wifiEntryView;
     CreditCardEntry *m_creditCardEntryView;
 
+    QString m_searchFilter;
+
     void populateList();
+    bool matchesFilter(const std::shared_ptr<Entry> &entry) const;
     void showEntryDetails(const std::shared_ptr<Entry> &entry);
     void handleDeleteRequested(const QString &id);
     void handleEntryUpdated(const QString &id);

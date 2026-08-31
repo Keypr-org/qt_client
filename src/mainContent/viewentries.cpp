@@ -25,6 +25,20 @@ EntrieItem::IconType iconForType(EntryType type)
     return EntrieItem::IconType::WebSite;
 }
 
+QString typeLabelForType(EntryType type)
+{
+    switch (type) {
+    case EntryType::Website:
+        return "Website";
+    case EntryType::Wifi:
+        return "Wifi";
+    case EntryType::CreditCard:
+        return "Card";
+    }
+
+    return QString();
+}
+
 ViewEntries::ViewEntries(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ViewEntries)
@@ -58,6 +72,11 @@ ViewEntries::ViewEntries(QWidget *parent)
 
     connect(ui->newItemButton, &QPushButton::clicked, this, [this](){
         emit newEntry();
+    });
+
+    connect(ui->searchInput, &QLineEdit::textChanged, this, [this](const QString &text){
+        m_searchFilter = text;
+        populateList();
     });
 
     connect(ui->entriesList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item){
@@ -122,6 +141,10 @@ void ViewEntries::populateList()
     }
 
     for (const auto &entry : m_repository->entries()) {
+        if (!matchesFilter(entry)) {
+            continue;
+        }
+
         auto *itemWidget = new EntrieItem(this);
         itemWidget->setIcon(iconForType(entry->type));
         itemWidget->setPrimaryInfo(entry->primaryInfo);
@@ -133,6 +156,27 @@ void ViewEntries::populateList()
 
         ui->entriesList->setItemWidget(listItem, itemWidget);
     }
+}
+
+bool ViewEntries::matchesFilter(const std::shared_ptr<Entry> &entry) const
+{
+    if (m_searchFilter.isEmpty()) {
+        return true;
+    }
+
+    if (entry->primaryInfo.contains(m_searchFilter, Qt::CaseInsensitive)) {
+        return true;
+    }
+
+    if (entry->secondaryInfo.contains(m_searchFilter, Qt::CaseInsensitive)) {
+        return true;
+    }
+
+    if (typeLabelForType(entry->type).contains(m_searchFilter, Qt::CaseInsensitive)) {
+        return true;
+    }
+
+    return false;
 }
 
 void ViewEntries::showEntryDetails(const std::shared_ptr<Entry> &entry)
