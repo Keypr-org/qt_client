@@ -254,6 +254,9 @@
                 <height>40</height>
                </size>
               </property>
+              <property name="cursor">
+               <cursorShape>PointingHandCursor</cursorShape>
+              </property>
               <property name="text">
                <string>Apply</string>
               </property>

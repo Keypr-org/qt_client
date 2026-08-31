@@ -75,6 +75,11 @@ void CategoriesSelection::addCategory(const QString &name)
     ui->listCategories->addItem(item);
 }
 
+void CategoriesSelection::setVaultName(const QString &name)
+{
+    ui->vaultName->setText(name);
+}
+
 void CategoriesSelection::setPersonaSelected(bool selected)
 {
     if (selected) {

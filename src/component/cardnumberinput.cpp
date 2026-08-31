@@ -57,6 +57,7 @@ bool CardNumberInput::eventFilter(QObject *obj, QEvent *event)
 }
 void CardNumberInput::on_input_textEdited(const QString &cardNumber)
 {
+    inputText = cardNumber;
     emit cardNumberChanged(cardNumber);
 }
 

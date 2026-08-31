@@ -1,6 +1,8 @@
 #include "creditcardentry.h"
 #include "ui_creditcardentry.h"
 
+#include "component/notificationtooltip.h"
+
 #include <QDateTime>
 
 CreditCardEntry::CreditCardEntry(QWidget *parent)
@@ -39,6 +41,11 @@ CreditCardEntry::CreditCardEntry(QWidget *parent)
             return;
         }
 
+        if (ui->cardNumberInput->cardNumber().isEmpty() || ui->nameInput->text().isEmpty()) {
+            NotificationTooltip::showErrorToast(this, "Please enter a card number and cardholder name.");
+            return;
+        }
+
         const QString cardNumber = ui->cardNumberInput->cardNumber();
         const QString ownerName = ui->nameInput->text();
         const QString cardLabel = cardNumber.length() >= 4
@@ -59,6 +66,7 @@ CreditCardEntry::CreditCardEntry(QWidget *parent)
         ui->nameHeader->setText(ownerName);
 
         emit entryUpdated(m_entry->id);
+        NotificationTooltip::showSuccessToast(this, "Credit card entry updated successfully.");
     });
 }
 

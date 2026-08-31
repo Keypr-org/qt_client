@@ -22,10 +22,12 @@ public:
 
     void addPersona(const PersonaData &persona);
     void updatePersona(const PersonaData &persona);
+    void removePersona(const QString &id);
 
 signals:
     void createPersona();
     void modifyPersonaRequested(PersonaData persona);
+    void deletePersonaRequested(QString id);
 
 private:
     Ui::PersonaDisplay *ui;

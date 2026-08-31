@@ -1,6 +1,8 @@
 #include "createvaultoverlay.h"
 #include "ui_createvaultoverlay.h"
 
+#include "component/notificationtooltip.h"
+
 CreateVaultOverlay::CreateVaultOverlay(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::CreateVaultOverlay)
@@ -25,13 +27,20 @@ CreateVaultOverlay::CreateVaultOverlay(QWidget *parent)
         const QString password = ui->masterPassword->text();
         const QString confirmPassword = ui->confirmMasterPassword->text();
 
-        if (name.isEmpty() || password.isEmpty() || password != confirmPassword) {
+        if (name.isEmpty() || password.isEmpty()) {
+            ui->notificationTooltip->showError("Please fill in all fields.");
+            return;
+        }
+
+        if (password != confirmPassword) {
+            ui->notificationTooltip->showError("Passwords do not match.");
             return;
         }
 
         emit vaultCreated(name, password);
         clearForm();
         hide();
+        NotificationTooltip::showSuccessToast(parentWidget(), "Vault created successfully.");
     });
 }
 
@@ -40,6 +49,7 @@ void CreateVaultOverlay::clearForm()
     ui->vaultName->setText("");
     ui->masterPassword->setText("");
     ui->confirmMasterPassword->setText("");
+    ui->notificationTooltip->hideMessage();
 }
 
 void CreateVaultOverlay::resizeEvent(QResizeEvent *event)

@@ -16,6 +16,9 @@
 #include "formOverlay/createcategoryoverlay.h"
 #include "formOverlay/editpersonaoverlay.h"
 
+// Component imports
+#include "component/notificationtooltip.h"
+
 // Main Content imports
 #include "mainContent/novaultselected.h"
 #include "mainContent/viewentries.h"
@@ -84,7 +87,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->mainContent->addWidget(viewEntries);
     viewEntries->setStyleSheet("background-color: #111827;");
 
-    connect(unlockVaultModal, &unlockvaultmodal::vaultUnlocked, this, [this, viewEntries, categoriesSelection]() {
+    connect(unlockVaultModal, &unlockvaultmodal::vaultUnlocked, this, [this, viewEntries, categoriesSelection](const QString &name) {
+        categoriesSelection->setVaultName(name);
         ui->sideBar->setCurrentWidget(categoriesSelection);
         ui->mainContent->setProperty("openEntries", true);
         ui->mainContent->setCurrentWidget(viewEntries);
@@ -146,19 +150,22 @@ MainWindow::MainWindow(QWidget *parent)
         viewEntries->repository()->addEntry(entry);
         viewEntries->refresh();
         ui->mainContent->setCurrentWidget(viewEntries);
-        });
+        NotificationTooltip::showSuccessToast(this, "Website entry created successfully.");
+    });
 
     connect(creditCardForm, &CreditCardForm::createCreditCardEntry, this, [this, viewEntries](std::shared_ptr<CreditCardEntryData> entry) {
         viewEntries->repository()->addEntry(entry);
         viewEntries->refresh();
         ui->mainContent->setCurrentWidget(viewEntries);
-        });
+        NotificationTooltip::showSuccessToast(this, "Credit card entry created successfully.");
+    });
 
     connect(wifiForm, &WifiForm::createNewWifiEntry, this, [this, viewEntries](std::shared_ptr<WifiEntryData> entry) {
         viewEntries->repository()->addEntry(entry);
         viewEntries->refresh();
         ui->mainContent->setCurrentWidget(viewEntries);
-        });
+        NotificationTooltip::showSuccessToast(this, "Wifi entry created successfully.");
+    });
 
     auto passwordGeneratorOverlay = new PasswordGenerator(this);
     ui->mainContent->addWidget(passwordGeneratorOverlay);
@@ -221,7 +228,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(editPersonaOverlay, &EditPersonaOverlay::personaModified, this, [personaDisplay](const PersonaData &persona) {
         personaDisplay->updatePersona(persona);
-        });
+        NotificationTooltip::showSuccessToast(personaDisplay, "Persona updated successfully.");
+    });
+
+    connect(personaDisplay, &PersonaDisplay::deletePersonaRequested, this, [personaDisplay](const QString &id){
+        personaDisplay->removePersona(id);
+        NotificationTooltip::showSuccessToast(personaDisplay, "Persona deleted successfully.");
+    });
 
     // Resolves a strange timing issue bug with the Stacked Widget component.
     connect(ui->mainContent, &QStackedWidget::currentChanged, this, [this](int) {

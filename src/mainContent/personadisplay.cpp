@@ -30,6 +30,10 @@ void PersonaDisplay::addPersona(const PersonaData &persona)
         emit modifyPersonaRequested(persona);
     });
 
+    connect(item, &PersonaItem::deleteRequested, this, [this](QString id){
+        emit deletePersonaRequested(id);
+    });
+
     const int row = m_personaCount / GRID_COLUMNS;
     const int column = m_personaCount % GRID_COLUMNS;
     ui->gridLayout->addWidget(item, row, column);
@@ -42,5 +46,29 @@ void PersonaDisplay::updatePersona(const PersonaData &persona)
 {
     if (auto *item = m_personaItems.value(persona.id)) {
         item->setPersona(persona);
+    }
+}
+
+void PersonaDisplay::removePersona(const QString &id)
+{
+    PersonaItem *item = m_personaItems.take(id);
+    if (!item) {
+        return;
+    }
+
+    ui->gridLayout->removeWidget(item);
+    item->deleteLater();
+
+    const QList<PersonaItem *> remaining = m_personaItems.values();
+    for (PersonaItem *remainingItem : remaining) {
+        ui->gridLayout->removeWidget(remainingItem);
+    }
+
+    m_personaCount = 0;
+    for (PersonaItem *remainingItem : remaining) {
+        const int row = m_personaCount / GRID_COLUMNS;
+        const int column = m_personaCount % GRID_COLUMNS;
+        ui->gridLayout->addWidget(remainingItem, row, column);
+        ++m_personaCount;
     }
 }

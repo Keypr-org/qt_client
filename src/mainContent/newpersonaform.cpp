@@ -1,6 +1,8 @@
 #include "newpersonaform.h"
 #include "ui_newpersonaform.h"
 
+#include "component/notificationtooltip.h"
+
 #include <QUuid>
 
 NewPersonaForm::NewPersonaForm(QWidget *parent)
@@ -42,6 +44,11 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
     });
 
     connect(ui->savePersonaButton, &QPushButton::clicked, this, [this](){
+        if (ui->firstName->text().isEmpty() || ui->lastName->text().isEmpty()) {
+            NotificationTooltip::showErrorToast(this, "Please enter a first and last name.");
+            return;
+        }
+
         PersonaData persona;
         persona.id = QUuid::createUuid().toString();
         persona.firstName = ui->firstName->text();

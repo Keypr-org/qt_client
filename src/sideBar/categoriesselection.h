@@ -17,6 +17,7 @@ public:
     ~CategoriesSelection();
 
     void addCategory(const QString &name);
+    void setVaultName(const QString &name);
 
 signals:
     void lockVaultRequested();

@@ -1,6 +1,8 @@
 #include "wifientry.h"
 #include "ui_wifientry.h"
 
+#include "component/notificationtooltip.h"
+
 #include <QDateTime>
 
 WifiEntry::WifiEntry(QWidget *parent)
@@ -26,6 +28,11 @@ WifiEntry::WifiEntry(QWidget *parent)
             return;
         }
 
+        if (ui->nameInput->text().isEmpty() || ui->passwordInput->text().isEmpty()) {
+            NotificationTooltip::showErrorToast(this, "Please enter a network name and password.");
+            return;
+        }
+
         m_entry->ssid = ui->nameInput->text();
         m_entry->password = ui->passwordInput->text();
         m_entry->notes = ui->notesInput->text();
@@ -35,6 +42,7 @@ WifiEntry::WifiEntry(QWidget *parent)
         ui->titleLabel->setText(m_entry->ssid);
 
         emit entryUpdated(m_entry->id);
+        NotificationTooltip::showSuccessToast(this, "Wifi entry updated successfully.");
     });
 }
 
