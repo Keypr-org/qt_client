@@ -3,7 +3,6 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
-#include "fakevaultsession.h"
 #include "VaultRepository.h"
 
 

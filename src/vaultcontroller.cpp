@@ -2,8 +2,8 @@
 
 #include <exception>
 
-VaultController::VaultController(VaultRepository &repository)
-    : repository(&repository) {
+VaultController::VaultController(std::unique_ptr<VaultRepository> repository)
+    : repository(std::move(repository)), session(nullptr) {
 }
 
 bool VaultController::vaultExists(const std::string &vaultName) const {

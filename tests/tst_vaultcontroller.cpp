@@ -1,5 +1,5 @@
 #include <QtTest/QtTest>
-
+#include <memory>
 #include "fakevaultrepository.h"
 #include "../src/vaultcontroller.h"
 
@@ -17,8 +17,8 @@ private slots:
  * @brief Test the openVault method when the file exists and parsing succeeds.
  */
 void VaultControllerTest::openVault_returnsTrue_whenFileExistsAndParsingSucceeds() {
-    FakeVaultRepository repository(true, true);
-    VaultController controller(repository);
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
 
     QVERIFY(controller.vaultExists("vault"));
 }
@@ -27,8 +27,8 @@ void VaultControllerTest::openVault_returnsTrue_whenFileExistsAndParsingSucceeds
  * @brief Test the openVault method when the file exists and parsing fails.
  */
 void VaultControllerTest::openVault_returnsFalse_whenFileExistsAndParsingFails() {
-    FakeVaultRepository repository(true, false);
-    VaultController controller(repository);
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, false);
+    VaultController controller(std::move(repository));
 
     QVERIFY(!controller.vaultExists("vault"));
 }
@@ -37,8 +37,8 @@ void VaultControllerTest::openVault_returnsFalse_whenFileExistsAndParsingFails()
  * @brief Test the openVault method when the file does not exist and parsing succeeds.
  */
 void VaultControllerTest::openVault_returnsFalse_whenFileDoesNotExistAndParsingSucceeds() {
-    FakeVaultRepository repository(false, true);
-    VaultController controller(repository);
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false, true);
+    VaultController controller(std::move(repository));
 
     QVERIFY(!controller.vaultExists("vault"));
 }
@@ -47,8 +47,8 @@ void VaultControllerTest::openVault_returnsFalse_whenFileDoesNotExistAndParsingS
  * @brief Test the openVault method when the file does not exist and parsing fails.
  */
 void VaultControllerTest::openVault_returnsFalse_whenFileDoesNotExistAndParsingFails() {
-    FakeVaultRepository repository(false, false);
-    VaultController controller(repository);
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false, false);
+    VaultController controller(std::move(repository));
 
     QVERIFY(!controller.vaultExists("vault"));
 }

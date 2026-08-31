@@ -13,7 +13,7 @@ public:
      * @brief Construct a new VaultController object.
      * @param repository The vault repository to use.
      */
-    explicit VaultController(VaultRepository &repository);
+    explicit VaultController(std::unique_ptr<VaultRepository> repository);
 
     /**
      * @brief Check if a vault exists.
@@ -23,6 +23,6 @@ public:
     bool vaultExists(const std::string &vaultName) const;
 
 private:
-    VaultRepository *repository;
+    std::unique_ptr<VaultRepository> repository;
     std::unique_ptr<VaultSession> session;
 };
