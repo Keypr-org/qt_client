@@ -1,6 +1,8 @@
 #include "createcategoryoverlay.h"
 #include "ui_createcategoryoverlay.h"
 
+#include "component/notificationtooltip.h"
+
 CreateCategoryOverlay::CreateCategoryOverlay(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::CreateCategoryOverlay)
@@ -21,18 +23,21 @@ CreateCategoryOverlay::CreateCategoryOverlay(QWidget *parent)
         const QString name = ui->categoryName->text();
 
         if (name.isEmpty()) {
+            ui->notificationTooltip->showError("Please enter a category name.");
             return;
         }
 
         emit categoryCreated(name);
         clearForm();
         hide();
+        NotificationTooltip::showSuccessToast(parentWidget(), "Category created successfully.");
     });
 }
 
 void CreateCategoryOverlay::clearForm()
 {
     ui->categoryName->setText("");
+    ui->notificationTooltip->hideMessage();
 }
 
 void CreateCategoryOverlay::resizeEvent(QResizeEvent *event)

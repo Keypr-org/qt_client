@@ -271,6 +271,22 @@ height: 40px
           </widget>
          </item>
          <item>
+          <widget class="NotificationTooltip" name="notificationTooltip" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>40</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="LineTextInput" name="categoryName" native="true">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
@@ -434,6 +450,12 @@ height: 40px
    <class>LineTextInput</class>
    <extends>QWidget</extends>
    <header>component/linetextinput.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>NotificationTooltip</class>
+   <extends>QWidget</extends>
+   <header>component/notificationtooltip.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

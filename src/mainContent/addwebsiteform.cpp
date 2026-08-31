@@ -1,6 +1,8 @@
 #include "addwebsiteform.h"
 #include "ui_addwebsiteform.h"
 
+#include "component/notificationtooltip.h"
+
 #include <QDateTime>
 #include <QUuid>
 
@@ -28,6 +30,11 @@ AddWebsiteForm::AddWebsiteForm(QWidget *parent)
     });
 
     connect(ui->validateWebsiteEntryButton, &QPushButton::clicked, this, [this](){
+        if (ui->websiteNameInput->text().isEmpty() || ui->passwordInput->text().isEmpty()) {
+            NotificationTooltip::showErrorToast(this, "Please enter a website name and password.");
+            return;
+        }
+
         auto entry = std::make_shared<WebsiteEntryData>(
             QUuid::createUuid().toString(),
             ui->websiteNameInput->text(),

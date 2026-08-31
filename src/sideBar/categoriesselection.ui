@@ -241,7 +241,7 @@ background-color: #2a2a4e;
     <widget class="QPushButton" name="createCategory">
      <property name="font">
       <font>
-       <pointsize>14</pointsize>
+       <pointsize>13</pointsize>
        <bold>true</bold>
       </font>
      </property>
@@ -257,10 +257,7 @@ background-color: #2a2a4e;
 }</string>
      </property>
      <property name="text">
-      <string>New Category</string>
-     </property>
-     <property name="icon">
-      <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
+      <string>+ New Category</string>
      </property>
      <property name="iconSize">
       <size>

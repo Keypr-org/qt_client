@@ -1,6 +1,8 @@
 #include "websiteentry.h"
 #include "ui_websiteentry.h"
 
+#include "component/notificationtooltip.h"
+
 #include <QDateTime>
 
 WebsiteEntry::WebsiteEntry(QWidget *parent)
@@ -30,6 +32,11 @@ WebsiteEntry::WebsiteEntry(QWidget *parent)
             return;
         }
 
+        if (ui->passwordInput->text().isEmpty()) {
+            NotificationTooltip::showErrorToast(this, "Password cannot be empty.");
+            return;
+        }
+
         m_entry->username = ui->usernameInput->text();
         m_entry->password = ui->passwordInput->text();
         m_entry->url = ui->urlInput->text();
@@ -41,6 +48,7 @@ WebsiteEntry::WebsiteEntry(QWidget *parent)
         ui->subtitle->setText(m_entry->url);
 
         emit entryUpdated(m_entry->id);
+        NotificationTooltip::showSuccessToast(this, "Website entry updated successfully.");
     });
 }
 
