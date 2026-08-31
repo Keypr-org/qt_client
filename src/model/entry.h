@@ -20,9 +20,20 @@ struct Entry
     QString secondaryInfo;
     QDateTime lastUpdated;
 
+    /**
+     * @brief Destroys the entry, allowing derived entry types to clean up polymorphically.
+     */
     virtual ~Entry() = default;
 
 protected:
+    /**
+     * @brief Initializes the fields common to every entry kind; only callable by derived entry types.
+     * @param id Unique entry identifier.
+     * @param type Concrete kind of the entry.
+     * @param primaryInfo Main display label for the entry.
+     * @param secondaryInfo Secondary display label for the entry.
+     * @param lastUpdated Timestamp of the last modification.
+     */
     Entry(const QString &id, EntryType type,
           const QString &primaryInfo, const QString &secondaryInfo,
           const QDateTime &lastUpdated)

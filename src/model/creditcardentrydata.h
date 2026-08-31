@@ -12,6 +12,17 @@ struct CreditCardEntryData : public Entry
     QString cvv;
     QString notes;
 
+    /**
+     * @brief Constructs a fully-populated credit card entry.
+     * @param id Unique entry identifier.
+     * @param cardLabel Display name of the card (e.g. bank/network label).
+     * @param ownerName Name of the cardholder.
+     * @param cardNumber Card number.
+     * @param expiration Card expiration date.
+     * @param cvv Card verification value.
+     * @param notes Optional free-form notes.
+     * @param lastUpdated Timestamp of the last modification.
+     */
     CreditCardEntryData(const QString &id, const QString &cardLabel,
                          const QString &ownerName, const QString &cardNumber,
                          const QString &expiration, const QString &cvv,

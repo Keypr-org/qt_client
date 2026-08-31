@@ -45,6 +45,27 @@ bool EntryRepository::removeEntry(const QString &id)
     return false;
 }
 
+void EntryRepository::unlinkPersonaFromEntries(const QString &personaId)
+{
+    bool changed = false;
+
+    for (const auto &entry : m_entries) {
+        if (entry->type != EntryType::Website) {
+            continue;
+        }
+
+        auto website = std::static_pointer_cast<WebsiteEntryData>(entry);
+        if (website->personaId == personaId) {
+            website->personaId.clear();
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        emit entriesChanged();
+    }
+}
+
 void EntryRepository::seedMockData()
 {
     m_entries.append(std::make_shared<WebsiteEntryData>(
