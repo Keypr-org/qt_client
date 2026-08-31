@@ -32,6 +32,12 @@ public:
      */
     bool unlockVault(const std::string &masterPassword, const std::string &vaultName);
 
+    /**
+     * @brief Get the categories in the current vault.
+     * @return The categories in the current vault.
+     */
+    const std::vector<std::unique_ptr<Category>> &getCategories() const;
+
 private:
     std::unique_ptr<VaultRepository> repository;
     std::unique_ptr<VaultSession> session;
