@@ -18,13 +18,14 @@ public:
     void setVaultName(const QString &name);
 
 signals:
-    void vaultUnlocked(); // emitted when the user successfully unlocks the vault
+    void vaultUnlocked(const QString &name); // emitted when the user successfully unlocks the vault
 
 private slots:
     void onUnlockClicked();
 
 private:
     Ui::unlockvaultmodal *ui;
+    QString m_vaultName;
 };
 
 #endif // UNLOCKVAULTMODAL_H

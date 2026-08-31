@@ -1,6 +1,8 @@
 #include "editpersonaoverlay.h"
 #include "ui_editpersonaoverlay.h"
 
+#include "component/notificationtooltip.h"
+
 #include <QLocale>
 #include <QSet>
 #include <QStringList>
@@ -39,6 +41,11 @@ EditPersonaOverlay::EditPersonaOverlay(QWidget *parent)
     });
 
     connect(ui->saveChangesButton, &QPushButton::clicked, this, [this](){
+        if (ui->firstName->text().isEmpty() || ui->lastName->text().isEmpty()) {
+            NotificationTooltip::showErrorToast(this, "Please enter a first and last name.");
+            return;
+        }
+
         PersonaData persona;
         persona.id = m_personaId;
         persona.firstName = ui->firstName->text();

@@ -1,6 +1,8 @@
 #include "creditcardform.h"
 #include "ui_creditcardform.h"
 
+#include "component/notificationtooltip.h"
+
 #include <QDateEdit>
 #include <QDateTime>
 #include <QUuid>
@@ -37,6 +39,11 @@ CreditCardForm::CreditCardForm(QWidget *parent)
     });
 
     connect(ui->saveButton, &QPushButton::clicked, this, [this](){
+        if (ui->cardNumberInput->cardNumber().isEmpty() || ui->nameInput->text().isEmpty()) {
+            NotificationTooltip::showErrorToast(this, "Please enter a card number and cardholder name.");
+            return;
+        }
+
         const QString cardNumber = ui->cardNumberInput->cardNumber();
         const QString ownerName = ui->nameInput->text();
         const QString cardLabel = cardNumber.length() >= 4

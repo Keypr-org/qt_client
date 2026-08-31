@@ -1,6 +1,8 @@
 #include "wifiform.h"
 #include "ui_wifiform.h"
 
+#include "component/notificationtooltip.h"
+
 #include <QDateTime>
 #include <QUuid>
 
@@ -21,6 +23,11 @@ WifiForm::WifiForm(QWidget *parent)
     });
 
     connect(ui->saveButton, &QPushButton::clicked, this, [this](){
+        if (ui->nameInput->text().isEmpty() || ui->passwordInput->text().isEmpty()) {
+            NotificationTooltip::showErrorToast(this, "Please enter a network name and password.");
+            return;
+        }
+
         auto entry = std::make_shared<WifiEntryData>(
             QUuid::createUuid().toString(),
             ui->nameInput->text(),
