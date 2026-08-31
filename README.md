@@ -2,6 +2,22 @@
 
 > Repository containing the code of the desktop application.
 
+## Table of Contents
+
+- [qt\_client](#qt_client)
+  - [Table of Contents](#table-of-contents)
+  - [Cloning/Updating the repository and its submodules](#cloningupdating-the-repository-and-its-submodules)
+    - [First time cloning the repository](#first-time-cloning-the-repository)
+    - [Updating the repository and its submodules](#updating-the-repository-and-its-submodules)
+    - [Automatically updating the submodules when pulling](#automatically-updating-the-submodules-when-pulling)
+  - [Updating the submodules in the repository](#updating-the-submodules-in-the-repository)
+  - [How to use the application](#how-to-use-the-application)
+    - [Using email aliases](#using-email-aliases)
+  - [Contributions and Workflow](#contributions-and-workflow)
+    - [Contributing](#contributing)
+    - [Workflow of the project](#workflow-of-the-project)
+      - [Example of a versioned tag: `v1.0.2`](#example-of-a-versioned-tag-v102)
+
 ## Cloning/Updating the repository and its submodules
 
 ### First time cloning the repository
@@ -35,6 +51,17 @@ git add keypr-core # Assuming the submodule is located in the keypr-core folder
 git commit -m "[Fix]: Update submodule keypr-core" 
 git push
 ```
+
+## How to use the application
+
+### Using email aliases
+
+For email aliases, we are using the [Postscale](https://postscale.io) service. To generate email aliases through the application, here are the steps to follow :
+1. Register to Postscale
+2. Follow the `Getting Started` instruction until the `adding a domain` step
+3. Get your API key and target email your wish emails to be redirected to
+4. Paste those informations inside the `Settings` window inside Keypr
+5. Click generate alias inside a WEB entry and enjoy !
 
 ## Contributions and Workflow
 

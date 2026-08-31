@@ -795,7 +795,7 @@
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>170</height>
+       <height>220</height>
       </size>
      </property>
      <property name="styleSheet">
@@ -916,26 +916,6 @@
           <number>0</number>
          </property>
          <item>
-          <widget class="QLineEdit" name="lineEditEmail">
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">#lineEditEmail {
-	background-color: #0F0F0A;
-	border-radius: 6px;
-	padding-left: 10px;
-}</string>
-           </property>
-           <property name="placeholderText">
-            <string>user@email.here</string>
-           </property>
-          </widget>
-         </item>
-         <item>
           <widget class="QPushButton" name="generateAliasButton">
            <property name="minimumSize">
             <size>
@@ -959,34 +939,6 @@
            </property>
            <property name="text">
             <string>Generate Alias</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="deleteAliasButton">
-           <property name="minimumSize">
-            <size>
-             <width>130</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="cursor">
-            <cursorShape>PointingHandCursor</cursorShape>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">#deleteAliasButton {
-	border-radius: 6px;
-	border: 1px solid #EF4444;
-	background-color: #271925;
-	color: #EF4444;
-}</string>
-           </property>
-           <property name="text">
-            <string>Delete Alias</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../../../resources.qrc">
-             <normaloff>:/icons/icons/icon-trash.png</normaloff>:/icons/icons/icon-trash.png</iconset>
            </property>
           </widget>
          </item>
@@ -1044,12 +996,12 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="aliasEmailLabel">
            <property name="styleSheet">
             <string notr="true">background: none;</string>
            </property>
            <property name="text">
-            <string>current+alias@email.user</string>
+            <string/>
            </property>
            <property name="alignment">
             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -1057,7 +1009,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLabel" name="label_2">
+          <widget class="QToolButton" name="copyAliasButton">
            <property name="minimumSize">
             <size>
              <width>20</width>
@@ -1070,18 +1022,62 @@
              <height>20</height>
             </size>
            </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
            <property name="styleSheet">
-            <string notr="true">background: none;</string>
+            <string notr="true">background: none; border: none;</string>
            </property>
            <property name="text">
             <string/>
            </property>
-           <property name="pixmap">
-            <pixmap resource="../../../resources.qrc">:/icons/icons/icon-copy-green.png</pixmap>
+           <property name="icon">
+            <iconset resource="../../../resources.qrc">
+             <normaloff>:/icons/icons/icon-copy-green.png</normaloff>:/icons/icons/icon-copy-green.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
            </property>
           </widget>
          </item>
         </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="deleteAliasButton">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">#deleteAliasButton {
+	border-radius: 6px;
+	border: 1px solid #EF4444;
+	background-color: #271925;
+	color: #EF4444;
+}</string>
+        </property>
+        <property name="text">
+         <string>Delete Alias</string>
+        </property>
+        <property name="icon">
+         <iconset resource="../../../resources.qrc">
+          <normaloff>:/icons/icons/icon-trash.png</normaloff>:/icons/icons/icon-trash.png</iconset>
+        </property>
        </widget>
       </item>
      </layout>

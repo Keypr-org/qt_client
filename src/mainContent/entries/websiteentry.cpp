@@ -2,11 +2,15 @@
 #include "ui_websiteentry.h"
 
 #include "component/notificationtooltip.h"
+#include "mailaliascontroller.h"
 
 #include <QAction>
+#include <QClipboard>
 #include <QDateTime>
+#include <QGuiApplication>
 #include <QMenu>
 #include <QPoint>
+#include <QToolButton>
 
 WebsiteEntry::WebsiteEntry(QWidget *parent)
     : QWidget(parent)
@@ -38,6 +42,22 @@ WebsiteEntry::WebsiteEntry(QWidget *parent)
             return;
         }
         emit deleteRequested(m_entry->id);
+    });
+
+    connect(ui->generateAliasButton, &QPushButton::clicked, this, [this](){
+        generateAlias();
+    });
+
+    connect(ui->deleteAliasButton, &QPushButton::clicked, this, [this](){
+        deleteAlias();
+    });
+
+    connect(ui->copyAliasButton, &QToolButton::clicked, this, [this](){
+        if (!m_entry || m_entry->aliasEmail.isEmpty()) {
+            return;
+        }
+        QGuiApplication::clipboard()->setText(m_entry->aliasEmail);
+        NotificationTooltip::showSuccessToast(this, "Alias copied to clipboard.");
     });
 
     connect(ui->applyButton, &QPushButton::clicked, this, [this](){
@@ -88,6 +108,7 @@ void WebsiteEntry::setEntry(const std::shared_ptr<WebsiteEntryData> &entry)
     ui->notesInput->setText(entry->notes);
 
     refreshPersonaDisplay();
+    refreshAliasDisplay();
 }
 
 void WebsiteEntry::setPersonaRepository(PersonaRepository *repository)
@@ -154,4 +175,55 @@ void WebsiteEntry::unlinkPersona()
     refreshPersonaDisplay();
     emit entryUpdated(m_entry->id);
     NotificationTooltip::showSuccessToast(this, "Persona unlinked successfully.");
+}
+
+void WebsiteEntry::generateAlias()
+{
+    if (!m_entry) {
+        return;
+    }
+
+    MailAliasController mailAliasController;
+
+    if (!mailAliasController.hasCredentials()) {
+        NotificationTooltip::showErrorToast(this, "Set your Postscale API key and source email in Settings before generating an alias.");
+        return;
+    }
+
+    const auto alias = mailAliasController.createAlias(m_entry->primaryInfo.toStdString());
+
+    if (!alias) {
+        NotificationTooltip::showErrorToast(this, QString("Failed to create alias: %1").arg(QString::fromStdString(mailAliasController.lastError())));
+        return;
+    }
+
+    m_entry->aliasEmail = QString::fromStdString(alias->fullAddress());
+    refreshAliasDisplay();
+    emit entryUpdated(m_entry->id);
+    NotificationTooltip::showSuccessToast(this, "Email alias created successfully.");
+}
+
+void WebsiteEntry::deleteAlias()
+{
+    if (!m_entry || m_entry->aliasEmail.isEmpty()) {
+        return;
+    }
+
+    m_entry->aliasEmail.clear();
+    refreshAliasDisplay();
+    emit entryUpdated(m_entry->id);
+    NotificationTooltip::showSuccessToast(this, "Alias removed from this entry.");
+}
+
+void WebsiteEntry::refreshAliasDisplay()
+{
+    const bool hasAlias = m_entry && !m_entry->aliasEmail.isEmpty();
+
+    ui->aliasFormWrapper->setVisible(!hasAlias);
+    ui->widgetAliasEmail->setVisible(hasAlias);
+    ui->deleteAliasButton->setVisible(hasAlias);
+
+    if (hasAlias) {
+        ui->aliasEmailLabel->setText(m_entry->aliasEmail);
+    }
 }

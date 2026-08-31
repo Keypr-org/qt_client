@@ -71,6 +71,21 @@ private:
      * @brief Removes the persona link from the current entry, if one exists.
      */
     void unlinkPersona();
+
+    /**
+     * @brief Requests a new email alias from Postscale for the current entry and stores it.
+     */
+    void generateAlias();
+
+    /**
+     * @brief Clears the email alias stored on the current entry.
+     */
+    void deleteAlias();
+
+    /**
+     * @brief Shows or hides the alias success widget depending on whether the entry has an alias.
+     */
+    void refreshAliasDisplay();
 };
 
 #endif // WEBSITEENTRY_H

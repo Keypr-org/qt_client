@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Widgets Test)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Widgets Test Network)
 
 qt_standard_project_setup()
 
@@ -57,6 +57,10 @@ qt_add_executable(qt_client
     src/model/creditcardentrydata.h
     src/model/entryrepository.h src/model/entryrepository.cpp
     src/vaultcontroller.h src/vaultcontroller.cpp
+    src/settings/settingswindow.h src/settings/settingswindow.cpp src/settings/settingswindow.ui
+    src/mailaliasconfig.h src/mailaliasconfig.cpp
+    src/mailaliasclient.h src/mailaliasclient.cpp
+    src/mailaliascontroller.h src/mailaliascontroller.cpp
 )
 
 target_include_directories(qt_client PRIVATE
@@ -66,11 +70,13 @@ target_include_directories(qt_client PRIVATE
 target_link_libraries(qt_client
     PRIVATE
         Qt6::Widgets
+        Qt6::Network
         keypr-core
 )
 
 set_target_properties(qt_client PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER com.example.qt_client
+    MACOSX_BUNDLE_BUNDLE_NAME "Keypr"
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
 )
