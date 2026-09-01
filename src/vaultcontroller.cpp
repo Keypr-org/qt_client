@@ -7,7 +7,7 @@ VaultController::VaultController(std::unique_ptr<VaultRepository> repository, st
 {
     if (this->repository == nullptr)
     {
-        throw std::invalid_argument("Repository cannot be null");
+        this->repository = std::make_unique<VaultRepository>();
     }
 }
 
@@ -116,6 +116,23 @@ void VaultController::addCategory(std::unique_ptr<Category> category)
         throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
     }
     session->addCategory(std::move(category));
+}
+
+const std::vector<std::unique_ptr<Entry>> &VaultController::getEntriesInCategory(int64_t categoryId) const
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    static const std::vector<std::unique_ptr<Entry>> emptyEntries{};
+    try
+    {
+        return session->getEntriesInCategory(categoryId);
+    }
+    catch (const CategoryNotFoundError &)
+    {
+        return emptyEntries;
+    }
 }
 
 const std::vector<std::unique_ptr<Persona>> &VaultController::getPersonas() const
