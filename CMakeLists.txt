@@ -57,6 +57,7 @@ qt_add_executable(qt_client
     src/model/creditcardentrydata.h
     src/model/entryrepository.h src/model/entryrepository.cpp
     src/vaultcontroller.h src/vaultcontroller.cpp
+    src/nativeMessaging/nativemessaging.h src/nativeMessaging/nativemessaging.cpp
 )
 
 target_include_directories(qt_client PRIVATE
