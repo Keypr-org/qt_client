@@ -27,10 +27,18 @@ public:
     /**
      * @brief Unlock a vault.
      * @param masterPassword The master password.
-     * @param vaultName The name of the vault to unlock.
+     * @param filename The name of the vault file to unlock.
      * @return true if the vault is unlocked, false otherwise.
      */
-    bool unlockVault(const std::string &masterPassword, const std::string &vaultName);
+    bool unlockVault(const std::string &masterPassword, const std::string &filename);
+
+    /**
+     * @brief Create a new vault.
+     * @param masterPassword The master password.
+     * @param vaultName The name of the vault to create.
+     * @return true if the vault is created, false otherwise.
+     */
+    bool createVault(const std::string &masterPassword, const std::string &vaultName);
 
     /**
      * @brief Get the categories in the current vault.
