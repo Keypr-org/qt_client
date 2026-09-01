@@ -26,6 +26,17 @@ bool VaultController::unlockVault(const std::string &masterPassword, const std::
         return false;
     }
 }
+
+bool VaultController::createVault(const std::string &masterPassword, const std::string &vaultName) {
+    try {
+        session = repository->createVault(masterPassword, vaultName);
+        return session != nullptr;
+    }
+    catch (CreateVaultError &) {
+        return false;
+    }
+}
+
 const std::vector<std::unique_ptr<Category>> &VaultController::getCategories() const {
     if (session == nullptr) {
         throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");

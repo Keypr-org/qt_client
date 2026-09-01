@@ -50,6 +50,8 @@ private slots:
     void unlockVault_returnsTrue_whenEverythingIsCorrect();
     void unlockVault_returnsFalse_whenPasswordIsWrongButParsingSucceeds();
     void unlockVault_returnsFalse_whenEverythingFailsAndParsingFails();
+    void createVault_returnsTrue_whenVaultCreationSucceeds();
+    void createVault_returnsFalse_whenVaultCreationFails();
     void getCategories_returnsCategories_whenSessionIsOpen();
     void getCategories_returnsEmptyVector_whenSessionIsOpenButEmpty();
     void getCategories_throws_whenSessionIsNotOpen();
@@ -129,6 +131,28 @@ void VaultControllerTest::unlockVault_returnsFalse_whenEverythingFailsAndParsing
     VaultController controller(std::move(repository));
 
     QVERIFY(!controller.unlockVault("wrong-password", "vault"));
+    QVERIFY(!controller.isVaultUnlocked());
+}
+
+/**
+ * @brief Test the createVault method when vault creation succeeds.
+ */
+void VaultControllerTest::createVault_returnsTrue_whenVaultCreationSucceeds() {
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY(controller.createVault("master-password", "vault"));
+    QVERIFY(controller.isVaultUnlocked());
+}
+
+/**
+ * @brief Test the createVault method when vault creation fails.
+ */
+void VaultControllerTest::createVault_returnsFalse_whenVaultCreationFails() {
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false, false);
+    VaultController controller(std::move(repository));
+
+    QVERIFY(!controller.createVault("master-password", "vault"));
     QVERIFY(!controller.isVaultUnlocked());
 }
 

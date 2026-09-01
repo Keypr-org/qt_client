@@ -36,6 +36,15 @@ public:
         }
     }
 
+    std::unique_ptr<VaultSession> createVault(const std::string &masterpass,
+        const std::string &vaultName) const override {
+        if (fileExistsOrGoodPassword || parsingSuccess) {
+            return std::make_unique<FakeVaultSession>();
+        } else {
+            throw CreateVaultError("Failed to create vault.");
+        }
+    }
+
 private:
     bool fileExistsOrGoodPassword;
     bool parsingSuccess;
