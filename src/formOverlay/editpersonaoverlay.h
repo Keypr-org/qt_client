@@ -2,8 +2,9 @@
 #define EDITPERSONAOVERLAY_H
 
 #include <QWidget>
+#include <QDate>
 
-#include "model/persona.h"
+#include "vaultbridge.h"
 
 namespace Ui {
 class EditPersonaOverlay;
@@ -29,7 +30,7 @@ public:
      * @brief Populates the form fields with an existing persona's data for editing.
      * @param persona Persona to load into the form.
      */
-    void setPersona(const PersonaData &persona);
+    void setPersona(const VaultBridge::PersonaSummary &persona);
 
 signals:
     /**
@@ -39,9 +40,9 @@ signals:
 
     /**
      * @brief Emitted when the user submits the modified persona.
-     * @param persona Persona holding the updated field values.
      */
-    void personaModified(PersonaData persona);
+    void personaModified(qint64 id, QString firstName, QString lastName, QDate dateOfBirth,
+                          QString address, QString phone);
 
 protected:
     /**
@@ -52,7 +53,7 @@ protected:
 
 private:
     Ui::EditPersonaOverlay *ui;
-    QString m_personaId;
+    qint64 m_personaId = -1;
 };
 
 #endif // EDITPERSONAOVERLAY_H

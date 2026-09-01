@@ -294,6 +294,12 @@
                </property>
                <item>
                 <widget class="QLabel" name="label">
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>18</height>
+                  </size>
+                 </property>
                  <property name="font">
                   <font>
                    <pointsize>11</pointsize>
@@ -363,206 +369,13 @@ QCalendarWidget QAbstractItemView:enabled {
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="frame_2">
+             <widget class="LineTextInput" name="phoneInput" native="true">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>70</height>
+                <height>60</height>
                </size>
               </property>
-              <property name="frameShape">
-               <enum>QFrame::Shape::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Shadow::Raised</enum>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_5">
-               <property name="spacing">
-                <number>1</number>
-               </property>
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="genderLabel">
-                 <property name="font">
-                  <font>
-                   <pointsize>11</pointsize>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">color: #9CA3AF;</string>
-                 </property>
-                 <property name="text">
-                  <string>GENDER</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="genderSelect">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                 <property name="cursor">
-                  <cursorShape>PointingHandCursor</cursorShape>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">QComboBox {
-    background-color: #0F0F0A;
-    border: 1px solid #1F2937;
-    border-radius: 6px;
-    padding: 8px 12px;
-    color: #e0e0e0;
-}
-
-QComboBox::drop-down {
-    border: none;
-    width: 30px;
-}
-
-QComboBox::down-arrow {
-    image: url(:/icons/icons/chevron-down.png);
-    width: 12px;
-    height: 12px;
-}
-
-QComboBox QAbstractItemView {
-    background-color: #0F0F0A;
-    border: 1px solid #1F2937;
-    selection-background-color: #6c2bd9;
-    color: #e0e0e0;
-}</string>
-                 </property>
-                 <property name="placeholderText">
-                  <string>Select Gender</string>
-                 </property>
-                 <item>
-                  <property name="text">
-                   <string>Male</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
-                   <string>Female</string>
-                  </property>
-                 </item>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item>
-             <widget class="QFrame" name="frame_3">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>70</height>
-               </size>
-              </property>
-              <property name="frameShape">
-               <enum>QFrame::Shape::NoFrame</enum>
-              </property>
-              <property name="frameShadow">
-               <enum>QFrame::Shadow::Raised</enum>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_6">
-               <property name="spacing">
-                <number>1</number>
-               </property>
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QLabel" name="label_2">
-                 <property name="font">
-                  <font>
-                   <pointsize>11</pointsize>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">color: #9CA3AF;</string>
-                 </property>
-                 <property name="text">
-                  <string>COUNTRY</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QComboBox" name="countrySelect">
-                 <property name="minimumSize">
-                  <size>
-                   <width>0</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
-                   <width>16777215</width>
-                   <height>40</height>
-                  </size>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">QComboBox {
-    background-color: #0F0F0A;
-    border: 1px solid #1F2937;
-    border-radius: 6px;
-    padding: 8px 12px;
-    color: #e0e0e0;
-}
-
-QComboBox::drop-down {
-    border: none;
-    width: 30px;
-}
-
-QComboBox::down-arrow {
-    image: url(:/icons/icons/chevron-down.png);
-    width: 12px;
-    height: 12px;
-}
-
-QComboBox QAbstractItemView {
-    background-color: #0F0F0A;
-    border: 1px solid #1F2937;
-    selection-background-color: #6c2bd9;
-    color: #e0e0e0;
-}</string>
-                 </property>
-                 <property name="placeholderText">
-                  <string>Select Country</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
              </widget>
             </item>
            </layout>

@@ -4,8 +4,6 @@
 #include "component/notificationtooltip.h"
 
 #include <QDateEdit>
-#include <QDateTime>
-#include <QUuid>
 
 CreditCardForm::CreditCardForm(QWidget *parent)
     : QWidget(parent)
@@ -44,24 +42,12 @@ CreditCardForm::CreditCardForm(QWidget *parent)
             return;
         }
 
-        const QString cardNumber = ui->cardNumberInput->cardNumber();
-        const QString ownerName = ui->nameInput->text();
-        const QString cardLabel = cardNumber.length() >= 4
-            ? "•••• " + cardNumber.right(4)
-            : "•••• " + cardNumber;
-
-        auto entry = std::make_shared<CreditCardEntryData>(
-            QUuid::createUuid().toString(),
-            cardLabel,
-            ownerName,
-            cardNumber,
+        emit createCreditCardEntry(
+            ui->nameInput->text(),
+            ui->cardNumberInput->cardNumber(),
             ui->expiresInput->date().toString("MM/yy"),
             ui->cvvInput->text(),
-            ui->notesInput->text(),
-            QDateTime::currentDateTime());
-
-        emit createCreditCardEntry(entry);
-        clearForm();
+            ui->notesInput->text());
     });
 }
 

@@ -3,9 +3,6 @@
 
 #include "component/notificationtooltip.h"
 
-#include <QDateTime>
-#include <QUuid>
-
 AddWebsiteForm::AddWebsiteForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::AddWebsiteForm)
@@ -35,18 +32,13 @@ AddWebsiteForm::AddWebsiteForm(QWidget *parent)
             return;
         }
 
-        auto entry = std::make_shared<WebsiteEntryData>(
-            QUuid::createUuid().toString(),
+        emit createWebsiteEntry(
             ui->websiteNameInput->text(),
             ui->usernameEmailInput->text(),
             ui->passwordInput->text(),
             ui->urlInput->text(),
             ui->descriptionInput->text(),
-            ui->notesInput->text(),
-            QDateTime::currentDateTime());
-
-        emit createWebsiteEntry(entry);
-        clearForm();
+            ui->notesInput->text());
     });
 
     connect(ui->cancelButton, &QPushButton::clicked, this, [this](){

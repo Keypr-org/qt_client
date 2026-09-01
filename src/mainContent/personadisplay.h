@@ -1,10 +1,9 @@
 #ifndef PERSONADISPLAY_H
 #define PERSONADISPLAY_H
 
-#include <QMap>
 #include <QWidget>
 
-#include "model/persona.h"
+#include "vaultbridge.h"
 
 class PersonaItem;
 
@@ -29,22 +28,30 @@ public:
     ~PersonaDisplay();
 
     /**
-     * @brief Adds a new persona card to the grid.
-     * @param persona Persona to display.
+     * @brief Provides the bridge used to read and mutate personas. Must be called once before
+     * loadPersonas() or addPersona()/updatePersona() are used.
+     * @param bridge Bridge to the currently open vault. Not owned.
      */
-    void addPersona(const PersonaData &persona);
+    void setVaultBridge(VaultBridge *bridge);
 
     /**
-     * @brief Refreshes the card matching the given persona's id with its new data.
-     * @param persona Updated persona data.
+     * @brief Loads and displays every persona from the vault, replacing the current grid.
      */
-    void updatePersona(const PersonaData &persona);
+    void loadPersonas();
 
     /**
-     * @brief Removes a persona card from the grid and re-packs the remaining cards.
-     * @param id Id of the persona to remove.
+     * @brief Creates a new persona in the vault and reloads the grid on success.
+     * @return true on success.
      */
-    void removePersona(const QString &id);
+    bool addPersona(const QString &firstName, const QString &lastName, const QDate &dateOfBirth,
+                     const QString &address, const QString &phone);
+
+    /**
+     * @brief Updates an existing persona's fields and reloads the grid on success.
+     * @return true on success.
+     */
+    bool updatePersona(qint64 id, const QString &firstName, const QString &lastName,
+                        const QDate &dateOfBirth, const QString &address, const QString &phone);
 
 signals:
     /**
@@ -56,20 +63,13 @@ signals:
      * @brief Emitted when the user requests to edit an existing persona.
      * @param persona Persona to edit.
      */
-    void modifyPersonaRequested(PersonaData persona);
-
-    /**
-     * @brief Emitted when the user requests to delete a persona.
-     * @param id Id of the persona to delete.
-     */
-    void deletePersonaRequested(QString id);
+    void modifyPersonaRequested(VaultBridge::PersonaSummary persona);
 
 private:
     Ui::PersonaDisplay *ui;
+    VaultBridge *m_vaultBridge = nullptr;
 
     static const int GRID_COLUMNS = 2;
-    int m_personaCount = 0;
-    QMap<QString, PersonaItem *> m_personaItems;
 };
 
 #endif // PERSONADISPLAY_H

@@ -32,12 +32,12 @@ void PersonaItem::paintEvent(QPaintEvent *)
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 }
 
-const PersonaData &PersonaItem::persona() const
+const VaultBridge::PersonaSummary &PersonaItem::persona() const
 {
     return m_persona;
 }
 
-void PersonaItem::setPersona(const PersonaData &persona)
+void PersonaItem::setPersona(const VaultBridge::PersonaSummary &persona)
 {
     m_persona = persona;
 
@@ -52,8 +52,6 @@ void PersonaItem::setPersona(const PersonaData &persona)
     }
     ui->label->setText(initials);
 
-    ui->locationValue->setText(persona.country);
-    ui->birthdayValue->setText(persona.birthday.toString("MMM d, yyyy"));
-    ui->genderValue->setText(persona.gender);
+    ui->birthdayValue->setText(persona.dateOfBirth.toString("MMM d, yyyy"));
     ui->addressValue->setText(persona.address);
 }

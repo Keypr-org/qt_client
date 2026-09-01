@@ -1,6 +1,7 @@
 #include "randompersona.h"
 
 #include <QRandomGenerator>
+#include <QStringList>
 
 namespace
 {
@@ -91,18 +92,23 @@ QString RandomPersona::randomAddress()
         .arg(QString::number(houseNumber), streetName, streetType, city, QString::number(postalCode));
 }
 
-PersonaData RandomPersona::generate(const QStringList &countries)
+QString RandomPersona::randomPhone()
 {
-    PersonaData persona;
+    const int exchange = 200 + QRandomGenerator::global()->bounded(800);
+    const int line = QRandomGenerator::global()->bounded(10000);
+    return QString("+1 555-%1-%2").arg(exchange).arg(line, 4, 10, QChar('0'));
+}
 
-    persona.gender = randomGender();
-    persona.firstName = randomFirstName(persona.gender);
+RandomPersona::Generated RandomPersona::generate()
+{
+    Generated persona;
+
+    const QString gender = randomGender();
+    persona.firstName = randomFirstName(gender);
     persona.lastName = randomLastName();
     persona.birthday = randomBirthday();
     persona.address = randomAddress();
-
-    if (!countries.isEmpty())
-        persona.country = countries.at(QRandomGenerator::global()->bounded(countries.size()));
+    persona.phone = randomPhone();
 
     return persona;
 }

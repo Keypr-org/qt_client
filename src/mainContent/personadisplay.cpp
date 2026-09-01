@@ -21,54 +21,66 @@ PersonaDisplay::~PersonaDisplay()
     delete ui;
 }
 
-void PersonaDisplay::addPersona(const PersonaData &persona)
+void PersonaDisplay::setVaultBridge(VaultBridge *bridge)
 {
-    auto *item = new PersonaItem(ui->personasScrollContent);
-    item->setPersona(persona);
-
-    connect(item, &PersonaItem::modifyRequested, this, [this](PersonaData persona){
-        emit modifyPersonaRequested(persona);
-    });
-
-    connect(item, &PersonaItem::deleteRequested, this, [this](QString id){
-        emit deletePersonaRequested(id);
-    });
-
-    const int row = m_personaCount / GRID_COLUMNS;
-    const int column = m_personaCount % GRID_COLUMNS;
-    ui->gridLayout->addWidget(item, row, column);
-
-    m_personaItems.insert(persona.id, item);
-    ++m_personaCount;
+    m_vaultBridge = bridge;
 }
 
-void PersonaDisplay::updatePersona(const PersonaData &persona)
+void PersonaDisplay::loadPersonas()
 {
-    if (auto *item = m_personaItems.value(persona.id)) {
-        item->setPersona(persona);
+    QLayoutItem *child;
+    while ((child = ui->gridLayout->takeAt(0)) != nullptr) {
+        delete child->widget();
+        delete child;
     }
-}
 
-void PersonaDisplay::removePersona(const QString &id)
-{
-    PersonaItem *item = m_personaItems.take(id);
-    if (!item) {
+    if (!m_vaultBridge) {
         return;
     }
 
-    ui->gridLayout->removeWidget(item);
-    item->deleteLater();
+    const auto personas = m_vaultBridge->personas();
+    for (int i = 0; i < personas.size(); ++i) {
+        auto *item = new PersonaItem(ui->personasScrollContent);
+        item->setPersona(personas.at(i));
 
-    const QList<PersonaItem *> remaining = m_personaItems.values();
-    for (PersonaItem *remainingItem : remaining) {
-        ui->gridLayout->removeWidget(remainingItem);
+        connect(item, &PersonaItem::modifyRequested, this, [this](VaultBridge::PersonaSummary persona){
+            emit modifyPersonaRequested(persona);
+        });
+
+        connect(item, &PersonaItem::deleteRequested, this, [this](qint64 id){
+            if (m_vaultBridge && m_vaultBridge->removePersona(id)) {
+                loadPersonas();
+            }
+        });
+
+        ui->gridLayout->addWidget(item, i / GRID_COLUMNS, i % GRID_COLUMNS);
+    }
+}
+
+bool PersonaDisplay::addPersona(const QString &firstName, const QString &lastName,
+                                 const QDate &dateOfBirth, const QString &address,
+                                 const QString &phone)
+{
+    if (!m_vaultBridge) {
+        return false;
     }
 
-    m_personaCount = 0;
-    for (PersonaItem *remainingItem : remaining) {
-        const int row = m_personaCount / GRID_COLUMNS;
-        const int column = m_personaCount % GRID_COLUMNS;
-        ui->gridLayout->addWidget(remainingItem, row, column);
-        ++m_personaCount;
+    if (m_vaultBridge->addPersona(firstName, lastName, dateOfBirth, address, phone) < 0) {
+        return false;
     }
+
+    loadPersonas();
+    return true;
+}
+
+bool PersonaDisplay::updatePersona(qint64 id, const QString &firstName, const QString &lastName,
+                                    const QDate &dateOfBirth, const QString &address,
+                                    const QString &phone)
+{
+    if (!m_vaultBridge || !m_vaultBridge->updatePersona(id, firstName, lastName, dateOfBirth, address, phone)) {
+        return false;
+    }
+
+    loadPersonas();
+    return true;
 }

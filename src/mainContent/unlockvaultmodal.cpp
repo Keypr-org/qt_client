@@ -22,9 +22,21 @@ void unlockvaultmodal::setVaultName(const QString &name)
 
 void unlockvaultmodal::onUnlockClicked()
 {
-    // TODO: replace with real password validation via vaultController
+    ui->notificationTooltip->hideMessage();
+    emit unlockAttempted(m_vaultName, ui->passwordInput->text());
+}
+
+void unlockvaultmodal::reportUnlockSuccess()
+{
+    ui->passwordInput->setText("");
     NotificationTooltip::showSuccessToast(this, "Vault unlocked successfully.");
     emit vaultUnlocked(m_vaultName);
+}
+
+void unlockvaultmodal::reportUnlockError(const QString &message)
+{
+    ui->passwordInput->setText("");
+    ui->notificationTooltip->showError(message);
 }
 
 unlockvaultmodal::~unlockvaultmodal()

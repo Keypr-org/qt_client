@@ -2,9 +2,6 @@
 #define CREDITCARDFORM_H
 
 #include <QWidget>
-#include <memory>
-
-#include "model/creditcardentrydata.h"
 
 namespace Ui {
 class CreditCardForm;
@@ -39,9 +36,9 @@ signals:
 
     /**
      * @brief Emitted when the user submits the form with a valid new credit card entry.
-     * @param entry Credit card entry data built from the form fields.
      */
-    void createCreditCardEntry(std::shared_ptr<CreditCardEntryData> entry);
+    void createCreditCardEntry(QString cardHolderName, QString cardNumber, QString expiration,
+                                QString securityCode, QString notes);
 
 private:
     Ui::CreditCardForm *ui;

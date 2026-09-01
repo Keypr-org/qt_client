@@ -4,27 +4,11 @@
 #include "component/notificationtooltip.h"
 #include "utils/randompersona.h"
 
-#include <QUuid>
-
 NewPersonaForm::NewPersonaForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::NewPersonaForm)
 {
     ui->setupUi(this);
-
-    QList<QLocale> allLocales = QLocale::matchingLocales(
-        QLocale::AnyLanguage, QLocale::AnyScript, QLocale::AnyCountry);
-
-    QSet<QString> countries;
-    for (const QLocale &locale : allLocales) {
-        countries.insert(QLocale::territoryToString(locale.territory()));
-    }
-
-    QStringList sortedCountries = countries.values();
-    sortedCountries.sort();
-
-    ui->countrySelect->addItem("Select Country", "");
-    ui->countrySelect->addItems(sortedCountries);
 
     ui->firstName->setLabelText("FIRST NAME");
     ui->firstName->setInputPlaceholder("e.g. Taylor");
@@ -35,20 +19,22 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
     ui->addressInput->setLabelText("PHYSICAL ADDRESS");
     ui->addressInput->setInputPlaceholder("e.g. 221B Baker Street, London, UK");
 
+    ui->phoneInput->setLabelText("PHONE");
+    ui->phoneInput->setInputPlaceholder("e.g. +1 555-123-4567");
+
     connect(ui->cancelButton, &QPushButton::clicked, this, [this](){
         clearForm();
         emit cancelSignal();
     });
 
-    connect(ui->generatePersonaButton, &QPushButton::clicked, this, [this, sortedCountries](){
-        PersonaData persona = RandomPersona::generate(sortedCountries);
+    connect(ui->generatePersonaButton, &QPushButton::clicked, this, [this](){
+        const auto persona = RandomPersona::generate();
 
         ui->firstName->setText(persona.firstName);
         ui->lastName->setText(persona.lastName);
         ui->dateSelect->setDate(persona.birthday);
-        ui->genderSelect->setCurrentText(persona.gender);
-        ui->countrySelect->setCurrentText(persona.country);
         ui->addressInput->setText(persona.address);
+        ui->phoneInput->setText(persona.phone);
 
         emit generatePersonaSignal();
     });
@@ -59,16 +45,8 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
             return;
         }
 
-        PersonaData persona;
-        persona.id = QUuid::createUuid().toString();
-        persona.firstName = ui->firstName->text();
-        persona.lastName = ui->lastName->text();
-        persona.birthday = ui->dateSelect->date();
-        persona.gender = ui->genderSelect->currentIndex() >= 0 ? ui->genderSelect->currentText() : QString();
-        persona.country = ui->countrySelect->currentIndex() > 0 ? ui->countrySelect->currentText() : QString();
-        persona.address = ui->addressInput->text();
-
-        emit usePersonaSignal(persona);
+        emit usePersonaSignal(ui->firstName->text(), ui->lastName->text(), ui->dateSelect->date(),
+                               ui->addressInput->text(), ui->phoneInput->text());
         clearForm();
     });
 }
@@ -78,9 +56,8 @@ void NewPersonaForm::clearForm()
     ui->firstName->setText("");
     ui->lastName->setText("");
     ui->addressInput->setText("");
+    ui->phoneInput->setText("");
     ui->dateSelect->setDate(QDate::currentDate());
-    ui->genderSelect->setCurrentIndex(-1);
-    ui->countrySelect->setCurrentIndex(0);
 }
 
 NewPersonaForm::~NewPersonaForm()

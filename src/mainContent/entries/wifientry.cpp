@@ -3,8 +3,6 @@
 
 #include "component/notificationtooltip.h"
 
-#include <QDateTime>
-
 WifiEntry::WifiEntry(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::WifiEntry)
@@ -17,14 +15,14 @@ WifiEntry::WifiEntry(QWidget *parent)
     ui->notesInput->setInputPlaceholder("Enter notes here...");
 
     connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
-        if (!m_entry) {
+        if (m_entryId.isEmpty()) {
             return;
         }
-        emit deleteRequested(m_entry->id);
+        emit deleteRequested(m_entryId);
     });
 
     connect(ui->applyButton, &QPushButton::clicked, this, [this](){
-        if (!m_entry) {
+        if (m_entryId.isEmpty()) {
             return;
         }
 
@@ -33,16 +31,7 @@ WifiEntry::WifiEntry(QWidget *parent)
             return;
         }
 
-        m_entry->ssid = ui->nameInput->text();
-        m_entry->password = ui->passwordInput->text();
-        m_entry->notes = ui->notesInput->text();
-        m_entry->primaryInfo = m_entry->ssid;
-        m_entry->lastUpdated = QDateTime::currentDateTime();
-
-        ui->titleLabel->setText(m_entry->ssid);
-
-        emit entryUpdated(m_entry->id);
-        NotificationTooltip::showSuccessToast(this, "Wifi entry updated successfully.");
+        emit entrySaveRequested(m_entryId, ui->nameInput->text(), ui->passwordInput->text(), ui->notesInput->text());
     });
 }
 
@@ -51,16 +40,12 @@ WifiEntry::~WifiEntry()
     delete ui;
 }
 
-void WifiEntry::setEntry(const std::shared_ptr<WifiEntryData> &entry)
+void WifiEntry::setEntry(const VaultBridge::EntrySummary &entry)
 {
-    if (!entry) {
-        return;
-    }
+    m_entryId = entry.id;
 
-    m_entry = entry;
-
-    ui->titleLabel->setText(entry->ssid);
-    ui->nameInput->setText(entry->ssid);
-    ui->passwordInput->setText(entry->password);
-    ui->notesInput->setText(entry->notes);
+    ui->titleLabel->setText(entry.networkName);
+    ui->nameInput->setText(entry.networkName);
+    ui->passwordInput->setText(entry.password);
+    ui->notesInput->setText(entry.notes);
 }

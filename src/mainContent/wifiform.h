@@ -2,9 +2,6 @@
 #define WIFIFORM_H
 
 #include <QWidget>
-#include <memory>
-
-#include "model/wifientrydata.h"
 
 namespace Ui {
 class WifiForm;
@@ -39,9 +36,8 @@ signals:
 
     /**
      * @brief Emitted when the user submits the form with a valid new wifi entry.
-     * @param entry Wifi entry data built from the form fields.
      */
-    void createNewWifiEntry(std::shared_ptr<WifiEntryData> entry);
+    void createNewWifiEntry(QString networkName, QString password, QString notes);
 
 private:
     Ui::WifiForm *ui;

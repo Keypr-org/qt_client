@@ -3,8 +3,6 @@
 
 #include "component/notificationtooltip.h"
 
-#include <QDateTime>
-
 CreditCardEntry::CreditCardEntry(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::CreditCardEntry)
@@ -30,14 +28,14 @@ CreditCardEntry::CreditCardEntry(QWidget *parent)
     ui->notesInput->setInputPlaceholder("Enter notes here...");
 
     connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
-        if (!m_entry) {
+        if (m_entryId.isEmpty()) {
             return;
         }
-        emit deleteRequested(m_entry->id);
+        emit deleteRequested(m_entryId);
     });
 
     connect(ui->applyButton, &QPushButton::clicked, this, [this](){
-        if (!m_entry) {
+        if (m_entryId.isEmpty()) {
             return;
         }
 
@@ -46,27 +44,8 @@ CreditCardEntry::CreditCardEntry(QWidget *parent)
             return;
         }
 
-        const QString cardNumber = ui->cardNumberInput->cardNumber();
-        const QString ownerName = ui->nameInput->text();
-        const QString cardLabel = cardNumber.length() >= 4
-            ? "•••• " + cardNumber.right(4)
-            : "•••• " + cardNumber;
-
-        m_entry->cardNumber = cardNumber;
-        m_entry->ownerName = ownerName;
-        m_entry->expiration = ui->expiresInput->text();
-        m_entry->cvv = ui->cvvInput->text();
-        m_entry->notes = ui->notesInput->text();
-        m_entry->cardLabel = cardLabel;
-        m_entry->primaryInfo = cardLabel;
-        m_entry->secondaryInfo = ownerName;
-        m_entry->lastUpdated = QDateTime::currentDateTime();
-
-        ui->titleLabel->setText(cardLabel);
-        ui->nameHeader->setText(ownerName);
-
-        emit entryUpdated(m_entry->id);
-        NotificationTooltip::showSuccessToast(this, "Credit card entry updated successfully.");
+        emit entrySaveRequested(m_entryId, ui->nameInput->text(), ui->cardNumberInput->cardNumber(),
+                                 ui->expiresInput->text(), ui->cvvInput->text(), ui->notesInput->text());
     });
 }
 
@@ -75,24 +54,24 @@ CreditCardEntry::~CreditCardEntry()
     delete ui;
 }
 
-void CreditCardEntry::setEntry(const std::shared_ptr<CreditCardEntryData> &entry)
+void CreditCardEntry::setEntry(const VaultBridge::EntrySummary &entry)
 {
-    if (!entry) {
-        return;
-    }
+    m_entryId = entry.id;
 
-    m_entry = entry;
+    const QString cardLabel = entry.cardNumber.length() >= 4
+        ? "•••• " + entry.cardNumber.right(4)
+        : "•••• " + entry.cardNumber;
 
-    ui->titleLabel->setText(entry->cardLabel);
-    ui->nameHeader->setText(entry->ownerName);
+    ui->titleLabel->setText(cardLabel);
+    ui->nameHeader->setText(entry.cardHolderName);
 
-    ui->cardNumberInput->setCardNumber(entry->cardNumber);
-    ui->nameInput->setText(entry->ownerName);
-    ui->expiresInput->setText(entry->expiration);
-    ui->cvvInput->setText(entry->cvv);
-    ui->notesInput->setText(entry->notes);
+    ui->cardNumberInput->setCardNumber(entry.cardNumber);
+    ui->nameInput->setText(entry.cardHolderName);
+    ui->expiresInput->setText(entry.expiration);
+    ui->cvvInput->setText(entry.securityCode);
+    ui->notesInput->setText(entry.notes);
 
-    ui->card->setCardNumber(entry->cardNumber);
-    ui->card->setOwnerName(entry->ownerName);
-    ui->card->setExpiration(entry->expiration);
+    ui->card->setCardNumber(entry.cardNumber);
+    ui->card->setOwnerName(entry.cardHolderName);
+    ui->card->setExpiration(entry.expiration);
 }

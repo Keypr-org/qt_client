@@ -2,6 +2,8 @@
 #include "./ui_mainwindow.h"
 
 #include <QDebug>
+#include <QDir>
+#include <QFileInfo>
 #include <QTransform>
 #include <QPushButton>
 #include <QResizeEvent>
@@ -9,6 +11,10 @@
 #include <QKeySequence>
 #include <QMenu>
 #include <QMenuBar>
+
+// App config / vault bridge
+#include "appconfig.h"
+#include "vaultbridge.h"
 
 // Sidebar imports
 #include "sideBar/vaultselection.h"
@@ -37,13 +43,13 @@
 #include "mainContent/personadisplay.h"
 #include "mainContent/newpersonaform.h"
 
-// Model imports
-#include "model/personarepository.h"
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    const QString vaultStoragePath = AppConfig::load().vaultStoragePath;
+    m_vaultBridge = std::make_unique<VaultBridge>(vaultStoragePath);
 
     auto *settingsMenu = menuBar()->addMenu("Settings");
     auto *settingsAction = settingsMenu->addAction("Open Settings...");
@@ -59,13 +65,31 @@ MainWindow::MainWindow(QWidget *parent)
     ui->sideBar->addWidget(vaultSelection);
     ui->sideBar->setCurrentWidget(vaultSelection);
 
+    const QStringList existingVaultFiles =
+        QDir(vaultStoragePath).entryList(QStringList() << "*.kvdb", QDir::Files, QDir::Name);
+    for (const QString &vaultFile : existingVaultFiles) {
+        vaultSelection->addVault(QFileInfo(vaultFile).completeBaseName());
+    }
+
     m_createVaultOverlay = new CreateVaultOverlay(this);
     m_createVaultOverlay->setGeometry(this->rect());
     m_createVaultOverlay->hide();
 
-    connect(m_createVaultOverlay, &CreateVaultOverlay::vaultCreated, this, [vaultSelection](const QString &name, const QString &password) {
-        // Calling keypr-core here
+    connect(m_createVaultOverlay, &CreateVaultOverlay::vaultCreated, this, [this, vaultSelection](const QString &name, const QString &password) {
+        if (QFileInfo::exists(m_vaultBridge->vaultFilePath(name))) {
+            NotificationTooltip::showErrorToast(this, "A vault with this name already exists.");
+            return;
+        }
+
+        if (!m_vaultBridge->createVault(name, password)) {
+            NotificationTooltip::showErrorToast(this, "Failed to create the vault.");
+            return;
+        }
+
+        m_createVaultOverlay->hide();
+        m_createVaultOverlay->clearForm();
         vaultSelection->addVault(name);
+        NotificationTooltip::showSuccessToast(this, "Vault created successfully.");
         });
 
     auto categoriesSelection = new CategoriesSelection(this);
@@ -81,8 +105,22 @@ MainWindow::MainWindow(QWidget *parent)
         createCategoryOverlay->show();
         });
 
-    connect(createCategoryOverlay, &CreateCategoryOverlay::categoryCreated, this, [categoriesSelection](const QString &name) {
-        categoriesSelection->addCategory(name);
+    connect(createCategoryOverlay, &CreateCategoryOverlay::categoryCreated, this, [this, categoriesSelection, createCategoryOverlay](const QString &name) {
+        if (!m_vaultBridge->addCategory(name)) {
+            NotificationTooltip::showErrorToast(this, "Failed to create the category.");
+            return;
+        }
+
+        createCategoryOverlay->hide();
+        createCategoryOverlay->clearForm();
+
+        QList<CategoriesSelection::CategoryItem> categoryItems;
+        for (const auto &category : m_vaultBridge->categories()) {
+            categoryItems.append({category.id, category.name});
+        }
+        categoriesSelection->setCategories(categoryItems);
+
+        NotificationTooltip::showSuccessToast(this, "Category created successfully.");
         });
 
     connect(vaultSelection, &VaultSelection::createVaultRequested, this, [this]() {
@@ -103,21 +141,50 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(unlockVaultModal);
         });
 
-    auto personaRepository = new PersonaRepository(this);
+    connect(unlockVaultModal, &unlockvaultmodal::unlockAttempted, this, [this, unlockVaultModal](const QString &vaultName, const QString &password) {
+        switch (m_vaultBridge->unlockVault(vaultName, password)) {
+        case VaultBridge::UnlockResult::Success:
+            unlockVaultModal->reportUnlockSuccess();
+            break;
+        case VaultBridge::UnlockResult::VaultFileNotFound:
+            unlockVaultModal->reportUnlockError("Vault file not found.");
+            break;
+        case VaultBridge::UnlockResult::IncorrectPasswordOrCorrupted:
+            unlockVaultModal->reportUnlockError("Incorrect master password.");
+            break;
+        }
+        });
 
     auto viewEntries = new ViewEntries(this);
     ui->mainContent->addWidget(viewEntries);
     viewEntries->setStyleSheet("background-color: #111827;");
-    viewEntries->setPersonaRepository(personaRepository);
+    viewEntries->setVaultBridge(m_vaultBridge.get());
 
     connect(unlockVaultModal, &unlockvaultmodal::vaultUnlocked, this, [this, viewEntries, categoriesSelection](const QString &name) {
         categoriesSelection->setVaultName(name);
+
+        const auto categories = m_vaultBridge->categories();
+        QList<CategoriesSelection::CategoryItem> categoryItems;
+        for (const auto &category : categories) {
+            categoryItems.append({category.id, category.name});
+        }
+        categoriesSelection->setCategories(categoryItems);
+
+        if (categoryItems.isEmpty()) {
+            viewEntries->clearCategory();
+        }
+
         ui->sideBar->setCurrentWidget(categoriesSelection);
         ui->mainContent->setProperty("openEntries", true);
         ui->mainContent->setCurrentWidget(viewEntries);
         });
 
     connect(categoriesSelection, &CategoriesSelection::lockVaultRequested, this, [this, vaultSelection, noVaultSelected]() {
+        if (!m_vaultBridge->lockVault()) {
+            NotificationTooltip::showErrorToast(this, "Failed to lock the vault.");
+            return;
+        }
+
         ui->sideBar->setCurrentWidget(vaultSelection);
         ui->mainContent->setProperty("openEntries", false);
         ui->mainContent->setCurrentWidget(noVaultSelected);
@@ -169,23 +236,34 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(viewEntries);
         });
 
-    connect(addWebsiteForm, &AddWebsiteForm::createWebsiteEntry, this, [this, viewEntries](std::shared_ptr<WebsiteEntryData> entry) {
-        viewEntries->repository()->addEntry(entry);
-        viewEntries->refresh();
+    connect(addWebsiteForm, &AddWebsiteForm::createWebsiteEntry, this,
+            [this, viewEntries](const QString &title, const QString &username, const QString &password,
+                                 const QString &url, const QString &description, const QString &notes) {
+        if (!viewEntries->createWebsiteEntry(title, username, password, url, description, notes)) {
+            NotificationTooltip::showErrorToast(this, "Failed to create the website entry.");
+            return;
+        }
         ui->mainContent->setCurrentWidget(viewEntries);
         NotificationTooltip::showSuccessToast(this, "Website entry created successfully.");
     });
 
-    connect(creditCardForm, &CreditCardForm::createCreditCardEntry, this, [this, viewEntries](std::shared_ptr<CreditCardEntryData> entry) {
-        viewEntries->repository()->addEntry(entry);
-        viewEntries->refresh();
+    connect(creditCardForm, &CreditCardForm::createCreditCardEntry, this,
+            [this, viewEntries](const QString &cardHolderName, const QString &cardNumber,
+                                 const QString &expiration, const QString &securityCode, const QString &notes) {
+        if (!viewEntries->createCreditCardEntry(cardHolderName, cardNumber, expiration, securityCode, notes)) {
+            NotificationTooltip::showErrorToast(this, "Failed to create the credit card entry.");
+            return;
+        }
         ui->mainContent->setCurrentWidget(viewEntries);
         NotificationTooltip::showSuccessToast(this, "Credit card entry created successfully.");
     });
 
-    connect(wifiForm, &WifiForm::createNewWifiEntry, this, [this, viewEntries](std::shared_ptr<WifiEntryData> entry) {
-        viewEntries->repository()->addEntry(entry);
-        viewEntries->refresh();
+    connect(wifiForm, &WifiForm::createNewWifiEntry, this,
+            [this, viewEntries](const QString &networkName, const QString &password, const QString &notes) {
+        if (!viewEntries->createWifiEntry(networkName, password, notes)) {
+            NotificationTooltip::showErrorToast(this, "Failed to create the wifi entry.");
+            return;
+        }
         ui->mainContent->setCurrentWidget(viewEntries);
         NotificationTooltip::showSuccessToast(this, "Wifi entry created successfully.");
     });
@@ -208,12 +286,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     auto personaDisplay = new PersonaDisplay(this);
     ui->mainContent->addWidget(personaDisplay);
+    personaDisplay->setVaultBridge(m_vaultBridge.get());
 
     connect(categoriesSelection, &CategoriesSelection::setPersonaFrame, this, [this, personaDisplay]() {
+        personaDisplay->loadPersonas();
         ui->mainContent->setCurrentWidget(personaDisplay);
         });
 
-    connect(categoriesSelection, &CategoriesSelection::categorySelected, this, [this, viewEntries]() {
+    connect(categoriesSelection, &CategoriesSelection::categorySelected, this, [this, viewEntries](qint64 categoryId) {
+        viewEntries->loadCategory(categoryId);
         ui->mainContent->setCurrentWidget(viewEntries);
         });
 
@@ -233,35 +314,36 @@ MainWindow::MainWindow(QWidget *parent)
         ui->mainContent->setCurrentWidget(personaDisplay);
         });
 
-    connect(personaForm, &NewPersonaForm::usePersonaSignal, this, [this, personaDisplay, personaRepository](const PersonaData &persona) {
+    connect(personaForm, &NewPersonaForm::usePersonaSignal, this,
+            [this, personaDisplay](const QString &firstName, const QString &lastName, const QDate &dateOfBirth,
+                                    const QString &address, const QString &phone) {
+        if (!personaDisplay->addPersona(firstName, lastName, dateOfBirth, address, phone)) {
+            NotificationTooltip::showErrorToast(this, "Failed to create the persona.");
+            return;
+        }
         ui->mainContent->setCurrentWidget(personaDisplay);
-        personaRepository->addPersona(persona);
-        personaDisplay->addPersona(persona);
+        NotificationTooltip::showSuccessToast(this, "Persona created successfully.");
         });
 
     auto editPersonaOverlay = new EditPersonaOverlay(this);
     editPersonaOverlay->setGeometry(this->rect());
     editPersonaOverlay->hide();
 
-    connect(personaDisplay, &PersonaDisplay::modifyPersonaRequested, this, [this, editPersonaOverlay](const PersonaData &persona) {
+    connect(personaDisplay, &PersonaDisplay::modifyPersonaRequested, this, [this, editPersonaOverlay](const VaultBridge::PersonaSummary &persona) {
         editPersonaOverlay->setPersona(persona);
         editPersonaOverlay->setGeometry(this->rect());
         editPersonaOverlay->raise();
         editPersonaOverlay->show();
         });
 
-    connect(editPersonaOverlay, &EditPersonaOverlay::personaModified, this, [personaDisplay, personaRepository](const PersonaData &persona) {
-        personaRepository->updatePersona(persona);
-        personaDisplay->updatePersona(persona);
+    connect(editPersonaOverlay, &EditPersonaOverlay::personaModified, this,
+            [personaDisplay](qint64 id, const QString &firstName, const QString &lastName,
+                              const QDate &dateOfBirth, const QString &address, const QString &phone) {
+        if (!personaDisplay->updatePersona(id, firstName, lastName, dateOfBirth, address, phone)) {
+            NotificationTooltip::showErrorToast(personaDisplay, "Failed to update the persona.");
+            return;
+        }
         NotificationTooltip::showSuccessToast(personaDisplay, "Persona updated successfully.");
-    });
-
-    connect(personaDisplay, &PersonaDisplay::deletePersonaRequested, this, [personaDisplay, personaRepository, viewEntries](const QString &id){
-        viewEntries->repository()->unlinkPersonaFromEntries(id);
-        viewEntries->refreshCurrentEntryDetails();
-        personaRepository->removePersona(id);
-        personaDisplay->removePersona(id);
-        NotificationTooltip::showSuccessToast(personaDisplay, "Persona deleted successfully.");
     });
 
     // Resolves a strange timing issue bug with the Stacked Widget component.

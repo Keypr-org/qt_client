@@ -2,8 +2,7 @@
 #define NEWPERSONAFORM_H
 
 #include <QWidget>
-
-#include "model/persona.h"
+#include <QDate>
 
 namespace Ui {
 class NewPersonaForm;
@@ -43,9 +42,9 @@ signals:
 
     /**
      * @brief Emitted when the user submits the form with a valid new persona.
-     * @param persona Persona data built from the form fields.
      */
-    void usePersonaSignal(PersonaData persona);
+    void usePersonaSignal(QString firstName, QString lastName, QDate dateOfBirth, QString address,
+                           QString phone);
 
 private:
     Ui::NewPersonaForm *ui;

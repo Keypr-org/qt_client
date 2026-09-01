@@ -2,10 +2,8 @@
 #define WEBSITEENTRY_H
 
 #include <QWidget>
-#include <memory>
 
-#include "model/personarepository.h"
-#include "model/websiteentrydata.h"
+#include "vaultbridge.h"
 
 namespace Ui {
 class WebsiteEntry;
@@ -28,16 +26,17 @@ public:
     ~WebsiteEntry();
 
     /**
-     * @brief Populates the widget's fields from the given website entry, including its linked persona, if any.
+     * @brief Populates the widget's fields from the given website entry.
      * @param entry Website entry data to display and edit.
      */
-    void setEntry(const std::shared_ptr<WebsiteEntryData> &entry);
+    void setEntry(const VaultBridge::EntrySummary &entry);
 
     /**
-     * @brief Provides the persona source used to list, look up and display linkable personas.
-     * @param repository Repository to read personas from.
+     * @brief Provides the personas the user can link this entry to, and refreshes the linked
+     * persona's displayed name.
+     * @param personas Personas currently available in the vault.
      */
-    void setPersonaRepository(PersonaRepository *repository);
+    void setAvailablePersonas(const QList<VaultBridge::PersonaSummary> &personas);
 
 signals:
     /**
@@ -47,18 +46,41 @@ signals:
     void deleteRequested(QString id);
 
     /**
-     * @brief Emitted after the currently displayed entry has been edited, linked to, or unlinked from a persona.
-     * @param id Identifier of the updated entry.
+     * @brief Emitted when the user applies edits to the currently displayed entry's fields.
      */
-    void entryUpdated(QString id);
+    void entrySaveRequested(QString id, QString username, QString password, QString url,
+                             QString description, QString notes);
+
+    /**
+     * @brief Emitted when the user links a persona to the currently displayed entry.
+     */
+    void personaLinkRequested(QString id, qint64 personaId);
+
+    /**
+     * @brief Emitted when the user unlinks the persona from the currently displayed entry.
+     */
+    void personaUnlinkRequested(QString id);
+
+    /**
+     * @brief Emitted when a new mail alias was generated for the currently displayed entry.
+     */
+    void aliasSetRequested(QString id, QString aliasId, QString alias);
+
+    /**
+     * @brief Emitted when the user removes the mail alias from the currently displayed entry.
+     */
+    void aliasClearRequested(QString id);
 
 private:
     Ui::WebsiteEntry *ui;
-    std::shared_ptr<WebsiteEntryData> m_entry;
-    PersonaRepository *m_personaRepository = nullptr;
+    QString m_entryId;
+    qint64 m_personaId = -1;
+    QString m_aliasId;
+    QString m_alias;
+    QList<VaultBridge::PersonaSummary> m_availablePersonas;
 
     /**
-     * @brief Refreshes the linked-persona label and controls to reflect the current entry's persona state.
+     * @brief Refreshes the linked-persona label to reflect the current entry's persona state.
      */
     void refreshPersonaDisplay();
 

@@ -5,11 +5,8 @@
 #include <QtWidgets/qlistwidget.h>
 #include <QStackedWidget>
 #include <QString>
-#include <memory>
 
-#include "model/entry.h"
-#include "model/entryrepository.h"
-#include "model/personarepository.h"
+#include "vaultbridge.h"
 
 class WebsiteEntry;
 class WifiEntry;
@@ -25,7 +22,7 @@ class ViewEntries : public QWidget
 
 public:
     /**
-     * @brief Constructs the entries list/detail view, seeding its own mock entry repository.
+     * @brief Constructs the entries list/detail view.
      * @param parent Parent widget, or nullptr.
      */
     explicit ViewEntries(QWidget *parent = nullptr);
@@ -36,26 +33,44 @@ public:
     ~ViewEntries();
 
     /**
-     * @brief Returns the repository backing the displayed entries.
-     * @return Pointer to the entry repository owned by this widget.
+     * @brief Provides the bridge used to read and mutate entries. Must be called once before
+     * loadCategory() or the create*Entry() methods are used.
+     * @param bridge Bridge to the currently open vault. Not owned.
      */
-    EntryRepository *repository() const;
+    void setVaultBridge(VaultBridge *bridge);
 
     /**
-     * @brief Provides the persona source used by entry detail views to link/unlink personas.
-     * @param repository Repository to read personas from.
+     * @brief Loads and displays the entries of the given category from the vault.
+     * @param categoryId Identifier of the category to display.
      */
-    void setPersonaRepository(PersonaRepository *repository);
+    void loadCategory(qint64 categoryId);
 
     /**
-     * @brief Re-populates the entries list from the repository's current state.
+     * @brief Clears the displayed entries and forgets the current category (e.g. when the
+     * unlocked vault has no categories at all).
      */
-    void refresh();
+    void clearCategory();
 
     /**
-     * @brief Re-renders the currently selected entry's detail view from its (possibly just-changed) data, e.g. after a linked persona was deleted elsewhere.
+     * @brief Creates a new website entry in the current category.
+     * @return true on success.
      */
-    void refreshCurrentEntryDetails();
+    bool createWebsiteEntry(const QString &title, const QString &username, const QString &password,
+                             const QString &url, const QString &description, const QString &notes);
+
+    /**
+     * @brief Creates a new wifi entry in the current category.
+     * @return true on success.
+     */
+    bool createWifiEntry(const QString &networkName, const QString &password, const QString &notes);
+
+    /**
+     * @brief Creates a new credit card entry in the current category.
+     * @return true on success.
+     */
+    bool createCreditCardEntry(const QString &cardHolderName, const QString &cardNumber,
+                                const QString &expiration, const QString &securityCode,
+                                const QString &notes);
 
     /**
      * @brief Clears the current list selection and shows the empty detail placeholder.
@@ -78,7 +93,9 @@ private slots:
 
 private:
     Ui::ViewEntries *ui;
-    EntryRepository *m_repository;
+    VaultBridge *m_vaultBridge = nullptr;
+    qint64 m_currentCategoryId = -1;
+    QList<VaultBridge::EntrySummary> m_entries;
 
     QStackedWidget *m_detailStack;
     QWidget *m_emptyDetailPage;
@@ -89,34 +106,44 @@ private:
     QString m_searchFilter;
 
     /**
-     * @brief Rebuilds the entries list widget from the repository, applying the current search filter.
+     * @brief Rebuilds the entries list widget from the currently loaded entries.
      */
     void populateList();
 
     /**
-     * @brief Checks whether an entry matches the current search filter.
-     * @param entry Entry to test.
-     * @return True if the entry should be shown, false otherwise.
+     * @brief Re-fetches m_entries for the current category, honoring the current search filter
+     * (via VaultController::searchEntriesInCategory() when non-empty, or the full category
+     * otherwise), and repopulates the list.
      */
-    bool matchesFilter(const std::shared_ptr<Entry> &entry) const;
+    void refreshEntries();
 
     /**
-     * @brief Shows the detail view corresponding to the given entry's type, populated with its data.
-     * @param entry Entry to display.
+     * @brief Finds a currently loaded entry by id.
      */
-    void showEntryDetails(const std::shared_ptr<Entry> &entry);
+    const VaultBridge::EntrySummary *findEntry(const QString &id) const;
 
     /**
-     * @brief Removes an entry from the repository and refreshes the list/selection accordingly.
-     * @param id Identifier of the entry to delete.
+     * @brief Shows the detail view corresponding to the given entry's kind, populated with its
+     * data.
+     */
+    void showEntryDetails(const VaultBridge::EntrySummary &entry);
+
+    /**
+     * @brief Re-selects the entry with the given id in the list, if present, and shows its
+     * details.
+     */
+    void selectEntry(const QString &id);
+
+    /**
+     * @brief Reloads the current category and re-selects the given entry, e.g. after editing it.
+     */
+    void reloadAndReselect(const QString &id);
+
+    /**
+     * @brief Deletes an entry from the current category and refreshes the list/selection
+     * accordingly.
      */
     void handleDeleteRequested(const QString &id);
-
-    /**
-     * @brief Refreshes the list and re-selects the given entry after it has been updated.
-     * @param id Identifier of the updated entry.
-     */
-    void handleEntryUpdated(const QString &id);
 };
 
 #endif // VIEWENTRIES_H

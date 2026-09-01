@@ -2,9 +2,8 @@
 #define CREDITCARDENTRY_H
 
 #include <QWidget>
-#include <memory>
 
-#include "model/creditcardentrydata.h"
+#include "vaultbridge.h"
 
 namespace Ui {
 class CreditCardEntry;
@@ -30,7 +29,7 @@ public:
      * @brief Populates the widget's fields from the given credit card entry.
      * @param entry Credit card entry data to display and edit.
      */
-    void setEntry(const std::shared_ptr<CreditCardEntryData> &entry);
+    void setEntry(const VaultBridge::EntrySummary &entry);
 
 signals:
     /**
@@ -40,14 +39,14 @@ signals:
     void deleteRequested(QString id);
 
     /**
-     * @brief Emitted after the currently displayed entry has been edited and applied.
-     * @param id Identifier of the updated entry.
+     * @brief Emitted when the user applies edits to the currently displayed entry's fields.
      */
-    void entryUpdated(QString id);
+    void entrySaveRequested(QString id, QString cardHolderName, QString cardNumber,
+                             QString expiration, QString securityCode, QString notes);
 
 private:
     Ui::CreditCardEntry *ui;
-    std::shared_ptr<CreditCardEntryData> m_entry;
+    QString m_entryId;
 };
 
 #endif // CREDITCARDENTRY_H

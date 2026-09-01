@@ -37,22 +37,10 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
     ui->listCategories->setVisible(true);
     updateArrowIcon(true);
 
-    QIcon lockIcon(FOLDER_ICON_WHITE);
-
-    for (int i = 1; i <= 10; ++i) {
-        QListWidgetItem *item = new QListWidgetItem(lockIcon, QString("Categorie%1").arg(i));
-        ui->listCategories->addItem(item);
-    }
-
-    ui->listCategories->setCurrentRow(0);
-    ui->listCategories->item(0)->setSelected(true);
-    m_lastClickedCategory = ui->listCategories->item(0);
-
     connect(ui->personasButton, &QPushButton::clicked, this, [this](){
-        ui->listCategories->setCurrentItem(nullptr);
-        m_lastClickedCategory = nullptr;
-        setPersonaSelected(true);
         emit setPersonaFrame();
+        deselectAllCategories();
+        setPersonaSelected(true);
     });
 
     connect(ui->listCategories, &QListWidget::itemClicked, this, [this](QListWidgetItem *item){
@@ -69,15 +57,53 @@ CategoriesSelection::CategoriesSelection(QWidget *parent)
     });
 }
 
-void CategoriesSelection::addCategory(const QString &name)
+void CategoriesSelection::addCategory(qint64 id, const QString &name)
 {
     auto *item = new QListWidgetItem(QIcon(FOLDER_ICON_WHITE), name);
+    item->setData(Qt::UserRole, id);
     ui->listCategories->addItem(item);
+}
+
+void CategoriesSelection::setCategories(const QList<CategoryItem> &categories)
+{
+    ui->listCategories->clear();
+    m_lastClickedCategory = nullptr;
+
+    for (const CategoryItem &category : categories) {
+        addCategory(category.id, category.name);
+    }
+
+    if (ui->listCategories->count() > 0) {
+        ui->listCategories->setCurrentRow(0);
+        ui->listCategories->item(0)->setSelected(true);
+        m_lastClickedCategory = ui->listCategories->item(0);
+    }
 }
 
 void CategoriesSelection::setVaultName(const QString &name)
 {
     ui->vaultName->setText(name);
+}
+
+void CategoriesSelection::deselectAllCategories()
+{
+    // Reset every item explicitly (icon + Qt's own selection state) rather than relying on
+    // currentItem()/clearSelection() alone: those only reliably stay in sync when the user
+    // selects rows via mouse clicks on the list itself. setCurrentItem() from code (as we do
+    // here) does not always fire currentItemChanged() with the right "previous" item when an
+    // entry elsewhere in the window currently holds keyboard focus, which left a stale
+    // highlighted category behind until a second click.
+    for (int i = 0; i < ui->listCategories->count(); ++i) {
+        QListWidgetItem *item = ui->listCategories->item(i);
+        item->setIcon(QIcon(FOLDER_ICON_WHITE));
+        item->setSelected(false);
+    }
+
+    ui->listCategories->setCurrentItem(nullptr);
+    m_lastClickedCategory = nullptr;
+
+    // Force an immediate repaint instead of leaving it to the next coalesced paint event.
+    ui->listCategories->viewport()->update();
 }
 
 void CategoriesSelection::setPersonaSelected(bool selected)
@@ -141,7 +167,7 @@ void CategoriesSelection::on_listCategories_currentItemChanged(QListWidgetItem *
     if (current) {
         current->setIcon(QIcon(FOLDER_ICON_COLOR));
         setPersonaSelected(false);
-        emit categorySelected();
+        emit categorySelected(current->data(Qt::UserRole).toLongLong());
     }
 }
 

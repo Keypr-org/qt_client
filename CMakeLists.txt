@@ -51,16 +51,12 @@ qt_add_executable(qt_client
     src/component/personaitem.h src/component/personaitem.cpp src/component/personaitem.ui
     src/mainContent/newpersonaform.h src/mainContent/newpersonaform.cpp src/mainContent/newpersonaform.ui
     src/formOverlay/editpersonaoverlay.h src/formOverlay/editpersonaoverlay.cpp src/formOverlay/editpersonaoverlay.ui
-    src/model/persona.h
-    src/model/personarepository.h src/model/personarepository.cpp
-    src/model/entry.h
-    src/model/websiteentrydata.h
-    src/model/wifientrydata.h
-    src/model/creditcardentrydata.h
-    src/model/entryrepository.h src/model/entryrepository.cpp
     src/vaultcontroller.h src/vaultcontroller.cpp
+    src/vaultbridge.h src/vaultbridge.cpp
+    src/jsonfileconfig.h src/jsonfileconfig.cpp
+    src/appconfig.h src/appconfig.cpp
+    src/vaultstoragesetupdialog.h src/vaultstoragesetupdialog.cpp
     src/settings/settingswindow.h src/settings/settingswindow.cpp src/settings/settingswindow.ui
-    src/mailaliasconfig.h src/mailaliasconfig.cpp
     src/mailaliasclient.h src/mailaliasclient.cpp
     src/mailaliascontroller.h src/mailaliascontroller.cpp
 )
