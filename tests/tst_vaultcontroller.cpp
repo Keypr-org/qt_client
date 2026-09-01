@@ -207,6 +207,9 @@ private slots:
     void unlockVault_returnsFalse_whenEverythingFailsAndParsingFails();
     void createVault_returnsTrue_whenVaultCreationSucceeds();
     void createVault_returnsFalse_whenVaultCreationFails();
+    void lockVault_returnsTrue_whenRepositoryLocksVault();
+    void lockVault_returnsFalse_whenRepositoryRefusesToLockVault();
+    void lockVault_throws_whenSessionIsNotOpen();
     void getVaultName_returnsVaultName_whenSessionIsOpen();
     void getVaultName_throws_whenSessionIsNotOpen();
     void addCategory_addsCategory_whenSessionIsOpen();
@@ -354,6 +357,44 @@ void VaultControllerTest::createVault_returnsFalse_whenVaultCreationFails()
     VaultController controller(std::move(repository));
 
     QVERIFY(!controller.createVault("master-password", "vault"));
+    QVERIFY(!controller.isVaultUnlocked());
+}
+
+/**
+ * @brief Test lockVault when the repository accepts locking the vault.
+ */
+void VaultControllerTest::lockVault_returnsTrue_whenRepositoryLocksVault()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true);
+    VaultController controller(std::move(repository));
+    controller.session = makeVaultSession();
+
+    QVERIFY(controller.lockVault("vault"));
+    QVERIFY(!controller.isVaultUnlocked());
+}
+
+/**
+ * @brief Test lockVault when the repository refuses to lock the vault.
+ */
+void VaultControllerTest::lockVault_returnsFalse_whenRepositoryRefusesToLockVault()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false);
+    VaultController controller(std::move(repository));
+    controller.session = makeVaultSession();
+
+    QVERIFY(!controller.lockVault("vault"));
+    QVERIFY(controller.isVaultUnlocked());
+}
+
+/**
+ * @brief Test lockVault when no vault session is open.
+ */
+void VaultControllerTest::lockVault_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.lockVault("vault"));
     QVERIFY(!controller.isVaultUnlocked());
 }
 
