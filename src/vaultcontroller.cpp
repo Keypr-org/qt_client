@@ -56,6 +56,10 @@ bool VaultController::lockVault(const std::string &filename)
     std::string path;
     if (filename.empty())
     {
+        if (pathToVaults.empty())
+        {
+            throw std::runtime_error("Path to vaults is not set. Please provide a path to the vaults.");
+        }
         std::string vaultName = session->getName();
         std::transform(vaultName.begin(), vaultName.end(), vaultName.begin(),
                        [](unsigned char c)

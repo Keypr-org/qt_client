@@ -47,6 +47,7 @@ public:
      * @param filename The name of the vault file to lock.
      * @return true if the vault is locked, false otherwise.
      * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws std::runtime_error if no filename is provided and the path to vaults is not set.
      */
     bool lockVault(const std::string &filename = "");
 
