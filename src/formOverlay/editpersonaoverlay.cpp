@@ -33,6 +33,9 @@ EditPersonaOverlay::EditPersonaOverlay(QWidget *parent)
     ui->lastName->setLabelText("LAST NAME");
     ui->lastName->setInputPlaceholder("e.g. Brooks");
 
+    ui->addressInput->setLabelText("PHYSICAL ADDRESS");
+    ui->addressInput->setInputPlaceholder("e.g. 221B Baker Street, London, UK");
+
     hide();
 
     connect(ui->cancelButton, &QPushButton::clicked, this, [this](){
@@ -53,6 +56,7 @@ EditPersonaOverlay::EditPersonaOverlay(QWidget *parent)
         persona.birthday = ui->dateSelect->date();
         persona.gender = ui->genderSelect->currentIndex() >= 0 ? ui->genderSelect->currentText() : QString();
         persona.country = ui->countrySelect->currentIndex() > 0 ? ui->countrySelect->currentText() : QString();
+        persona.address = ui->addressInput->text();
 
         emit personaModified(persona);
         hide();
@@ -70,6 +74,7 @@ void EditPersonaOverlay::setPersona(const PersonaData &persona)
 
     ui->firstName->setText(persona.firstName);
     ui->lastName->setText(persona.lastName);
+    ui->addressInput->setText(persona.address);
     ui->dateSelect->setDate(persona.birthday.isValid() ? persona.birthday : QDate::currentDate());
 
     const int genderIndex = ui->genderSelect->findText(persona.gender);

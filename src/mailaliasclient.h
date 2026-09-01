@@ -9,6 +9,7 @@
  * @brief An email alias created through the Postscale Shield API.
  */
 struct MailAlias {
+    std::string id;
     std::string address;
     std::string domain;
     std::vector<std::string> forwardTo;
@@ -35,6 +36,15 @@ public:
      */
     virtual std::optional<MailAlias> createAlias(const QString &apiKey, const QString &sourceEmail,
                                                   const QString &description, std::string &error) = 0;
+
+    /**
+     * @brief Permanently deletes an existing alias.
+     * @param apiKey Postscale API key.
+     * @param aliasId Identifier of the alias to delete.
+     * @param error Set to a human-readable message on failure.
+     * @return true if the alias was deleted successfully.
+     */
+    virtual bool deleteAlias(const QString &apiKey, const QString &aliasId, std::string &error) = 0;
 };
 
 /**
@@ -44,4 +54,5 @@ class PostscaleClient : public MailAliasClient {
 public:
     std::optional<MailAlias> createAlias(const QString &apiKey, const QString &sourceEmail,
                                           const QString &description, std::string &error) override;
+    bool deleteAlias(const QString &apiKey, const QString &aliasId, std::string &error) override;
 };

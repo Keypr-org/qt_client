@@ -2,6 +2,8 @@
 #include "ui_createvaultoverlay.h"
 
 #include "component/notificationtooltip.h"
+#include "component/passwordinput.h"
+#include "utils/passwordstrengthutils.h"
 
 CreateVaultOverlay::CreateVaultOverlay(QWidget *parent)
     : QWidget(parent)
@@ -11,6 +13,9 @@ CreateVaultOverlay::CreateVaultOverlay(QWidget *parent)
     ui->vaultName->setLabelText("VAULT NAME");
     ui->masterPassword->setLabelText("MASTER PASSWORD");
     ui->confirmMasterPassword->setLabelText("CONFIRM MASTER PASSWORD");
+
+    connect(ui->masterPassword, &PasswordInput::textChanged, this, &CreateVaultOverlay::updateStrengthDisplay);
+    updateStrengthDisplay("");
 
     // By default, hide the overlay
     hide();
@@ -42,6 +47,22 @@ CreateVaultOverlay::CreateVaultOverlay(QWidget *parent)
         hide();
         NotificationTooltip::showSuccessToast(parentWidget(), "Vault created successfully.");
     });
+}
+
+void CreateVaultOverlay::updateStrengthDisplay(const QString &password)
+{
+    const PasswordStrengthUtils::Strength strength = PasswordStrengthUtils::evaluate(password);
+    const QString color = PasswordStrengthUtils::color(strength);
+    const int filledLines = PasswordStrengthUtils::filledBarCount(strength);
+
+    ui->passEval->setText(PasswordStrengthUtils::label(strength) + " Password");
+    ui->passEval->setStyleSheet("color: " + color + ";");
+
+    QFrame *lines[] = { ui->lineEval_1, ui->lineEval_2, ui->lineEval_3, ui->lineEval_4 };
+    for (int i = 0; i < 4; ++i) {
+        const QString lineColor = i < filledLines ? color : "#1F2937";
+        lines[i]->setStyleSheet("color: " + lineColor + ";");
+    }
 }
 
 void CreateVaultOverlay::clearForm()

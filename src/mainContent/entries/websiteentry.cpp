@@ -198,6 +198,7 @@ void WebsiteEntry::generateAlias()
     }
 
     m_entry->aliasEmail = QString::fromStdString(alias->fullAddress());
+    m_entry->aliasId = QString::fromStdString(alias->id);
     refreshAliasDisplay();
     emit entryUpdated(m_entry->id);
     NotificationTooltip::showSuccessToast(this, "Email alias created successfully.");
@@ -209,7 +210,22 @@ void WebsiteEntry::deleteAlias()
         return;
     }
 
+    if (!m_entry->aliasId.isEmpty()) {
+        MailAliasController mailAliasController;
+
+        if (!mailAliasController.hasCredentials()) {
+            NotificationTooltip::showErrorToast(this, "Set your Postscale API key and source email in Settings before deleting an alias.");
+            return;
+        }
+
+        if (!mailAliasController.deleteAlias(m_entry->aliasId.toStdString())) {
+            NotificationTooltip::showErrorToast(this, QString("Failed to delete alias: %1").arg(QString::fromStdString(mailAliasController.lastError())));
+            return;
+        }
+    }
+
     m_entry->aliasEmail.clear();
+    m_entry->aliasId.clear();
     refreshAliasDisplay();
     emit entryUpdated(m_entry->id);
     NotificationTooltip::showSuccessToast(this, "Alias removed from this entry.");

@@ -224,7 +224,7 @@
       <item>
        <widget class="QFrame" name="buttonsWrapper">
         <property name="frameShape">
-         <enum>QFrame::Shape::StyledPanel</enum>
+         <enum>QFrame::Shape::NoFrame</enum>
         </property>
         <property name="frameShadow">
          <enum>QFrame::Shadow::Raised</enum>
@@ -789,7 +789,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>150</height>
+       <height>0</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -807,7 +807,7 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <property name="spacing">
-       <number>10</number>
+       <number>-1</number>
       </property>
       <property name="leftMargin">
        <number>16</number>
@@ -920,7 +920,7 @@
            <property name="minimumSize">
             <size>
              <width>130</width>
-             <height>30</height>
+             <height>40</height>
             </size>
            </property>
            <property name="font">
@@ -1100,15 +1100,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PasswordInput</class>
-   <extends>QWidget</extends>
-   <header>component/passwordinput.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>LineTextInput</class>
    <extends>QWidget</extends>
    <header>component/linetextinput.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PasswordInput</class>
+   <extends>QWidget</extends>
+   <header>component/passwordinput.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

@@ -39,3 +39,12 @@ std::optional<MailAlias> MailAliasController::createAlias(const std::string &des
 
     return client->createAlias(config.apiKey, config.sourceEmail, QString::fromStdString(description), error);
 }
+
+bool MailAliasController::deleteAlias(const std::string &aliasId) {
+    if (config.apiKey.isEmpty()) {
+        error = "Missing Postscale API key in configuration";
+        return false;
+    }
+
+    return client->deleteAlias(config.apiKey, QString::fromStdString(aliasId), error);
+}

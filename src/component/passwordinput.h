@@ -79,6 +79,13 @@ public:
      */
     QString text() const;
 
+signals:
+    /**
+     * @brief Emitted whenever the field's text value changes.
+     * @param text The new text.
+     */
+    void textChanged(const QString &text);
+
 private:
     Ui::PasswordInput *ui;
 };

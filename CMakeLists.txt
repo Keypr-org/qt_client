@@ -37,6 +37,8 @@ qt_add_executable(qt_client
     src/mainContent/entries/websiteentry.h src/mainContent/entries/websiteentry.cpp src/mainContent/entries/websiteentry.ui
     src/component/card.h src/component/card.cpp src/component/card.ui
     src/utils/cardnumberutils.h src/utils/cardnumberutils.cpp
+    src/utils/randompersona.h src/utils/randompersona.cpp
+    src/utils/passwordstrengthutils.h src/utils/passwordstrengthutils.cpp
     src/mainContent/creditcardform.h src/mainContent/creditcardform.cpp src/mainContent/creditcardform.ui
     src/component/cardnumberinput.h src/component/cardnumberinput.cpp src/component/cardnumberinput.ui
     src/mainContent/entries/creditcardentry.h src/mainContent/entries/creditcardentry.cpp src/mainContent/entries/creditcardentry.ui

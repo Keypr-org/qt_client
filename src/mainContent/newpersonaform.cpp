@@ -2,6 +2,7 @@
 #include "ui_newpersonaform.h"
 
 #include "component/notificationtooltip.h"
+#include "utils/randompersona.h"
 
 #include <QUuid>
 
@@ -39,7 +40,16 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
         emit cancelSignal();
     });
 
-    connect(ui->generatePersonaButton, &QPushButton::clicked, this, [this](){
+    connect(ui->generatePersonaButton, &QPushButton::clicked, this, [this, sortedCountries](){
+        PersonaData persona = RandomPersona::generate(sortedCountries);
+
+        ui->firstName->setText(persona.firstName);
+        ui->lastName->setText(persona.lastName);
+        ui->dateSelect->setDate(persona.birthday);
+        ui->genderSelect->setCurrentText(persona.gender);
+        ui->countrySelect->setCurrentText(persona.country);
+        ui->addressInput->setText(persona.address);
+
         emit generatePersonaSignal();
     });
 
@@ -56,6 +66,7 @@ NewPersonaForm::NewPersonaForm(QWidget *parent)
         persona.birthday = ui->dateSelect->date();
         persona.gender = ui->genderSelect->currentIndex() >= 0 ? ui->genderSelect->currentText() : QString();
         persona.country = ui->countrySelect->currentIndex() > 0 ? ui->countrySelect->currentText() : QString();
+        persona.address = ui->addressInput->text();
 
         emit usePersonaSignal(persona);
         clearForm();

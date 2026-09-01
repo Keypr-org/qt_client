@@ -37,6 +37,12 @@ private slots:
      */
     void on_passwordLengthSlider_valueChanged(int value);
 
+    /**
+     * @brief Updates the strength label and rating bars to reflect the given password.
+     * @param password Password to evaluate.
+     */
+    void updateStrengthDisplay(const QString &password);
+
 signals:
     /**
      * @brief Emitted when the user cancels password generation.

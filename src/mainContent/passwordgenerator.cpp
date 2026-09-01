@@ -1,9 +1,14 @@
 #include "passwordgenerator.h"
+#include "component/passwordinput.h"
 #include "component/toggleswitch.h"
 #include "ui_passwordgenerator.h"
+#include "utils/passwordstrengthutils.h"
 
 #include <QLineEdit>
 #include <QRandomGenerator>
+#include <QStringList>
+
+#include <utility>
 
 PasswordGenerator::PasswordGenerator(QWidget *parent)
     : QWidget(parent)
@@ -36,12 +41,30 @@ PasswordGenerator::PasswordGenerator(QWidget *parent)
         emit usePasswordEvent(ui->passwordGenOutput->text());
     });
 
+    connect(ui->passwordGenOutput, &PasswordInput::textChanged, this, &PasswordGenerator::updateStrengthDisplay);
+
     onGeneratePassword();
 }
 
 void PasswordGenerator::on_passwordLengthSlider_valueChanged(int value)
 {
     ui->currentNumber->setText(QString::number(value));
+}
+
+void PasswordGenerator::updateStrengthDisplay(const QString &password)
+{
+    const PasswordStrengthUtils::Strength strength = PasswordStrengthUtils::evaluate(password);
+    const QString color = PasswordStrengthUtils::color(strength);
+    const int filledBars = PasswordStrengthUtils::filledBarCount(strength);
+
+    ui->label_3->setText(PasswordStrengthUtils::label(strength));
+    ui->label_3->setStyleSheet("color: " + color + ";");
+
+    QWidget *bars[] = { ui->bar_1, ui->bar_2, ui->bar_3, ui->bar_4 };
+    for (int i = 0; i < 4; ++i) {
+        const QString barColor = i < filledBars ? color : "#1F2937";
+        bars[i]->setStyleSheet("background-color: " + barColor + "; border-radius: 5px;");
+    }
 }
 
 QString PasswordGenerator::generatePassword(
@@ -52,26 +75,40 @@ QString PasswordGenerator::generatePassword(
     bool useSpecialChars
     )
 {
-    // Build the available pool of available char
-    QString availableChars;
+    QStringList selectedPools;
 
     if (useUppercase)
-        availableChars += UPPERCASE;
+        selectedPools << UPPERCASE;
     if (useLowercase)
-        availableChars += LOWERCASE;
+        selectedPools << LOWERCASE;
     if (useNumbers)
-        availableChars += NUMBERS;
+        selectedPools << NUMBERS;
     if (useSpecialChars)
-        availableChars += SPECIAL_CHARS;
+        selectedPools << SPECIAL_CHARS;
 
-    if (availableChars.isEmpty())
+    if (selectedPools.isEmpty())
         return QString();
 
-    // Will be changed as soon as the correct method is implemented
+    QString availableChars = selectedPools.join(QString());
+
+    // Guarantee at least one character from each selected class
     QString password;
-    for (int i = 0; i < length; ++i) {
-        int randomIndex = QRandomGenerator::global()->bounded(availableChars.length());
-        password += availableChars[randomIndex];
+    for (const QString &pool : std::as_const(selectedPools)) {
+        if (password.length() >= length)
+            break;
+        password += pool.at(QRandomGenerator::global()->bounded(pool.length()));
+    }
+
+    while (password.length() < length) {
+        password += availableChars.at(QRandomGenerator::global()->bounded(availableChars.length()));
+    }
+
+    // Shuffle so the guaranteed characters aren't always at the front
+    for (int i = password.length() - 1; i > 0; --i) {
+        int j = QRandomGenerator::global()->bounded(i + 1);
+        const QChar tmp = password[i];
+        password[i] = password[j];
+        password[j] = tmp;
     }
 
     return password;

@@ -12,6 +12,9 @@ private slots:
     void createAlias_returnsAlias_whenCredentialsProvidedAndClientSucceeds();
     void createAlias_forwardsSourceEmailAndDescriptionToClient();
     void createAlias_returnsNulloptAndSetsError_whenClientFails();
+    void deleteAlias_returnsFalse_whenApiKeyMissing();
+    void deleteAlias_forwardsAliasIdToClient_andReturnsTrue_onSuccess();
+    void deleteAlias_returnsFalseAndSetsError_whenClientFails();
 };
 
 /**
@@ -97,6 +100,57 @@ void MailAliasControllerTest::createAlias_returnsNulloptAndSetsError_whenClientF
     const auto alias = controller.createAlias("newsletter-signup");
 
     QVERIFY(!alias.has_value());
+    QCOMPARE(QString::fromStdString(controller.lastError()), QString("boom"));
+}
+
+/**
+ * @brief deleteAlias() should fail without ever calling the client when the API key is missing.
+ */
+void MailAliasControllerTest::deleteAlias_returnsFalse_whenApiKeyMissing() {
+    auto fakeClient = std::make_unique<FakeMailAliasClient>(std::nullopt);
+    FakeMailAliasClient *fakeClientPtr = fakeClient.get();
+
+    MailAliasController controller(MailAliasConfig{}, std::move(fakeClient));
+
+    QVERIFY(!controller.deleteAlias("alias-id"));
+    QCOMPARE(fakeClientPtr->deleteCallCount, 0);
+    QVERIFY(!controller.lastError().empty());
+}
+
+/**
+ * @brief deleteAlias() should forward the configured API key and alias id to the client and return true on success.
+ */
+void MailAliasControllerTest::deleteAlias_forwardsAliasIdToClient_andReturnsTrue_onSuccess() {
+    MailAliasConfig config;
+    config.apiKey = "ps_live_test";
+    config.sourceEmail = "user@example.com";
+
+    auto fakeClient = std::make_unique<FakeMailAliasClient>(std::nullopt);
+    FakeMailAliasClient *fakeClientPtr = fakeClient.get();
+    fakeClientPtr->deleteSucceeds = true;
+
+    MailAliasController controller(config, std::move(fakeClient));
+
+    QVERIFY(controller.deleteAlias("a1b2c3d4-e5f6-78"));
+    QCOMPARE(fakeClientPtr->deleteCallCount, 1);
+    QCOMPARE(fakeClientPtr->lastApiKey, QString("ps_live_test"));
+    QCOMPARE(fakeClientPtr->lastDeletedAliasId, QString("a1b2c3d4-e5f6-78"));
+}
+
+/**
+ * @brief deleteAlias() should surface the client's error message and return false on failure.
+ */
+void MailAliasControllerTest::deleteAlias_returnsFalseAndSetsError_whenClientFails() {
+    MailAliasConfig config;
+    config.apiKey = "ps_live_test";
+    config.sourceEmail = "user@example.com";
+
+    auto fakeClient = std::make_unique<FakeMailAliasClient>(std::nullopt, "boom");
+    fakeClient->deleteSucceeds = false;
+
+    MailAliasController controller(config, std::move(fakeClient));
+
+    QVERIFY(!controller.deleteAlias("alias-id"));
     QCOMPARE(QString::fromStdString(controller.lastError()), QString("boom"));
 }
 

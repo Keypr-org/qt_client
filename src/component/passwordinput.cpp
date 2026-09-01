@@ -22,6 +22,8 @@ PasswordInput::PasswordInput(QWidget *parent)
         else
             ui->input->setEchoMode(QLineEdit::Password);
     });
+
+    connect(ui->input, &QLineEdit::textChanged, this, &PasswordInput::textChanged);
 }
 
 PasswordInput::~PasswordInput()

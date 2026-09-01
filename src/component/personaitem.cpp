@@ -55,4 +55,5 @@ void PersonaItem::setPersona(const PersonaData &persona)
     ui->locationValue->setText(persona.country);
     ui->birthdayValue->setText(persona.birthday.toString("MMM d, yyyy"));
     ui->genderValue->setText(persona.gender);
+    ui->addressValue->setText(persona.address);
 }
