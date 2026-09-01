@@ -122,3 +122,28 @@ bool VaultController::removePersona(int64_t personaId)
         return false; // Persona not found
     }
 }
+
+bool VaultController::setAliasForWebsite(int64_t categoryId, int64_t entryId, const std::string &aliasId, const std::string &alias)
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    try
+    {
+        session->setAliasForWebsite(categoryId, entryId, aliasId, alias);
+        return true;
+    }
+    catch (const CategoryNotFoundError &)
+    {
+        return false; // Category not found
+    }
+    catch (const EntryNotFoundError &)
+    {
+        return false; // Entry not found
+    }
+    catch (const EntryNotGoodTypeError &)
+    {
+        return false; // Entry is not of the correct type to set an alias
+    }
+}
