@@ -74,6 +74,17 @@ public:
      */
     bool removePersona(int64_t personaId);
 
+    /**
+     * @brief Set the alias for a website.
+     * @param categoryId The ID of the category containing the entry.
+     * @param entryId The ID of the entry to set the alias for.
+     * @param aliasId The ID of the alias to set.
+     * @param alias The alias to set.
+     * @return true if the alias is set, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    bool setAliasForWebsite(int64_t categoryId, int64_t entryId, const std::string &aliasId, const std::string &alias);
+
 private:
     std::unique_ptr<VaultRepository> repository;
     std::unique_ptr<VaultSession> session;

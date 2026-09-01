@@ -160,6 +160,37 @@ static std::unique_ptr<VaultSession> makeVaultSessionWithCategoryAndEntry(int64_
     return vaultSession;
 }
 
+static std::unique_ptr<VaultSession> makeVaultSessionWithWebsite(int64_t *categoryId,
+                                                                 int64_t *websiteId,
+                                                                 int64_t *wrongEntryId = nullptr)
+{
+    auto vaultSession = makeVaultSession();
+    vaultSession->addCategory(std::make_unique<Category>("Passwords"));
+    auto &category = vaultSession->getCategories().front();
+
+    auto website = makeWebsite("website notes", "Target", "alice", "secret",
+                               "https://target.example.com");
+    if (websiteId != nullptr)
+    {
+        *websiteId = website->getId();
+    }
+    category->addEntry(std::move(website));
+
+    if (wrongEntryId != nullptr)
+    {
+        auto wrongEntry = std::make_unique<TestEntry>("wrong entry");
+        *wrongEntryId = wrongEntry->getId();
+        category->addEntry(std::move(wrongEntry));
+    }
+
+    if (categoryId != nullptr)
+    {
+        *categoryId = category->getId();
+    }
+
+    return vaultSession;
+}
+
 class VaultControllerTest : public QObject
 {
     Q_OBJECT
@@ -190,6 +221,11 @@ private slots:
     void removePersona_returnsTrue_whenPersonaExists();
     void removePersona_returnsFalse_whenPersonaDoesNotExist();
     void removePersona_throws_whenSessionIsNotOpen();
+    void setAliasForWebsite_returnsTrue_whenWebsiteExists();
+    void setAliasForWebsite_returnsFalse_whenCategoryDoesNotExist();
+    void setAliasForWebsite_returnsFalse_whenEntryDoesNotExist();
+    void setAliasForWebsite_returnsFalse_whenEntryHasWrongType();
+    void setAliasForWebsite_throws_whenSessionIsNotOpen();
 };
 
 /**
@@ -574,6 +610,99 @@ void VaultControllerTest::removePersona_throws_whenSessionIsNotOpen()
     VaultController controller(std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.removePersona(1));
+}
+
+/**
+ * @brief Test setAliasForWebsite when the website exists.
+ */
+void VaultControllerTest::setAliasForWebsite_returnsTrue_whenWebsiteExists()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t websiteId = 0;
+    controller.session = makeVaultSessionWithWebsite(&categoryId, &websiteId);
+
+    QVERIFY(controller.setAliasForWebsite(categoryId, websiteId, "example-alias-id", "Example alias"));
+
+    const auto *updatedWebsite = controller.session->getWebsiteById(websiteId);
+    QVERIFY(updatedWebsite != nullptr);
+    QCOMPARE(updatedWebsite->getAliasId(), std::string("example-alias-id"));
+    QCOMPARE(updatedWebsite->getAlias(), std::string("Example alias"));
+}
+
+/**
+ * @brief Test setAliasForWebsite when the category does not exist.
+ */
+void VaultControllerTest::setAliasForWebsite_returnsFalse_whenCategoryDoesNotExist()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t websiteId = 0;
+    controller.session = makeVaultSessionWithWebsite(&categoryId, &websiteId);
+
+    QVERIFY(!controller.setAliasForWebsite(categoryId + 1, websiteId, "example-alias-id", "Example alias"));
+
+    const auto *storedWebsite = controller.session->getWebsiteById(websiteId);
+    QVERIFY(storedWebsite != nullptr);
+    QCOMPARE(storedWebsite->getAliasId(), std::string(""));
+    QCOMPARE(storedWebsite->getAlias(), std::string(""));
+}
+
+/**
+ * @brief Test setAliasForWebsite when the entry does not exist.
+ */
+void VaultControllerTest::setAliasForWebsite_returnsFalse_whenEntryDoesNotExist()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t websiteId = 0;
+    controller.session = makeVaultSessionWithWebsite(&categoryId, &websiteId);
+
+    QVERIFY(!controller.setAliasForWebsite(categoryId, websiteId + 1, "example-alias-id", "Example alias"));
+
+    const auto *storedWebsite = controller.session->getWebsiteById(websiteId);
+    QVERIFY(storedWebsite != nullptr);
+    QCOMPARE(storedWebsite->getAliasId(), std::string(""));
+    QCOMPARE(storedWebsite->getAlias(), std::string(""));
+}
+
+/**
+ * @brief Test setAliasForWebsite when the targeted entry has a wrong type.
+ */
+void VaultControllerTest::setAliasForWebsite_returnsFalse_whenEntryHasWrongType()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t websiteId = 0;
+    int64_t wrongEntryId = 0;
+    controller.session = makeVaultSessionWithWebsite(&categoryId, &websiteId, &wrongEntryId);
+
+    QVERIFY(!controller.setAliasForWebsite(categoryId, wrongEntryId, "example-alias-id", "Example alias"));
+
+    const auto *storedWebsite = controller.session->getWebsiteById(websiteId);
+    QVERIFY(storedWebsite != nullptr);
+    QCOMPARE(storedWebsite->getAliasId(), std::string(""));
+    QCOMPARE(storedWebsite->getAlias(), std::string(""));
+}
+
+/**
+ * @brief Test setAliasForWebsite when no session is open.
+ */
+void VaultControllerTest::setAliasForWebsite_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error,
+                             controller.setAliasForWebsite(1, 1, "alias-id", "Alias"));
 }
 
 QTEST_MAIN(VaultControllerTest)
