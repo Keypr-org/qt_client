@@ -32,3 +32,19 @@ const std::vector<std::unique_ptr<Category>> &VaultController::getCategories() c
     }
     return session->getCategories();
 }
+
+bool VaultController::removeEntryFromCategory(int64_t categoryId, int64_t entryId) {
+    if (session == nullptr) {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    try {
+        session->removeEntryFromCategory(categoryId, entryId);
+        return true;
+    }
+    catch (const CategoryNotFoundError &) {
+        return false; // Category not found
+    }
+    catch (const EntryNotFoundError &) {
+        return false; // Entry not found
+    }
+}
