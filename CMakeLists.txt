@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Widgets Test)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Widgets Network Test)
 
 qt_standard_project_setup()
 
@@ -58,6 +58,10 @@ qt_add_executable(qt_client
     src/model/entryrepository.h src/model/entryrepository.cpp
     src/vaultcontroller.h src/vaultcontroller.cpp
     src/nativeMessaging/nativemessaging.h src/nativeMessaging/nativemessaging.cpp
+    src/nativeMessaging/nativemessagedispatcher.h src/nativeMessaging/nativemessagedispatcher.cpp
+    src/nativeMessaging/nativemessageframing.h src/nativeMessaging/nativemessageframing.cpp
+    src/nativeMessaging/nativemessageserver.h src/nativeMessaging/nativemessageserver.cpp
+    src/nativeMessaging/nativemessagebridge.h src/nativeMessaging/nativemessagebridge.cpp
 )
 
 target_include_directories(qt_client PRIVATE
@@ -67,6 +71,7 @@ target_include_directories(qt_client PRIVATE
 target_link_libraries(qt_client
     PRIVATE
         Qt6::Widgets
+        Qt6::Network
         keypr-core
 )
 
@@ -74,6 +79,14 @@ set_target_properties(qt_client PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER com.example.qt_client
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+)
+
+add_custom_command(TARGET qt_client POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+        -DEXE_PATH=$<TARGET_FILE:qt_client>
+        -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P ${CMAKE_SOURCE_DIR}/installer/register_native_host.cmake
+    COMMENT "Registering com.keypr.native Native Messaging host"
 )
 
 include(GNUInstallDirs)

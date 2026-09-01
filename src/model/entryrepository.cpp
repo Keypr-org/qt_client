@@ -72,6 +72,14 @@ void EntryRepository::seedMockData()
         "website-1", "GitHub", "KeypingSafe", "hunter2",
         "https://github.com", "", "", QDateTime::currentDateTime()));
 
+    m_entries.append(std::make_shared<WebsiteEntryData>(
+        "website-2", "Digitec", "keypr.user", "digitec-pass",
+        "https://www.digitecgalaxus.ch", "", "", QDateTime::currentDateTime()));
+
+    m_entries.append(std::make_shared<WebsiteEntryData>(
+        "website-3", "AuthenticationTest", "keypr.user", "iframe-pass",
+        "https://authenticationtest.com/iframeChallenge/", "", "", QDateTime::currentDateTime()));
+
     m_entries.append(std::make_shared<WifiEntryData>(
         "wifi-1", "Sunrise", "sunrise-password", "",
         QDateTime::currentDateTime()));

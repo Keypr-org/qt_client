@@ -1,9 +1,0 @@
-{
-    "name": "com.keypr.native",
-    "description": "Keypr Native Messaging Host",
-    "path": "C:\\Users\\Alberto\\Desktop\\HEIG\\CyberSec\\HES_ete_2026\\PDG\\_main\\qt_client\\build\\Desktop_Qt_6_11_2_MinGW_64_bit_Debug\\qt_client.exe",
-    "type": "stdio",
-    "allowed_origins": [
-        "chrome-extension://oiilchipgbfdagfoeblhpjbldffidikn/"
-    ]
-}
