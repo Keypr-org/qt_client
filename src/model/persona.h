@@ -12,6 +12,7 @@ struct PersonaData
     QDate birthday;
     QString gender;
     QString country;
+    QString address;
 };
 
 #endif // PERSONA_H

@@ -28,6 +28,13 @@ public:
      */
     void clearForm();
 
+private slots:
+    /**
+     * @brief Updates the strength label and rating lines to reflect the given password.
+     * @param password Password to evaluate.
+     */
+    void updateStrengthDisplay(const QString &password);
+
 signals:
     /**
      * @brief Emitted when the user cancels vault creation.

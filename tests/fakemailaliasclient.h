@@ -27,10 +27,26 @@ public:
         return response;
     }
 
+    bool deleteAlias(const QString &apiKey, const QString &aliasId, std::string &error) override {
+        deleteCallCount++;
+        lastApiKey = apiKey;
+        lastDeletedAliasId = aliasId;
+
+        if (!deleteSucceeds) {
+            error = errorMessage;
+        }
+
+        return deleteSucceeds;
+    }
+
     int callCount = 0;
     QString lastApiKey;
     QString lastSourceEmail;
     QString lastDescription;
+
+    int deleteCallCount = 0;
+    QString lastDeletedAliasId;
+    bool deleteSucceeds = true;
 
 private:
     std::optional<MailAlias> response;

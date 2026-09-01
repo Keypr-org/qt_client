@@ -12,6 +12,7 @@ struct WebsiteEntryData : public Entry
     QString notes;
     QString personaId; // empty when no persona is linked
     QString aliasEmail; // empty when no email alias has been generated
+    QString aliasId; // Postscale alias identifier, empty when no email alias has been generated
 
     /**
      * @brief Constructs a fully-populated website entry with no persona linked.

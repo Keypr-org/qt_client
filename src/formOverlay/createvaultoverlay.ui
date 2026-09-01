@@ -387,7 +387,7 @@
                </size>
               </property>
               <property name="frameShape">
-               <enum>QFrame::Shape::StyledPanel</enum>
+               <enum>QFrame::Shape::NoFrame</enum>
               </property>
               <property name="frameShadow">
                <enum>QFrame::Shadow::Raised</enum>
@@ -720,15 +720,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>PasswordInput</class>
-   <extends>QWidget</extends>
-   <header>component/passwordinput.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>LineTextInput</class>
    <extends>QWidget</extends>
    <header>component/linetextinput.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PasswordInput</class>
+   <extends>QWidget</extends>
+   <header>component/passwordinput.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

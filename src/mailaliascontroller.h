@@ -45,6 +45,13 @@ public:
      */
     std::optional<MailAlias> createAlias(const std::string &description);
 
+    /**
+     * @brief Permanently deletes an existing alias.
+     * @param aliasId Identifier of the alias to delete.
+     * @return true if the alias was deleted successfully (see lastError() on failure).
+     */
+    bool deleteAlias(const std::string &aliasId);
+
     const std::string &lastError() const;
 
 private:

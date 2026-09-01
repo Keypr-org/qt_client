@@ -41,6 +41,7 @@ std::optional<MailAlias> PostscaleClient::createAlias(const QString &apiKey, con
     const QJsonObject aliasJson = QJsonDocument::fromJson(rawResponse).object().value("alias").toObject();
 
     MailAlias alias;
+    alias.id = aliasJson.value("id").toString().toStdString();
     alias.address = aliasJson.value("address").toString().toStdString();
     alias.domain = aliasJson.value("domain").toString().toStdString();
     alias.active = aliasJson.value("active").toBool();
@@ -54,4 +55,23 @@ std::optional<MailAlias> PostscaleClient::createAlias(const QString &apiKey, con
     }
 
     return alias;
+}
+
+bool PostscaleClient::deleteAlias(const QString &apiKey, const QString &aliasId, std::string &error) {
+    QNetworkRequest request{QUrl(QString("%1/%2").arg(POSTSCALE_ALIASES_URL, aliasId))};
+    request.setRawHeader("Authorization", "Bearer " + apiKey.toUtf8());
+
+    QNetworkAccessManager manager;
+    QEventLoop loop;
+    QObject::connect(&manager, &QNetworkAccessManager::finished, &loop, &QEventLoop::quit);
+    QNetworkReply *reply = manager.deleteResource(request);
+    loop.exec();
+
+    const bool succeeded = reply->error() == QNetworkReply::NoError;
+    if (!succeeded) {
+        error = reply->errorString().toStdString();
+    }
+    reply->deleteLater();
+
+    return succeeded;
 }

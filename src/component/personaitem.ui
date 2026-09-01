@@ -367,7 +367,7 @@ border-radius: 6px;</string>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>30</height>
+                <height>40</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -381,7 +381,7 @@ border-radius: 6px;</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_2">
                <property name="spacing">
-                <number>0</number>
+                <number>-1</number>
                </property>
                <property name="leftMargin">
                 <number>0</number>
@@ -430,7 +430,7 @@ border-radius: 6px;</string>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>30</height>
+                <height>40</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -523,7 +523,7 @@ border-radius: 6px;</string>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>30</height>
+                <height>40</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -579,11 +579,11 @@ border-radius: 6px;</string>
              </widget>
             </item>
             <item>
-             <widget class="QFrame" name="verificationWrapper">
+             <widget class="QFrame" name="addressWrapper">
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>30</height>
+                <height>40</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -597,7 +597,7 @@ border-radius: 6px;</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_7">
                <property name="spacing">
-                <number>0</number>
+                <number>-1</number>
                </property>
                <property name="leftMargin">
                 <number>0</number>
@@ -612,7 +612,7 @@ border-radius: 6px;</string>
                 <number>0</number>
                </property>
                <item>
-                <widget class="QLabel" name="verif">
+                <widget class="QLabel" name="address">
                  <property name="font">
                   <font>
                    <pointsize>11</pointsize>
@@ -622,17 +622,19 @@ border-radius: 6px;</string>
                   <string notr="true">color: #9CA3AF;</string>
                  </property>
                  <property name="text">
-                  <string>VERIFICATION STATUS</string>
+                  <string>ADDRESS</string>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QLabel" name="verifValue">
-                 <property name="styleSheet">
-                  <string notr="true">color: #10B981;</string>
+                <widget class="QLabel" name="addressValue">
+                 <property name="font">
+                  <font>
+                   <pointsize>14</pointsize>
+                  </font>
                  </property>
                  <property name="text">
-                  <string>Active persona</string>
+                  <string>123 Maple Street, Springfield, 54321</string>
                  </property>
                 </widget>
                </item>
