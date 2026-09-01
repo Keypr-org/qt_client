@@ -26,3 +26,9 @@ bool VaultController::unlockVault(const std::string &masterPassword, const std::
         return false;
     }
 }
+const std::vector<std::unique_ptr<Category>> &VaultController::getCategories() const {
+    if (session == nullptr) {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    return session->getCategories();
+}
