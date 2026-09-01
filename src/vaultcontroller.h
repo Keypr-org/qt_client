@@ -42,19 +42,46 @@ public:
     bool createVault(const std::string &masterPassword, const std::string &vaultName);
 
     /**
+     * @brief Get the name of the current vault.
+     * @return The name of the current vault.
+     */
+    const std::string &getVaultName() const;
+
+    /**
      * @brief Get the categories in the current vault.
      * @return The categories in the current vault.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
      */
     const std::vector<std::unique_ptr<Category>> &getCategories() const;
 
     /**
-     * @brief Remove an entry from a category.
-     * @param categoryId The ID of the category.
-     * @param entryId The ID of the entry to remove.
-     * @return true if the entry is removed, false otherwise.
+     * @brief Add a category to the current vault.
+     * @param category The category to add.
      * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
      */
-    bool removeEntryFromCategory(int64_t categoryId, int64_t entryId);
+    void addCategory(std::unique_ptr<Category> category);
+
+    /**
+     * @brief Get the personas in the current vault.
+     * @return The personas in the current vault.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    const std::vector<std::unique_ptr<Persona>> &getPersonas() const;
+
+    /**
+     * @brief Add a persona to the current vault.
+     * @param persona The persona to add.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    void addPersona(std::unique_ptr<Persona> persona);
+
+    /**
+     * @brief Remove a persona.
+     * @param personaId The ID of the persona to remove.
+     * @return true if the persona is removed, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    bool removePersona(int64_t personaId);
 
     /**
      * @brief Link a persona to an entry in a category.
@@ -67,12 +94,46 @@ public:
     bool linkPersonaToEntry(int64_t personaId, int64_t categoryId, int64_t entryId);
 
     /**
-     * @brief Remove a persona.
-     * @param personaId The ID of the persona to remove.
-     * @return true if the persona is removed, false otherwise.
+     * @brief Get a persona by its ID.
+     * @param personaId The ID of the persona to get.
+     * @return A reference to the persona with the specified ID.
      * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
      */
-    bool removePersona(int64_t personaId);
+    const std::unique_ptr<Persona> &getPersonaById(int64_t personaId) const;
+
+    /**
+     * @brief Add an entry to a category.
+     * @param categoryId The ID of the category to add the entry to.
+     * @param entry The entry to add.
+     * @return true if the entry is added, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    bool addEntryToCategory(int64_t categoryId, std::unique_ptr<Entry> entry);
+
+    /**
+     * @brief Remove an entry from a category.
+     * @param categoryId The ID of the category.
+     * @param entryId The ID of the entry to remove.
+     * @return true if the entry is removed, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    bool removeEntryFromCategory(int64_t categoryId, int64_t entryId);
+
+    /**
+     * @brief Get all websites by their URL.
+     * @param url The URL to search for.
+     * @return A vector of pointers to the websites with the specified URL.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    std::vector<const Website *> getWebsitesByUrl(const std::string &url) const;
+
+    /**
+     * @brief Get a website by its ID.
+     * @param entryId The ID of the website to get.
+     * @return A pointer to the website with the specified ID, or nullptr if not found.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    const Website *getWebsiteById(int64_t entryId) const;
 
     /**
      * @brief Set the alias for a website.
@@ -84,6 +145,15 @@ public:
      * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool setAliasForWebsite(int64_t categoryId, int64_t entryId, const std::string &aliasId, const std::string &alias);
+
+    /**
+     * @brief Search for entries in a category by a search term.
+     * @param categoryId The ID of the category to search in.
+     * @param searchTerm The term to search for in the entries' notes, title, username, comments, ...
+     * @return A vector of pointers to the entries that match the search term.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    std::vector<const Entry *> searchEntriesInCategory(int64_t categoryId, const std::string &searchTerm) const;
 
 private:
     std::unique_ptr<VaultRepository> repository;

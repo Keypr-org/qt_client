@@ -47,6 +47,15 @@ bool VaultController::createVault(const std::string &masterPassword, const std::
     }
 }
 
+const std::string &VaultController::getVaultName() const
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    return session->getName();
+}
+
 const std::vector<std::unique_ptr<Category>> &VaultController::getCategories() const
 {
     if (session == nullptr)
@@ -56,7 +65,34 @@ const std::vector<std::unique_ptr<Category>> &VaultController::getCategories() c
     return session->getCategories();
 }
 
-bool VaultController::removeEntryFromCategory(int64_t categoryId, int64_t entryId)
+void VaultController::addCategory(std::unique_ptr<Category> category)
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    session->addCategory(std::move(category));
+}
+
+const std::vector<std::unique_ptr<Persona>> &VaultController::getPersonas() const
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    return session->getPersonas();
+}
+
+void VaultController::addPersona(std::unique_ptr<Persona> persona)
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    session->addPersona(std::move(persona));
+}
+
+bool VaultController::removePersona(int64_t personaId)
 {
     if (session == nullptr)
     {
@@ -64,16 +100,12 @@ bool VaultController::removeEntryFromCategory(int64_t categoryId, int64_t entryI
     }
     try
     {
-        session->removeEntryFromCategory(categoryId, entryId);
+        session->removePersona(personaId);
         return true;
     }
-    catch (const CategoryNotFoundError &)
+    catch (const PersonaNotFoundError &)
     {
-        return false; // Category not found
-    }
-    catch (const EntryNotFoundError &)
-    {
-        return false; // Entry not found
+        return false; // Persona not found
     }
 }
 
@@ -106,7 +138,7 @@ bool VaultController::linkPersonaToEntry(int64_t personaId, int64_t categoryId, 
     }
 }
 
-bool VaultController::removePersona(int64_t personaId)
+const std::unique_ptr<Persona> &VaultController::getPersonaById(int64_t personaId) const
 {
     if (session == nullptr)
     {
@@ -114,13 +146,70 @@ bool VaultController::removePersona(int64_t personaId)
     }
     try
     {
-        session->removePersona(personaId);
-        return true;
+        return session->getPersonaById(personaId);
     }
     catch (const PersonaNotFoundError &)
     {
-        return false; // Persona not found
+        throw std::runtime_error("Persona not found.");
     }
+}
+
+bool VaultController::addEntryToCategory(int64_t categoryId, std::unique_ptr<Entry> entry)
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    try
+    {
+        session->addEntryToCategory(categoryId, std::move(entry));
+        return true;
+    }
+    catch (const CategoryNotFoundError &)
+    {
+        return false; // Category not found
+    }
+}
+
+bool VaultController::removeEntryFromCategory(int64_t categoryId, int64_t entryId)
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    try
+    {
+        session->removeEntryFromCategory(categoryId, entryId);
+        return true;
+    }
+    catch (const CategoryNotFoundError &)
+    {
+        return false; // Category not found
+    }
+    catch (const EntryNotFoundError &)
+    {
+        return false; // Entry not found
+    }
+}
+
+std::vector<const Website *> VaultController::getWebsitesByUrl(const std::string &url) const
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+
+    return session->getWebsiteByUrl(url);
+}
+
+const Website *VaultController::getWebsiteById(int64_t entryId) const
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+
+    return session->getWebsiteById(entryId);
 }
 
 bool VaultController::setAliasForWebsite(int64_t categoryId, int64_t entryId, const std::string &aliasId, const std::string &alias)
@@ -145,5 +234,21 @@ bool VaultController::setAliasForWebsite(int64_t categoryId, int64_t entryId, co
     catch (const EntryNotGoodTypeError &)
     {
         return false; // Entry is not of the correct type to set an alias
+    }
+}
+
+std::vector<const Entry *> VaultController::searchEntriesInCategory(int64_t categoryId, const std::string &searchTerm) const
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    try
+    {
+        return session->searchEntriesInCategory(categoryId, searchTerm);
+    }
+    catch (const CategoryNotFoundError &)
+    {
+        throw std::runtime_error("Category not found.");
     }
 }
