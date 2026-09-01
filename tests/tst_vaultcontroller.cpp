@@ -6,8 +6,36 @@
 #include "../src/vaultcontroller.h"
 #undef private
 
+class TestEntry : public Entry {
+public:
+    TestEntry(const std::string &notes) : Entry(notes) {}
+
+    std::string getType() const override {
+        return "TestEntry";
+    }
+};
+
 static std::unique_ptr<VaultSession> makeVaultSession() {
     auto vaultSession = std::make_unique<FakeVaultSession>();
+    return vaultSession;
+}
+
+static std::unique_ptr<VaultSession> makeVaultSessionWithCategoryAndEntry(int64_t *categoryId,
+    int64_t *entryId) {
+    std::unique_ptr<VaultSession> vaultSession = makeVaultSession();
+    vaultSession->addCategory(std::make_unique<Category>("Passwords"));
+    auto &category = vaultSession->getCategories().front();
+
+    auto entry = std::make_unique<TestEntry>("gmail");
+    if (entryId != nullptr) {
+        *entryId = entry->getId();
+    }
+    category->addEntry(std::move(entry));
+
+    if (categoryId != nullptr) {
+        *categoryId = category->getId();
+    }
+
     return vaultSession;
 }
 
@@ -25,6 +53,10 @@ private slots:
     void getCategories_returnsCategories_whenSessionIsOpen();
     void getCategories_returnsEmptyVector_whenSessionIsOpenButEmpty();
     void getCategories_throws_whenSessionIsNotOpen();
+    void removeEntryFromCategory_returnsTrue_whenEntryExists();
+    void removeEntryFromCategory_returnsFalse_whenCategoryDoesNotExist();
+    void removeEntryFromCategory_returnsFalse_whenEntryDoesNotExist();
+    void removeEntryFromCategory_throws_whenSessionIsNotOpen();
 };
 
 /**
@@ -137,7 +169,62 @@ void VaultControllerTest::getCategories_throws_whenSessionIsNotOpen() {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
     VaultController controller(std::move(repository));
 
-    QVERIFY_EXCEPTION_THROWN(controller.getCategories(), std::runtime_error);
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getCategories());
+}
+
+/**
+ * @brief Test removeEntryFromCategory when the entry exists in the category.
+ */
+void VaultControllerTest::removeEntryFromCategory_returnsTrue_whenEntryExists() {
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t entryId = 0;
+    controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
+
+    QVERIFY(controller.removeEntryFromCategory(categoryId, entryId));
+    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(0));
+}
+
+/**
+ * @brief Test removeEntryFromCategory when the category does not exist.
+ */
+void VaultControllerTest::removeEntryFromCategory_returnsFalse_whenCategoryDoesNotExist() {
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t entryId = 0;
+    controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
+
+    QVERIFY(!controller.removeEntryFromCategory(categoryId + 1, entryId));
+    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(1));
+}
+
+/**
+ * @brief Test removeEntryFromCategory when the entry does not exist in the category.
+ */
+void VaultControllerTest::removeEntryFromCategory_returnsFalse_whenEntryDoesNotExist() {
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t entryId = 0;
+    controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
+
+    QVERIFY(!controller.removeEntryFromCategory(categoryId, entryId + 1));
+    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(1));
+}
+
+/**
+ * @brief Test removeEntryFromCategory when no session is open.
+ */
+void VaultControllerTest::removeEntryFromCategory_throws_whenSessionIsNotOpen() {
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.removeEntryFromCategory(1, 1));
 }
 
 QTEST_MAIN(VaultControllerTest)

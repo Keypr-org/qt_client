@@ -38,6 +38,15 @@ public:
      */
     const std::vector<std::unique_ptr<Category>> &getCategories() const;
 
+    /**
+     * @brief Remove an entry from a category.
+     * @param categoryId The ID of the category.
+     * @param entryId The ID of the entry to remove.
+     * @return true if the entry is removed, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    bool removeEntryFromCategory(int64_t categoryId, int64_t entryId);
+
 private:
     std::unique_ptr<VaultRepository> repository;
     std::unique_ptr<VaultSession> session;

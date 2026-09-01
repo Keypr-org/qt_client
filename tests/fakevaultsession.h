@@ -7,5 +7,5 @@
 
 class FakeVaultSession : public VaultSession {
 public:
-    FakeVaultSession() : VaultSession("", {}, {}) {};
+    FakeVaultSession() : VaultSession("", {}, {}, {}) {};
 };
