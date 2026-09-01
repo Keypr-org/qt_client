@@ -105,3 +105,20 @@ bool VaultController::linkPersonaToEntry(int64_t personaId, int64_t categoryId, 
         return false; // Entry is not of the correct type to link a persona
     }
 }
+
+bool VaultController::removePersona(int64_t personaId)
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    try
+    {
+        session->removePersona(personaId);
+        return true;
+    }
+    catch (const PersonaNotFoundError &)
+    {
+        return false; // Persona not found
+    }
+}

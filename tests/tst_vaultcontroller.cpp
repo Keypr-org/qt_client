@@ -49,8 +49,7 @@ static std::unique_ptr<VaultSession> makeVaultSession()
 static std::unique_ptr<VaultSession> makeLinkedPersonaSession(int64_t *personaId,
                                                               int64_t *categoryId, int64_t *targetWebsiteId, int64_t *untouchedWebsiteId)
 {
-    auto vaultSession = std::make_unique<VaultSession>("vault", EncKey{}, AuthKey{},
-                                                       makeVaultHeader());
+    auto vaultSession = makeVaultSession();
 
     vaultSession->addPersona(makePersona("Ada", "Lovelace"));
     if (personaId != nullptr)
@@ -87,8 +86,7 @@ static std::unique_ptr<VaultSession> makeLinkedPersonaSession(int64_t *personaId
 static std::unique_ptr<VaultSession> makeLinkedPersonaSessionWithWrongEntry(int64_t *personaId,
                                                                             int64_t *categoryId, int64_t *websiteId, int64_t *wrongEntryId)
 {
-    auto vaultSession = std::make_unique<VaultSession>("vault", EncKey{}, AuthKey{},
-                                                       makeVaultHeader());
+    auto vaultSession = makeVaultSession();
 
     vaultSession->addPersona(makePersona("Ada", "Lovelace"));
     if (personaId != nullptr)
@@ -117,6 +115,25 @@ static std::unique_ptr<VaultSession> makeLinkedPersonaSessionWithWrongEntry(int6
         *wrongEntryId = wrongEntry->getId();
     }
     category->addEntry(std::move(wrongEntry));
+
+    return vaultSession;
+}
+
+static std::unique_ptr<VaultSession> makeVaultSessionWithPersonas(int64_t *firstPersonaId,
+                                                                  int64_t *secondPersonaId)
+{
+    auto vaultSession = makeVaultSession();
+    vaultSession->addPersona(makePersona("Ada", "Lovelace"));
+    vaultSession->addPersona(makePersona("Grace", "Hopper"));
+
+    if (firstPersonaId != nullptr)
+    {
+        *firstPersonaId = vaultSession->getPersonas()[0]->getId();
+    }
+    if (secondPersonaId != nullptr)
+    {
+        *secondPersonaId = vaultSession->getPersonas()[1]->getId();
+    }
 
     return vaultSession;
 }
@@ -170,6 +187,9 @@ private slots:
     void removeEntryFromCategory_returnsFalse_whenCategoryDoesNotExist();
     void removeEntryFromCategory_returnsFalse_whenEntryDoesNotExist();
     void removeEntryFromCategory_throws_whenSessionIsNotOpen();
+    void removePersona_returnsTrue_whenPersonaExists();
+    void removePersona_returnsFalse_whenPersonaDoesNotExist();
+    void removePersona_throws_whenSessionIsNotOpen();
 };
 
 /**
@@ -508,6 +528,52 @@ void VaultControllerTest::removeEntryFromCategory_throws_whenSessionIsNotOpen()
     VaultController controller(std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.removeEntryFromCategory(1, 1));
+}
+
+/**
+ * @brief Test removePersona when the persona exists.
+ */
+void VaultControllerTest::removePersona_returnsTrue_whenPersonaExists()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t firstPersonaId = 0;
+    int64_t secondPersonaId = 0;
+    controller.session = makeVaultSessionWithPersonas(&firstPersonaId, &secondPersonaId);
+
+    QVERIFY(controller.removePersona(firstPersonaId));
+    QCOMPARE(controller.session->getPersonas().size(), std::size_t(1));
+    QCOMPARE(controller.session->getPersonas().front()->getId(), secondPersonaId);
+}
+
+/**
+ * @brief Test removePersona when the persona does not exist.
+ */
+void VaultControllerTest::removePersona_returnsFalse_whenPersonaDoesNotExist()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t firstPersonaId = 0;
+    int64_t secondPersonaId = 0;
+    controller.session = makeVaultSessionWithPersonas(&firstPersonaId, &secondPersonaId);
+
+    QVERIFY(!controller.removePersona(secondPersonaId + 1));
+    QCOMPARE(controller.session->getPersonas().size(), std::size_t(2));
+    QCOMPARE(controller.session->getPersonas()[0]->getId(), firstPersonaId);
+    QCOMPARE(controller.session->getPersonas()[1]->getId(), secondPersonaId);
+}
+
+/**
+ * @brief Test removePersona when no session is open.
+ */
+void VaultControllerTest::removePersona_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.removePersona(1));
 }
 
 QTEST_MAIN(VaultControllerTest)

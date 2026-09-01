@@ -66,6 +66,14 @@ public:
      */
     bool linkPersonaToEntry(int64_t personaId, int64_t categoryId, int64_t entryId);
 
+    /**
+     * @brief Remove a persona.
+     * @param personaId The ID of the persona to remove.
+     * @return true if the persona is removed, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    bool removePersona(int64_t personaId);
+
 private:
     std::unique_ptr<VaultRepository> repository;
     std::unique_ptr<VaultSession> session;
