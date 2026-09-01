@@ -8,6 +8,8 @@
 #include "../src/vaultcontroller.h"
 #undef private
 
+#define NO_ID -1
+
 class TestEntry : public Entry
 {
 public:
@@ -205,6 +207,29 @@ private slots:
     void unlockVault_returnsFalse_whenEverythingFailsAndParsingFails();
     void createVault_returnsTrue_whenVaultCreationSucceeds();
     void createVault_returnsFalse_whenVaultCreationFails();
+    void getVaultName_returnsVaultName_whenSessionIsOpen();
+    void getVaultName_throws_whenSessionIsNotOpen();
+    void addCategory_addsCategory_whenSessionIsOpen();
+    void addCategory_throws_whenSessionIsNotOpen();
+    void getPersonas_returnsPersonas_whenSessionIsOpen();
+    void getPersonas_throws_whenSessionIsNotOpen();
+    void addPersona_addsPersona_whenSessionIsOpen();
+    void addPersona_throws_whenSessionIsNotOpen();
+    void getPersonaById_returnsPersona_whenPersonaExists();
+    void getPersonaById_throws_whenPersonaDoesNotExist();
+    void getPersonaById_throws_whenSessionIsNotOpen();
+    void addEntryToCategory_returnsTrue_whenCategoryExists();
+    void addEntryToCategory_returnsFalse_whenCategoryDoesNotExist();
+    void addEntryToCategory_throws_whenSessionIsNotOpen();
+    void getWebsitesByUrl_returnsMatchingWebsites_whenSessionIsOpen();
+    void getWebsitesByUrl_throws_whenSessionIsNotOpen();
+    void getWebsiteById_returnsWebsite_whenWebsiteExists();
+    void getWebsiteById_returnsNullptr_whenWebsiteDoesNotExist();
+    void getWebsiteById_throws_whenSessionIsNotOpen();
+    void searchEntriesInCategory_returnsMatchingEntries_whenSessionIsOpen();
+    void searchEntriesInCategory_returnsEmptyVector_whenNoEntryMatches();
+    void searchEntriesInCategory_throws_whenCategoryDoesNotExist();
+    void searchEntriesInCategory_throws_whenSessionIsNotOpen();
     void linkPersonaToEntry_returnsTrue_whenPersonaAndEntryExist();
     void linkPersonaToEntry_returnsFalse_whenPersonaDoesNotExist();
     void linkPersonaToEntry_returnsFalse_whenCategoryDoesNotExist();
@@ -333,6 +358,356 @@ void VaultControllerTest::createVault_returnsFalse_whenVaultCreationFails()
 }
 
 /**
+ * @brief Test getVaultName when a vault session is open.
+ */
+void VaultControllerTest::getVaultName_returnsVaultName_whenSessionIsOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+    controller.session = std::make_unique<VaultSession>("My Vault", EncKey{}, AuthKey{}, nullptr);
+
+    QCOMPARE(QString::fromStdString(controller.getVaultName()), QString("My Vault"));
+}
+
+/**
+ * @brief Test getVaultName when no vault session is open.
+ */
+void VaultControllerTest::getVaultName_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getVaultName());
+}
+
+/**
+ * @brief Test addCategory when a vault session is open.
+ */
+void VaultControllerTest::addCategory_addsCategory_whenSessionIsOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+    controller.session = makeVaultSession();
+
+    controller.addCategory(std::make_unique<Category>("Passwords"));
+
+    QCOMPARE(controller.getCategories().size(), std::size_t(1));
+    QCOMPARE(QString::fromStdString(controller.getCategories().front()->getName()), QString("Passwords"));
+}
+
+/**
+ * @brief Test addCategory when no vault session is open.
+ */
+void VaultControllerTest::addCategory_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error,
+                             controller.addCategory(std::make_unique<Category>("Passwords")));
+}
+
+/**
+ * @brief Test getPersonas when a vault session is open.
+ */
+void VaultControllerTest::getPersonas_returnsPersonas_whenSessionIsOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+    controller.session = makeVaultSessionWithPersonas(nullptr, nullptr);
+
+    const auto &personas = controller.getPersonas();
+
+    QCOMPARE(personas.size(), std::size_t(2));
+    QCOMPARE(QString::fromStdString(personas[0]->getFirstName()), QString("Ada"));
+    QCOMPARE(QString::fromStdString(personas[1]->getFirstName()), QString("Grace"));
+}
+
+/**
+ * @brief Test getPersonas when no vault session is open.
+ */
+void VaultControllerTest::getPersonas_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getPersonas());
+}
+
+/**
+ * @brief Test addPersona when a vault session is open.
+ */
+void VaultControllerTest::addPersona_addsPersona_whenSessionIsOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+    controller.session = makeVaultSession();
+
+    controller.addPersona(makePersona("Ada", "Lovelace"));
+
+    const auto &personas = controller.getPersonas();
+    QCOMPARE(personas.size(), std::size_t(1));
+    QCOMPARE(QString::fromStdString(personas.front()->getFirstName()), QString("Ada"));
+}
+
+/**
+ * @brief Test addPersona when no vault session is open.
+ */
+void VaultControllerTest::addPersona_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.addPersona(makePersona("Ada", "Lovelace")));
+}
+
+/**
+ * @brief Test getPersonaById when the persona exists.
+ */
+void VaultControllerTest::getPersonaById_returnsPersona_whenPersonaExists()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t firstPersonaId = 0;
+    int64_t secondPersonaId = 0;
+    controller.session = makeVaultSessionWithPersonas(&firstPersonaId, &secondPersonaId);
+
+    const auto &persona = controller.getPersonaById(firstPersonaId);
+
+    QVERIFY(persona != nullptr);
+    QCOMPARE(persona->getId(), firstPersonaId);
+    QCOMPARE(QString::fromStdString(persona->getFirstName()), QString("Ada"));
+}
+
+/**
+ * @brief Test getPersonaById when the persona does not exist.
+ */
+void VaultControllerTest::getPersonaById_throws_whenPersonaDoesNotExist()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    controller.session = makeVaultSessionWithPersonas(nullptr, nullptr);
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getPersonaById(NO_PERSONA_ID));
+}
+
+/**
+ * @brief Test getPersonaById when no vault session is open.
+ */
+void VaultControllerTest::getPersonaById_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getPersonaById(1));
+}
+
+/**
+ * @brief Test addEntryToCategory when the category exists.
+ */
+void VaultControllerTest::addEntryToCategory_returnsTrue_whenCategoryExists()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t entryId = 0;
+    controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
+
+    controller.removeEntryFromCategory(categoryId, entryId);
+    QVERIFY(controller.addEntryToCategory(categoryId, std::make_unique<TestEntry>("gmail")));
+    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(1));
+}
+
+/**
+ * @brief Test addEntryToCategory when the category does not exist.
+ */
+void VaultControllerTest::addEntryToCategory_returnsFalse_whenCategoryDoesNotExist()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t entryId = 0;
+    controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
+
+    QVERIFY(!controller.addEntryToCategory(categoryId + 1, std::make_unique<TestEntry>("gmail")));
+    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(1));
+}
+
+/**
+ * @brief Test addEntryToCategory when no vault session is open.
+ */
+void VaultControllerTest::addEntryToCategory_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error,
+                             controller.addEntryToCategory(1, std::make_unique<TestEntry>("gmail")));
+}
+
+/**
+ * @brief Test getWebsitesByUrl when matching websites exist.
+ */
+void VaultControllerTest::getWebsitesByUrl_returnsMatchingWebsites_whenSessionIsOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t personaId = 0;
+    int64_t categoryId = 0;
+    int64_t targetWebsiteId = 0;
+    int64_t untouchedWebsiteId = 0;
+    controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
+                                                  &untouchedWebsiteId);
+
+    const auto websites = controller.getWebsitesByUrl("https://target.example.com");
+
+    QCOMPARE(websites.size(), std::size_t(1));
+    QVERIFY(websites.front() != nullptr);
+    QCOMPARE(websites.front()->getId(), targetWebsiteId);
+}
+
+/**
+ * @brief Test getWebsitesByUrl when no vault session is open.
+ */
+void VaultControllerTest::getWebsitesByUrl_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error,
+                             controller.getWebsitesByUrl("https://target.example.com"));
+}
+
+/**
+ * @brief Test getWebsiteById when the website exists.
+ */
+void VaultControllerTest::getWebsiteById_returnsWebsite_whenWebsiteExists()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t personaId = 0;
+    int64_t categoryId = 0;
+    int64_t targetWebsiteId = 0;
+    int64_t untouchedWebsiteId = 0;
+    controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
+                                                  &untouchedWebsiteId);
+
+    const auto *website = controller.getWebsiteById(targetWebsiteId);
+
+    QVERIFY(website != nullptr);
+    QCOMPARE(website->getId(), targetWebsiteId);
+    QCOMPARE(website->getTitle(), std::string("Target"));
+}
+
+/**
+ * @brief Test getWebsiteById when the website does not exist.
+ */
+void VaultControllerTest::getWebsiteById_returnsNullptr_whenWebsiteDoesNotExist()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t personaId = 0;
+    int64_t categoryId = 0;
+    int64_t targetWebsiteId = 0;
+    int64_t untouchedWebsiteId = 0;
+    controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
+                                                  &untouchedWebsiteId);
+
+    QVERIFY(controller.getWebsiteById(NO_ID) == nullptr);
+}
+
+/**
+ * @brief Test getWebsiteById when no vault session is open.
+ */
+void VaultControllerTest::getWebsiteById_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getWebsiteById(1));
+}
+
+/**
+ * @brief Test searchEntriesInCategory when matching entries exist.
+ */
+void VaultControllerTest::searchEntriesInCategory_returnsMatchingEntries_whenSessionIsOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t personaId = 0;
+    int64_t categoryId = 0;
+    int64_t targetWebsiteId = 0;
+    int64_t untouchedWebsiteId = 0;
+    controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
+                                                  &untouchedWebsiteId);
+
+    const auto matches = controller.searchEntriesInCategory(categoryId, "target");
+
+    QCOMPARE(matches.size(), std::size_t(1));
+    QVERIFY(matches.front() != nullptr);
+    QCOMPARE(matches.front()->getId(), targetWebsiteId);
+}
+
+/**
+ * @brief Test searchEntriesInCategory when no entry matches.
+ */
+void VaultControllerTest::searchEntriesInCategory_returnsEmptyVector_whenNoEntryMatches()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t personaId = 0;
+    int64_t categoryId = 0;
+    int64_t targetWebsiteId = 0;
+    int64_t untouchedWebsiteId = 0;
+    controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
+                                                  &untouchedWebsiteId);
+
+    const auto matches = controller.searchEntriesInCategory(categoryId, "missing-term");
+
+    QCOMPARE(matches.size(), std::size_t(0));
+}
+
+/**
+ * @brief Test searchEntriesInCategory when the category does not exist.
+ */
+void VaultControllerTest::searchEntriesInCategory_throws_whenCategoryDoesNotExist()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t personaId = 0;
+    int64_t categoryId = 0;
+    int64_t targetWebsiteId = 0;
+    int64_t untouchedWebsiteId = 0;
+    controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
+                                                  &untouchedWebsiteId);
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error,
+                             controller.searchEntriesInCategory(categoryId + 1, "target"));
+}
+
+/**
+ * @brief Test searchEntriesInCategory when no vault session is open.
+ */
+void VaultControllerTest::searchEntriesInCategory_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error,
+                             controller.searchEntriesInCategory(1, "target"));
+}
+
+/**
  * @brief Test linkPersonaToEntry when the persona and entry both exist.
  */
 void VaultControllerTest::linkPersonaToEntry_returnsTrue_whenPersonaAndEntryExist()
@@ -422,7 +797,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryDoesNotExist(
     controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
                                                   &untouchedWebsiteId);
 
-    QVERIFY(!controller.linkPersonaToEntry(personaId, categoryId, -1));
+    QVERIFY(!controller.linkPersonaToEntry(personaId, categoryId, NO_ID));
 
     const auto *targetWebsite = dynamic_cast<const Website *>(
         controller.getCategories().front()->getEntries()[0].get());
