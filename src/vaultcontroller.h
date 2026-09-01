@@ -13,8 +13,9 @@ public:
     /**
      * @brief Construct a new VaultController object.
      * @param repository The vault repository to use.
+     * @param pathToVaults The path to the directory containing the vaults.
      */
-    explicit VaultController(std::unique_ptr<VaultRepository> repository);
+    explicit VaultController(std::unique_ptr<VaultRepository> repository, std::string pathToVaults = "");
 
     bool isVaultUnlocked() const;
 
@@ -40,6 +41,15 @@ public:
      * @return true if the vault is created, false otherwise.
      */
     bool createVault(const std::string &masterPassword, const std::string &vaultName);
+
+    /**
+     * @brief Lock the current vault.
+     * @param filename The name of the vault file to lock.
+     * @return true if the vault is locked, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws std::runtime_error if no filename is provided and the path to vaults is not set.
+     */
+    bool lockVault(const std::string &filename = "");
 
     /**
      * @brief Get the name of the current vault.
@@ -158,4 +168,5 @@ public:
 private:
     std::unique_ptr<VaultRepository> repository;
     std::unique_ptr<VaultSession> session;
+    std::string pathToVaults;
 };

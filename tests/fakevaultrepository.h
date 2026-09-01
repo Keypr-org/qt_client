@@ -6,42 +6,67 @@
 #include "VaultRepository.h"
 #include "fakevaultsession.h"
 
-
-
 /**
  * @brief A fake implementation of the VaultRepository interface for testing purposes.
  */
-class FakeVaultRepository : public VaultRepository {
+class FakeVaultRepository : public VaultRepository
+{
 public:
-    FakeVaultRepository(bool fileExistsOrGoodPassword, bool parsingSuccess)
+    FakeVaultRepository(bool fileExistsOrGoodPassword, bool parsingSuccess = true)
         : fileExistsOrGoodPassword(fileExistsOrGoodPassword), parsingSuccess(parsingSuccess) {
-    };
+          };
 
-    bool vaultExists(const std::string &vaultName) const override {
-        if (fileExistsOrGoodPassword && parsingSuccess) {
+    bool vaultExists(const std::string &vaultName) const override
+    {
+        if (fileExistsOrGoodPassword && parsingSuccess)
+        {
             return true;
-        } else {
+        }
+        else
+        {
             return false;
         }
     }
 
     std::unique_ptr<VaultSession> unlockVault(const std::string &masterpass,
-        const std::string &filename) const override {
-        if (fileExistsOrGoodPassword && parsingSuccess) {
+                                              const std::string &filename) const override
+    {
+        if (fileExistsOrGoodPassword && parsingSuccess)
+        {
             return std::make_unique<FakeVaultSession>();
-        } else if (!fileExistsOrGoodPassword) {
+        }
+        else if (!fileExistsOrGoodPassword)
+        {
             return nullptr;
-        } else {
+        }
+        else
+        {
             throw UnlockVaultError("Failed to unlock vault.");
         }
     }
 
     std::unique_ptr<VaultSession> createVault(const std::string &masterpass,
-        const std::string &vaultName) const override {
-        if (fileExistsOrGoodPassword || parsingSuccess) {
+                                              const std::string &vaultName) const override
+    {
+        if (fileExistsOrGoodPassword)
+        {
             return std::make_unique<FakeVaultSession>();
-        } else {
+        }
+        else
+        {
             throw CreateVaultError("Failed to create vault.");
+        }
+    }
+
+    bool lockVault(const VaultSession &session, const std::string &filename) const override
+    {
+        if (fileExistsOrGoodPassword)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 

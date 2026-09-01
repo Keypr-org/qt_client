@@ -2,8 +2,8 @@
 
 #include <exception>
 
-VaultController::VaultController(std::unique_ptr<VaultRepository> repository)
-    : repository(std::move(repository)), session(nullptr)
+VaultController::VaultController(std::unique_ptr<VaultRepository> repository, std::string pathToVaults)
+    : repository(std::move(repository)), session(nullptr), pathToVaults(std::move(pathToVaults))
 {
     if (this->repository == nullptr)
     {
@@ -42,6 +42,50 @@ bool VaultController::createVault(const std::string &masterPassword, const std::
         return session != nullptr;
     }
     catch (CreateVaultError &)
+    {
+        return false;
+    }
+}
+
+bool VaultController::lockVault(const std::string &filename)
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    std::string path;
+    if (filename.empty())
+    {
+        if (pathToVaults.empty())
+        {
+            throw std::runtime_error("Path to vaults is not set. Please provide a path to the vaults.");
+        }
+        std::string vaultName = session->getName();
+        std::transform(vaultName.begin(), vaultName.end(), vaultName.begin(),
+                       [](unsigned char c)
+                       {
+                           if (std::isalnum(c))
+                           {
+                               return static_cast<char>(std::tolower(c));
+                           }
+                           else
+                           {
+                               return '-';
+                           }
+                       });
+        path = pathToVaults + "/" + vaultName + ".kvdb";
+    }
+    else
+    {
+        path = filename;
+    }
+
+    if (repository->lockVault(*session, path))
+    {
+        session.reset(); // Reset the session to indicate that the vault is locked
+        return true;
+    }
+    else
     {
         return false;
     }
