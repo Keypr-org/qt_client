@@ -5,6 +5,10 @@
 #include <QTransform>
 #include <QPushButton>
 #include <QResizeEvent>
+#include <QAction>
+#include <QKeySequence>
+#include <QMenu>
+#include <QMenuBar>
 
 // Sidebar imports
 #include "sideBar/vaultselection.h"
@@ -18,6 +22,9 @@
 
 // Component imports
 #include "component/notificationtooltip.h"
+
+// Settings imports
+#include "settings/settingswindow.h"
 
 // Main Content imports
 #include "mainContent/novaultselected.h"
@@ -37,6 +44,16 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow) {
     ui->setupUi(this);
+
+    auto *settingsMenu = menuBar()->addMenu("Settings");
+    auto *settingsAction = settingsMenu->addAction("Open Settings...");
+    settingsAction->setMenuRole(QAction::NoRole);
+    settingsAction->setShortcut(QKeySequence::Preferences);
+
+    connect(settingsAction, &QAction::triggered, this, [this]() {
+        SettingsWindow settingsWindow(this);
+        settingsWindow.exec();
+    });
 
     auto vaultSelection = new VaultSelection(this);
     ui->sideBar->addWidget(vaultSelection);
