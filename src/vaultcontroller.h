@@ -15,7 +15,7 @@ public:
      * @param repository The vault repository to use.
      * @param pathToVaults The path to the directory containing the vaults.
      */
-    explicit VaultController(std::unique_ptr<VaultRepository> repository, std::string pathToVaults = "");
+    explicit VaultController(std::unique_ptr<VaultRepository> repository = nullptr, std::string pathToVaults = "");
 
     bool isVaultUnlocked() const;
 
@@ -70,6 +70,14 @@ public:
      * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
      */
     void addCategory(std::unique_ptr<Category> category);
+
+    /**
+     * @brief Get the entries in a category.
+     * @param categoryId The ID of the category.
+     * @return A vector of pointers to the entries in the category or an empty vector if the category is not found.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    const std::vector<std::unique_ptr<Entry>> &getEntriesInCategory(int64_t categoryId) const;
 
     /**
      * @brief Get the personas in the current vault.

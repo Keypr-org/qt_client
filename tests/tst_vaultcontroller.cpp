@@ -224,6 +224,10 @@ private slots:
     void addEntryToCategory_returnsTrue_whenCategoryExists();
     void addEntryToCategory_returnsFalse_whenCategoryDoesNotExist();
     void addEntryToCategory_throws_whenSessionIsNotOpen();
+    void getEntriesInCategory_returnsEntries_whenCategoryExists();
+    void getEntriesInCategory_returnsEmptyVector_whenCategoryIsEmpty();
+    void getEntriesInCategory_returnsEmptyVector_whenCategoryDoesNotExist();
+    void getEntriesInCategory_throws_whenSessionIsNotOpen();
     void getWebsitesByUrl_returnsMatchingWebsites_whenSessionIsOpen();
     void getWebsitesByUrl_throws_whenSessionIsNotOpen();
     void getWebsiteById_returnsWebsite_whenWebsiteExists();
@@ -588,6 +592,69 @@ void VaultControllerTest::addEntryToCategory_throws_whenSessionIsNotOpen()
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error,
                              controller.addEntryToCategory(1, std::make_unique<TestEntry>("gmail")));
+}
+
+/**
+ * @brief Test getEntriesInCategory when the category exists and contains entries.
+ */
+void VaultControllerTest::getEntriesInCategory_returnsEntries_whenCategoryExists()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t entryId = 0;
+    controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
+
+    const auto &entries = controller.getEntriesInCategory(categoryId);
+
+    QCOMPARE(entries.size(), std::size_t(1));
+    QCOMPARE(entries.front()->getId(), entryId);
+    QCOMPARE(entries.front()->getType(), std::string("TestEntry"));
+}
+
+/**
+ * @brief Test getEntriesInCategory when the category exists but has no entries.
+ */
+void VaultControllerTest::getEntriesInCategory_returnsEmptyVector_whenCategoryIsEmpty()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+    controller.session = makeVaultSession();
+    controller.session->addCategory(std::make_unique<Category>("Passwords"));
+
+    const auto categoryId = controller.session->getCategories().front()->getId();
+    const auto &entries = controller.getEntriesInCategory(categoryId);
+
+    QCOMPARE(entries.size(), std::size_t(0));
+}
+
+/**
+ * @brief Test getEntriesInCategory when the category does not exist.
+ */
+void VaultControllerTest::getEntriesInCategory_returnsEmptyVector_whenCategoryDoesNotExist()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    int64_t categoryId = 0;
+    int64_t entryId = 0;
+    controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
+
+    const auto &entries = controller.getEntriesInCategory(categoryId + 1);
+
+    QCOMPARE(entries.size(), std::size_t(0));
+}
+
+/**
+ * @brief Test getEntriesInCategory when no session is open.
+ */
+void VaultControllerTest::getEntriesInCategory_throws_whenSessionIsNotOpen()
+{
+    std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
+    VaultController controller(std::move(repository));
+
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getEntriesInCategory(1));
 }
 
 /**
