@@ -7,7 +7,8 @@
 /**
  * @brief The VaultController class is responsible for managing the vaults.
  */
-class VaultController {
+class VaultController
+{
 public:
     /**
      * @brief Construct a new VaultController object.
@@ -54,6 +55,16 @@ public:
      * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool removeEntryFromCategory(int64_t categoryId, int64_t entryId);
+
+    /**
+     * @brief Link a persona to an entry in a category.
+     * @param personaId The ID of the persona to link.
+     * @param categoryId The ID of the category containing the entry.
+     * @param entryId The ID of the entry to link the persona to.
+     * @return true if the persona is linked, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    bool linkPersonaToEntry(int64_t personaId, int64_t categoryId, int64_t entryId);
 
 private:
     std::unique_ptr<VaultRepository> repository;
