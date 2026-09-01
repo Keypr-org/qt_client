@@ -358,7 +358,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsTrue_whenPersonaAndEntryExis
     QCOMPARE(targetWebsite->getId(), targetWebsiteId);
     QCOMPARE(targetWebsite->getPersonaId(), personaId);
     QCOMPARE(untouchedWebsite->getId(), untouchedWebsiteId);
-    QCOMPARE(untouchedWebsite->getPersonaId(), static_cast<int64_t>(-1));
+    QCOMPARE(untouchedWebsite->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -381,7 +381,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenPersonaDoesNotExis
     const auto *targetWebsite = dynamic_cast<const Website *>(
         controller.getCategories().front()->getEntries()[0].get());
     QVERIFY(targetWebsite != nullptr);
-    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(-1));
+    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -404,7 +404,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenCategoryDoesNotExi
     const auto *targetWebsite = dynamic_cast<const Website *>(
         controller.getCategories().front()->getEntries()[0].get());
     QVERIFY(targetWebsite != nullptr);
-    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(-1));
+    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -427,7 +427,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryDoesNotExist(
     const auto *targetWebsite = dynamic_cast<const Website *>(
         controller.getCategories().front()->getEntries()[0].get());
     QVERIFY(targetWebsite != nullptr);
-    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(-1));
+    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -450,7 +450,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryHasWrongType(
     const auto *website = dynamic_cast<const Website *>(controller.getCategories().front()->getEntries()[0].get());
     QVERIFY(website != nullptr);
     QCOMPARE(website->getId(), websiteId);
-    QCOMPARE(website->getPersonaId(), static_cast<int64_t>(-1));
+    QCOMPARE(website->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
