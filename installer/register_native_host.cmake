@@ -58,9 +58,8 @@ function(install_native_manifest MANIFEST_DIRECTORY)
 endfunction()
 
 if(WIN32)
-  # Windows Chromium-based browsers use the registry to locate the manifest.
-  # The manifest itself can be stored next to the executable.
   get_filename_component(EXE_DIR "${EXE_PATH}" DIRECTORY)
+
   set(MANIFEST_DESTINATION
       "${EXE_DIR}/com.keypr.native.json")
 
@@ -75,84 +74,54 @@ if(WIN32)
     MANIFEST_DESTINATION_NATIVE
   )
 
-  # Register with all supported Chromium-based browsers whose registry
-  # installation roots are present.
-  set(BROWSER_REGISTRY_ROOTS
+  # Register the host for Chromium-based browsers.
+  # Writing an unused browser key is harmless, so this is more reliable than
+  # trying to detect browser installation locations.
+  set(BROWSER_REGISTRY_KEYS
     "Google\\Chrome"
     "Google\\Chrome Beta"
     "Google\\Chrome Dev"
     "Google\\Chrome SxS"
     "Microsoft\\Edge"
+    "Microsoft\\Edge Beta"
+    "Microsoft\\Edge Dev"
     "Chromium"
     "BraveSoftware\\Brave-Browser"
     "Vivaldi"
     "Opera Software\\Opera Stable"
   )
 
-  set(REGISTERED_BROWSER_COUNT 0)
-
-  foreach(BROWSER_REGISTRY_ROOT IN LISTS BROWSER_REGISTRY_ROOTS)
-    # Check whether the browser has a registry installation entry.
-    execute_process(
-      COMMAND reg query
-        "HKCU\\Software\\${BROWSER_REGISTRY_ROOT}"
-      RESULT_VARIABLE HKCU_RESULT
-      OUTPUT_QUIET
-      ERROR_QUIET
+  foreach(BROWSER_REGISTRY_KEY IN LISTS BROWSER_REGISTRY_KEYS)
+    set(REGISTRY_PATH
+      "HKCU\\Software\\${BROWSER_REGISTRY_KEY}\\NativeMessagingHosts\\com.keypr.native"
     )
 
     execute_process(
-      COMMAND reg query
-        "HKLM\\Software\\${BROWSER_REGISTRY_ROOT}"
-      RESULT_VARIABLE HKLM_RESULT
-      OUTPUT_QUIET
-      ERROR_QUIET
+      COMMAND reg.exe ADD "${REGISTRY_PATH}"
+        /ve
+        /t REG_SZ
+        /d "${MANIFEST_DESTINATION_NATIVE}"
+        /f
+      RESULT_VARIABLE REG_RESULT
+      OUTPUT_VARIABLE REG_OUTPUT
+      ERROR_VARIABLE REG_ERROR
     )
 
-    execute_process(
-      COMMAND reg query
-        "HKLM\\Software\\WOW6432Node\\${BROWSER_REGISTRY_ROOT}"
-      RESULT_VARIABLE HKLM_WOW6432_RESULT
-      OUTPUT_QUIET
-      ERROR_QUIET
-    )
-
-    if(HKCU_RESULT EQUAL 0 OR
-       HKLM_RESULT EQUAL 0 OR
-       HKLM_WOW6432_RESULT EQUAL 0)
-
-      execute_process(
-        COMMAND reg add
-          "HKCU\\Software\\${BROWSER_REGISTRY_ROOT}\\NativeMessagingHosts\\com.keypr.native"
-          /ve
-          /t REG_SZ
-          /d "${MANIFEST_DESTINATION_NATIVE}"
-          /f
-        RESULT_VARIABLE REG_RESULT
-        OUTPUT_QUIET
-        ERROR_QUIET
+    if(REG_RESULT EQUAL 0)
+      message(STATUS
+        "Registered native host for ${BROWSER_REGISTRY_KEY}"
       )
-
-      if(REG_RESULT EQUAL 0)
-        math(EXPR REGISTERED_BROWSER_COUNT
-          "${REGISTERED_BROWSER_COUNT} + 1")
-
-        message(STATUS
-          "Registered native host for ${BROWSER_REGISTRY_ROOT}"
-        )
-      else()
-        message(WARNING
-          "Failed to register native host for ${BROWSER_REGISTRY_ROOT}"
-        )
-      endif()
+    else()
+      message(WARNING
+        "Failed to register native host for ${BROWSER_REGISTRY_KEY}: "
+        "${REG_ERROR}"
+      )
     endif()
   endforeach()
 
-  if(REGISTERED_BROWSER_COUNT EQUAL 0)
-    message(WARNING
-      "No supported Chromium-based browser installation was detected"
-    )
-  endif()
+  message(STATUS
+    "Native Messaging manifest written to: ${MANIFEST_DESTINATION}"
+  )
 
 elseif(APPLE)
   # Chromium-based browser profile/configuration directories on macOS.
