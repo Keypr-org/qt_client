@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QtWidgets/qlistwidget.h>
 
+#include "vaultbridge.h"
+
 namespace Ui {
 class CategoriesSelection;
 }
@@ -13,14 +15,6 @@ class CategoriesSelection : public QWidget
     Q_OBJECT
 
 public:
-    /**
-     * @brief A category as displayed in the list: its real identifier plus display name.
-     */
-    struct CategoryItem {
-        qint64 id;
-        QString name;
-    };
-
     /**
      * @brief Constructs the sidebar categories selection panel.
      * @param parent Parent widget.
@@ -44,7 +38,7 @@ public:
      * (if any) to match the initial-selection behavior of the previous placeholder list.
      * @param categories Categories to display, in order.
      */
-    void setCategories(const QList<CategoryItem> &categories);
+    void setCategories(const QList<VaultBridge::CategorySummary> &categories);
 
     /**
      * @brief Updates the displayed name of the currently open vault.

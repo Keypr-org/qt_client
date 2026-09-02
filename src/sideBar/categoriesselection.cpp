@@ -64,12 +64,12 @@ void CategoriesSelection::addCategory(qint64 id, const QString &name)
     ui->listCategories->addItem(item);
 }
 
-void CategoriesSelection::setCategories(const QList<CategoryItem> &categories)
+void CategoriesSelection::setCategories(const QList<VaultBridge::CategorySummary> &categories)
 {
     ui->listCategories->clear();
     m_lastClickedCategory = nullptr;
 
-    for (const CategoryItem &category : categories) {
+    for (const VaultBridge::CategorySummary &category : categories) {
         addCategory(category.id, category.name);
     }
 
@@ -87,12 +87,6 @@ void CategoriesSelection::setVaultName(const QString &name)
 
 void CategoriesSelection::deselectAllCategories()
 {
-    // Reset every item explicitly (icon + Qt's own selection state) rather than relying on
-    // currentItem()/clearSelection() alone: those only reliably stay in sync when the user
-    // selects rows via mouse clicks on the list itself. setCurrentItem() from code (as we do
-    // here) does not always fire currentItemChanged() with the right "previous" item when an
-    // entry elsewhere in the window currently holds keyboard focus, which left a stale
-    // highlighted category behind until a second click.
     for (int i = 0; i < ui->listCategories->count(); ++i) {
         QListWidgetItem *item = ui->listCategories->item(i);
         item->setIcon(QIcon(FOLDER_ICON_WHITE));

@@ -114,11 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
         createCategoryOverlay->hide();
         createCategoryOverlay->clearForm();
 
-        QList<CategoriesSelection::CategoryItem> categoryItems;
-        for (const auto &category : m_vaultBridge->categories()) {
-            categoryItems.append({category.id, category.name});
-        }
-        categoriesSelection->setCategories(categoryItems);
+        categoriesSelection->setCategories(m_vaultBridge->categories());
 
         NotificationTooltip::showSuccessToast(this, "Category created successfully.");
         });
@@ -164,13 +160,9 @@ MainWindow::MainWindow(QWidget *parent)
         categoriesSelection->setVaultName(name);
 
         const auto categories = m_vaultBridge->categories();
-        QList<CategoriesSelection::CategoryItem> categoryItems;
-        for (const auto &category : categories) {
-            categoryItems.append({category.id, category.name});
-        }
-        categoriesSelection->setCategories(categoryItems);
+        categoriesSelection->setCategories(categories);
 
-        if (categoryItems.isEmpty()) {
+        if (categories.isEmpty()) {
             viewEntries->clearCategory();
         }
 
@@ -237,33 +229,36 @@ MainWindow::MainWindow(QWidget *parent)
         });
 
     connect(addWebsiteForm, &AddWebsiteForm::createWebsiteEntry, this,
-            [this, viewEntries](const QString &title, const QString &username, const QString &password,
+            [this, viewEntries, addWebsiteForm](const QString &title, const QString &username, const QString &password,
                                  const QString &url, const QString &description, const QString &notes) {
         if (!viewEntries->createWebsiteEntry(title, username, password, url, description, notes)) {
             NotificationTooltip::showErrorToast(this, "Failed to create the website entry.");
             return;
         }
+        addWebsiteForm->clearForm();
         ui->mainContent->setCurrentWidget(viewEntries);
         NotificationTooltip::showSuccessToast(this, "Website entry created successfully.");
     });
 
     connect(creditCardForm, &CreditCardForm::createCreditCardEntry, this,
-            [this, viewEntries](const QString &cardHolderName, const QString &cardNumber,
+            [this, viewEntries, creditCardForm](const QString &cardHolderName, const QString &cardNumber,
                                  const QString &expiration, const QString &securityCode, const QString &notes) {
         if (!viewEntries->createCreditCardEntry(cardHolderName, cardNumber, expiration, securityCode, notes)) {
             NotificationTooltip::showErrorToast(this, "Failed to create the credit card entry.");
             return;
         }
+        creditCardForm->clearForm();
         ui->mainContent->setCurrentWidget(viewEntries);
         NotificationTooltip::showSuccessToast(this, "Credit card entry created successfully.");
     });
 
     connect(wifiForm, &WifiForm::createNewWifiEntry, this,
-            [this, viewEntries](const QString &networkName, const QString &password, const QString &notes) {
+            [this, viewEntries, wifiForm](const QString &networkName, const QString &password, const QString &notes) {
         if (!viewEntries->createWifiEntry(networkName, password, notes)) {
             NotificationTooltip::showErrorToast(this, "Failed to create the wifi entry.");
             return;
         }
+        wifiForm->clearForm();
         ui->mainContent->setCurrentWidget(viewEntries);
         NotificationTooltip::showSuccessToast(this, "Wifi entry created successfully.");
     });
