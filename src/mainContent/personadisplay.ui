@@ -73,7 +73,7 @@
          </size>
         </property>
         <property name="frameShape">
-         <enum>QFrame::Shape::StyledPanel</enum>
+         <enum>QFrame::Shape::NoFrame</enum>
         </property>
         <property name="frameShadow">
          <enum>QFrame::Shadow::Raised</enum>
@@ -146,10 +146,7 @@ border: none;
 border-radius: 6px;</string>
         </property>
         <property name="text">
-         <string>Create Persona</string>
-        </property>
-        <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::DocumentNew"/>
+         <string>+ Create Persona</string>
         </property>
        </widget>
       </item>
@@ -211,10 +208,10 @@ border-radius: 6px;</string>
          <enum>QFrame::Shape::NoFrame</enum>
         </property>
         <property name="verticalScrollBarPolicy">
-         <enum>Qt::ScrollBarAlwaysOff</enum>
+         <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
         </property>
         <property name="horizontalScrollBarPolicy">
-         <enum>Qt::ScrollBarAlwaysOff</enum>
+         <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
         </property>
         <property name="widgetResizable">
          <bool>true</bool>
@@ -224,8 +221,8 @@ border-radius: 6px;</string>
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>760</width>
-           <height>460</height>
+           <width>764</width>
+           <height>632</height>
           </rect>
          </property>
          <property name="styleSheet">
@@ -255,14 +252,6 @@ border-radius: 6px;</string>
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>PersonaItem</class>
-   <extends>QWidget</extends>
-   <header>component/personaitem.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>
