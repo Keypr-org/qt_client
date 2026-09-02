@@ -281,6 +281,33 @@ bool VaultController::linkPersonaToEntry(qint64 personaId, qint64 categoryId, qi
     }
 }
 
+bool VaultController::unlinkPersonaFromEntry(qint64 categoryId, qint64 entryId)
+{
+    if (session == nullptr)
+    {
+        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+    }
+    try
+    {
+        const auto &entry = getEntryByIdFromCategory(categoryId, entryId);
+        auto *websiteEntry = dynamic_cast<Website *>(entry.get());
+        if (websiteEntry == nullptr)
+        {
+            return false; // Entry is not of the correct type to unlink a persona
+        }
+        websiteEntry->setPersona(NO_PERSONA_ID);
+        return true;
+    }
+    catch (const CategoryNotFoundError &)
+    {
+        return false; // Category not found
+    }
+    catch (const EntryNotFoundError &)
+    {
+        return false; // Entry not found
+    }
+}
+
 const QPersona VaultController::getPersonaById(qint64 personaId) const
 {
     if (session == nullptr)

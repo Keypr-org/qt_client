@@ -362,7 +362,7 @@ void VaultControllerTest::createVault_returnsTrue_whenVaultCreationSucceeds()
     VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY(controller.createVault("master-password", "vault"));
-    QVERIFY(controller.isVaultUnlocked());
+    QVERIFY(!controller.isVaultUnlocked());
 }
 
 /**

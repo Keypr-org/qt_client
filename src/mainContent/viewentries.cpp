@@ -212,7 +212,7 @@ ViewEntries::ViewEntries(QWidget *parent)
     connect(m_websiteEntryView, &WebsiteEntry::personaUnlinkRequested, this, [this](qint64 id)
             {
         auto &controller = VaultController::getInstance();
-        if (!controller.linkPersonaToEntry(-1, m_currentCategoryId, id)) {
+        if (!controller.unlinkPersonaFromEntry(m_currentCategoryId, id)) {
             NotificationTooltip::showErrorToast(this, "Failed to unlink the persona.");
             return;
         }

@@ -155,6 +155,15 @@ public:
     bool linkPersonaToEntry(qint64 personaId, qint64 categoryId, qint64 entryId);
 
     /**
+     * @brief Unlink the persona currently linked to an entry in a category, if any.
+     * @param categoryId The ID of the category containing the entry.
+     * @param entryId The ID of the entry to unlink the persona from.
+     * @return true if the persona is unlinked, false otherwise.
+     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     */
+    bool unlinkPersonaFromEntry(qint64 categoryId, qint64 entryId);
+
+    /**
      * @brief Get a persona by its ID.
      * @param personaId The ID of the persona to get.
      * @return A reference to the persona with the specified ID.

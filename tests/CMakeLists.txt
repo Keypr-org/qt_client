@@ -35,21 +35,3 @@ target_link_libraries(tst_mailaliascontroller
 )
 
 add_test(NAME tst_mailaliascontroller COMMAND tst_mailaliascontroller)
-
-#qt_add_executable(tst_vaultbridge
-#    tst_vaultbridge.cpp
-#    ../src/vaultbridge.cpp ../src/vaultbridge.h
-#    ../src/vaultcontroller.cpp ../src/vaultcontroller.h
-#)
-
-#target_include_directories(tst_vaultbridge PRIVATE
-#    ${CMAKE_CURRENT_SOURCE_DIR}/../src
-#)
-
-#target_link_libraries(tst_vaultbridge
-#    PRIVATE
-#        Qt6::Test
-#        keypr-core
-#)
-
-#add_test(NAME tst_vaultbridge COMMAND tst_vaultbridge)

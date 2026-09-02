@@ -52,7 +52,6 @@ qt_add_executable(qt_client
     src/mainContent/newpersonaform.h src/mainContent/newpersonaform.cpp src/mainContent/newpersonaform.ui
     src/formOverlay/editpersonaoverlay.h src/formOverlay/editpersonaoverlay.cpp src/formOverlay/editpersonaoverlay.ui
     src/vaultcontroller.h src/vaultcontroller.cpp
-    #src/vaultbridge.h src/vaultbridge.cpp
     src/jsonfileconfig.h src/jsonfileconfig.cpp
     src/appconfig.h src/appconfig.cpp
     src/vaultstoragesetupdialog.h src/vaultstoragesetupdialog.cpp
