@@ -55,8 +55,10 @@ protected:
             if (auto *widget = qobject_cast<QWidget *>(watched)) {
                 if (!widget->property("dpiFontScaled").toBool()) {
                     QFont f = widget->font();
-                    f.setPointSizeF(f.pointSizeF() * m_factor);
-                    widget->setFont(f);
+                    if (f.pointSizeF() > 0) {
+                        f.setPointSizeF(f.pointSizeF() * m_factor);
+                        widget->setFont(f);
+                    }
                     widget->setProperty("dpiFontScaled", true);
                 }
             }
