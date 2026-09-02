@@ -287,7 +287,7 @@ background-color: #2a2a4e;
 }</string>
      </property>
      <property name="text">
-      <string> Lock and Save Vault</string>
+      <string> Lock/Save Vault</string>
      </property>
      <property name="icon">
       <iconset resource="../../resources.qrc">

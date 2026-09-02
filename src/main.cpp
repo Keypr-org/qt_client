@@ -12,10 +12,12 @@ void applyPlatformFont()
 #if defined(Q_OS_WIN)
     QFont font;
     font.setFamilies({"Segoe UI", "Segoe UI Variable Text", "Tahoma", "sans-serif"});
+    font.setPointSize(9);
     QApplication::setFont(font);
 #elif defined(Q_OS_LINUX)
     QFont font;
     font.setFamilies({"Noto Sans", "Cantarell", "Ubuntu", "DejaVu Sans", "sans-serif"});
+    font.setPointSize(9);
     QApplication::setFont(font);
 #endif
 }
