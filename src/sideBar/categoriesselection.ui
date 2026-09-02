@@ -271,7 +271,7 @@ background-color: #2a2a4e;
     <widget class="QPushButton" name="lockVault">
      <property name="font">
       <font>
-       <pointsize>14</pointsize>
+       <pointsize>13</pointsize>
        <bold>false</bold>
       </font>
      </property>
@@ -287,7 +287,7 @@ background-color: #2a2a4e;
 }</string>
      </property>
      <property name="text">
-      <string> Lock Vault</string>
+      <string> Lock and Save Vault</string>
      </property>
      <property name="icon">
       <iconset resource="../../resources.qrc">

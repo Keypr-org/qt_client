@@ -1,5 +1,6 @@
 #include "appconfig.h"
 #include "mainwindow.h"
+#include "vaultcontroller.h"
 #include "vaultstoragesetupdialog.h"
 
 #include <QApplication>
@@ -17,7 +18,6 @@ void applyPlatformFont()
     font.setFamilies({"Noto Sans", "Cantarell", "Ubuntu", "DejaVu Sans", "sans-serif"});
     QApplication::setFont(font);
 #endif
-    // macOS: leave Qt's default, which already resolves to the system UI font.
 }
 }
 
@@ -38,6 +38,14 @@ int main(int argc, char *argv[])
     MainWindow w;
     w.setWindowTitle("Keypr | Your local password manager");
     w.showMaximized();
+
+    QObject::connect(&a, &QApplication::aboutToQuit, [&]()
+    {
+        auto &vaultController = VaultController::getInstance();
+        if (vaultController.isVaultUnlocked()) {
+            vaultController.lockVault();
+        }
+    });
 
     return QApplication::exec();
 }
