@@ -5,15 +5,17 @@
 #include <QtWidgets/qlistwidget.h>
 #include <QStackedWidget>
 #include <QString>
+#include <vector>
 
-#include "vaultbridge.h"
+#include "../utils/qtypes/QEntry.h"
 
 class WebsiteEntry;
 class WifiEntry;
 class CreditCardEntry;
 
-namespace Ui {
-class ViewEntries;
+namespace Ui
+{
+    class ViewEntries;
 }
 
 class ViewEntries : public QWidget
@@ -33,13 +35,6 @@ public:
     ~ViewEntries();
 
     /**
-     * @brief Provides the bridge used to read and mutate entries. Must be called once before
-     * loadCategory() or the create*Entry() methods are used.
-     * @param bridge Bridge to the currently open vault. Not owned.
-     */
-    void setVaultBridge(VaultBridge *bridge);
-
-    /**
      * @brief Loads and displays the entries of the given category from the vault.
      * @param categoryId Identifier of the category to display.
      */
@@ -56,7 +51,7 @@ public:
      * @return true on success.
      */
     bool createWebsiteEntry(const QString &title, const QString &username, const QString &password,
-                             const QString &url, const QString &description, const QString &notes);
+                            const QString &url, const QString &description, const QString &notes);
 
     /**
      * @brief Creates a new wifi entry in the current category.
@@ -69,8 +64,8 @@ public:
      * @return true on success.
      */
     bool createCreditCardEntry(const QString &cardHolderName, const QString &cardNumber,
-                                const QString &expiration, const QString &securityCode,
-                                const QString &notes);
+                               const QString &expiration, const QString &securityCode,
+                               const QString &notes);
 
     /**
      * @brief Clears the current list selection and shows the empty detail placeholder.
@@ -93,9 +88,8 @@ private slots:
 
 private:
     Ui::ViewEntries *ui;
-    VaultBridge *m_vaultBridge = nullptr;
     qint64 m_currentCategoryId = -1;
-    QList<VaultBridge::EntrySummary> m_entries;
+    std::vector<std::unique_ptr<QEntry>> m_entries;
 
     QStackedWidget *m_detailStack;
     QWidget *m_emptyDetailPage;
@@ -120,30 +114,30 @@ private:
     /**
      * @brief Finds a currently loaded entry by id.
      */
-    const VaultBridge::EntrySummary *findEntry(const QString &id) const;
+    const QEntry *findEntry(qint64 id) const;
 
     /**
      * @brief Shows the detail view corresponding to the given entry's kind, populated with its
      * data.
      */
-    void showEntryDetails(const VaultBridge::EntrySummary &entry);
+    void showEntryDetails(const QEntry &entry);
 
     /**
      * @brief Re-selects the entry with the given id in the list, if present, and shows its
      * details.
      */
-    void selectEntry(const QString &id);
+    void selectEntry(qint64 id);
 
     /**
      * @brief Reloads the current category and re-selects the given entry, e.g. after editing it.
      */
-    void reloadAndReselect(const QString &id);
+    void reloadAndReselect(qint64 id);
 
     /**
      * @brief Deletes an entry from the current category and refreshes the list/selection
      * accordingly.
      */
-    void handleDeleteRequested(const QString &id);
+    void handleDeleteRequested(qint64 id);
 };
 
 #endif // VIEWENTRIES_H

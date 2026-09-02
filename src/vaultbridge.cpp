@@ -32,7 +32,7 @@ QString sanitizedVaultFileStem(const QString &vaultName) {
  * @param entryId The ID of the entry to find.
  * @return A pointer to the Entry if found, or nullptr if not found or if the vault is locked.
  */
-Entry *findEntry(VaultController &controller, const QString &entryId) {
+const Entry *findEntry(VaultController &controller, const QString &entryId) {
     if (!controller.isVaultUnlocked()) {
         return nullptr;
     }

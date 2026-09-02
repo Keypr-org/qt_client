@@ -4,10 +4,11 @@
 #include <QWidget>
 #include <QDate>
 
-#include "vaultbridge.h"
+#include "../utils/qtypes/QPersona.h"
 
-namespace Ui {
-class EditPersonaOverlay;
+namespace Ui
+{
+    class EditPersonaOverlay;
 }
 
 class EditPersonaOverlay : public QWidget
@@ -30,7 +31,7 @@ public:
      * @brief Populates the form fields with an existing persona's data for editing.
      * @param persona Persona to load into the form.
      */
-    void setPersona(const VaultBridge::PersonaSummary &persona);
+    void setPersona(const QPersona &persona);
 
 signals:
     /**
@@ -42,7 +43,7 @@ signals:
      * @brief Emitted when the user submits the modified persona.
      */
     void personaModified(qint64 id, QString firstName, QString lastName, QDate dateOfBirth,
-                          QString address, QString phone);
+                         QString address, QString phone);
 
 protected:
     /**

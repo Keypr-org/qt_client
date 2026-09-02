@@ -4,10 +4,11 @@
 #include <QWidget>
 #include <QtWidgets/qlistwidget.h>
 
-#include "vaultbridge.h"
+#include "../utils/qtypes/QCategory.h"
 
-namespace Ui {
-class CategoriesSelection;
+namespace Ui
+{
+    class CategoriesSelection;
 }
 
 class CategoriesSelection : public QWidget
@@ -38,7 +39,7 @@ public:
      * (if any) to match the initial-selection behavior of the previous placeholder list.
      * @param categories Categories to display, in order.
      */
-    void setCategories(const QList<VaultBridge::CategorySummary> &categories);
+    void setCategories(const QList<QCategory> &categories);
 
     /**
      * @brief Updates the displayed name of the currently open vault.

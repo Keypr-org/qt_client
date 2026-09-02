@@ -1,4 +1,5 @@
 #include <QtTest/QtTest>
+#include <QDate>
 #include <array>
 #include <chrono>
 #include <memory>
@@ -198,6 +199,8 @@ class VaultControllerTest : public QObject
     Q_OBJECT
 
 private slots:
+    void init();
+    void cleanup();
     void openVault_returnsTrue_whenFileExistsAndParsingSucceeds();
     void openVault_returnsFalse_whenFileExistsAndParsingFails();
     void openVault_returnsFalse_whenFileDoesNotExistAndParsingSucceeds();
@@ -231,7 +234,7 @@ private slots:
     void getWebsitesByUrl_returnsMatchingWebsites_whenSessionIsOpen();
     void getWebsitesByUrl_throws_whenSessionIsNotOpen();
     void getWebsiteById_returnsWebsite_whenWebsiteExists();
-    void getWebsiteById_returnsNullptr_whenWebsiteDoesNotExist();
+    void getWebsiteById_throws_whenWebsiteDoesNotExist();
     void getWebsiteById_throws_whenSessionIsNotOpen();
     void searchEntriesInCategory_returnsMatchingEntries_whenSessionIsOpen();
     void searchEntriesInCategory_returnsEmptyVector_whenNoEntryMatches();
@@ -260,13 +263,23 @@ private slots:
     void setAliasForWebsite_throws_whenSessionIsNotOpen();
 };
 
+void VaultControllerTest::init()
+{
+    VaultController::instance.reset();
+}
+
+void VaultControllerTest::cleanup()
+{
+    VaultController::instance.reset();
+}
+
 /**
  * @brief Test the openVault method when the file exists and parsing succeeds.
  */
 void VaultControllerTest::openVault_returnsTrue_whenFileExistsAndParsingSucceeds()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY(controller.vaultExists("vault"));
 }
@@ -277,7 +290,7 @@ void VaultControllerTest::openVault_returnsTrue_whenFileExistsAndParsingSucceeds
 void VaultControllerTest::openVault_returnsFalse_whenFileExistsAndParsingFails()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, false);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY(!controller.vaultExists("vault"));
 }
@@ -288,7 +301,7 @@ void VaultControllerTest::openVault_returnsFalse_whenFileExistsAndParsingFails()
 void VaultControllerTest::openVault_returnsFalse_whenFileDoesNotExistAndParsingSucceeds()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY(!controller.vaultExists("vault"));
 }
@@ -299,7 +312,7 @@ void VaultControllerTest::openVault_returnsFalse_whenFileDoesNotExistAndParsingS
 void VaultControllerTest::openVault_returnsFalse_whenFileDoesNotExistAndParsingFails()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false, false);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY(!controller.vaultExists("vault"));
 }
@@ -310,9 +323,9 @@ void VaultControllerTest::openVault_returnsFalse_whenFileDoesNotExistAndParsingF
 void VaultControllerTest::unlockVault_returnsTrue_whenEverythingIsCorrect()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
-    QVERIFY(controller.unlockVault("master-password", "vault"));
+    QCOMPARE(controller.unlockVault("master-password", "vault"), VaultController::UnlockResult::Success);
     QVERIFY(controller.isVaultUnlocked());
 }
 
@@ -322,9 +335,9 @@ void VaultControllerTest::unlockVault_returnsTrue_whenEverythingIsCorrect()
 void VaultControllerTest::unlockVault_returnsFalse_whenPasswordIsWrongButParsingSucceeds()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
-    QVERIFY(!controller.unlockVault("wrong-password", "vault"));
+    QCOMPARE(controller.unlockVault("wrong-password", "vault"), VaultController::UnlockResult::IncorrectPasswordOrCorrupted);
     QVERIFY(!controller.isVaultUnlocked());
 }
 
@@ -334,9 +347,9 @@ void VaultControllerTest::unlockVault_returnsFalse_whenPasswordIsWrongButParsing
 void VaultControllerTest::unlockVault_returnsFalse_whenEverythingFailsAndParsingFails()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false, false);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
-    QVERIFY(!controller.unlockVault("wrong-password", "vault"));
+    QCOMPARE(controller.unlockVault("wrong-password", "vault"), VaultController::UnlockResult::IncorrectPasswordOrCorrupted);
     QVERIFY(!controller.isVaultUnlocked());
 }
 
@@ -346,7 +359,7 @@ void VaultControllerTest::unlockVault_returnsFalse_whenEverythingFailsAndParsing
 void VaultControllerTest::createVault_returnsTrue_whenVaultCreationSucceeds()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY(controller.createVault("master-password", "vault"));
     QVERIFY(controller.isVaultUnlocked());
@@ -358,7 +371,7 @@ void VaultControllerTest::createVault_returnsTrue_whenVaultCreationSucceeds()
 void VaultControllerTest::createVault_returnsFalse_whenVaultCreationFails()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false, false);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY(!controller.createVault("master-password", "vault"));
     QVERIFY(!controller.isVaultUnlocked());
@@ -370,7 +383,7 @@ void VaultControllerTest::createVault_returnsFalse_whenVaultCreationFails()
 void VaultControllerTest::lockVault_returnsTrue_whenRepositoryLocksVault()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = makeVaultSession();
 
     QVERIFY(controller.lockVault("vault"));
@@ -383,7 +396,7 @@ void VaultControllerTest::lockVault_returnsTrue_whenRepositoryLocksVault()
 void VaultControllerTest::lockVault_returnsFalse_whenRepositoryRefusesToLockVault()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(false);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = makeVaultSession();
 
     QVERIFY(!controller.lockVault("vault"));
@@ -396,7 +409,7 @@ void VaultControllerTest::lockVault_returnsFalse_whenRepositoryRefusesToLockVaul
 void VaultControllerTest::lockVault_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.lockVault("vault"));
     QVERIFY(!controller.isVaultUnlocked());
@@ -408,10 +421,10 @@ void VaultControllerTest::lockVault_throws_whenSessionIsNotOpen()
 void VaultControllerTest::getVaultName_returnsVaultName_whenSessionIsOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = std::make_unique<VaultSession>("My Vault", EncKey{}, AuthKey{}, nullptr);
 
-    QCOMPARE(QString::fromStdString(controller.getVaultName()), QString("My Vault"));
+    QCOMPARE(controller.getVaultName(), QString("My Vault"));
 }
 
 /**
@@ -420,7 +433,7 @@ void VaultControllerTest::getVaultName_returnsVaultName_whenSessionIsOpen()
 void VaultControllerTest::getVaultName_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getVaultName());
 }
@@ -431,13 +444,13 @@ void VaultControllerTest::getVaultName_throws_whenSessionIsNotOpen()
 void VaultControllerTest::addCategory_addsCategory_whenSessionIsOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = makeVaultSession();
 
-    controller.addCategory(std::make_unique<Category>("Passwords"));
+    controller.addCategory("Passwords");
 
     QCOMPARE(controller.getCategories().size(), std::size_t(1));
-    QCOMPARE(QString::fromStdString(controller.getCategories().front()->getName()), QString("Passwords"));
+    QCOMPARE(controller.getCategories().front().getName(), QString("Passwords"));
 }
 
 /**
@@ -446,10 +459,10 @@ void VaultControllerTest::addCategory_addsCategory_whenSessionIsOpen()
 void VaultControllerTest::addCategory_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error,
-                             controller.addCategory(std::make_unique<Category>("Passwords")));
+                             controller.addCategory("Passwords"));
 }
 
 /**
@@ -458,14 +471,14 @@ void VaultControllerTest::addCategory_throws_whenSessionIsNotOpen()
 void VaultControllerTest::getPersonas_returnsPersonas_whenSessionIsOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = makeVaultSessionWithPersonas(nullptr, nullptr);
 
     const auto &personas = controller.getPersonas();
 
     QCOMPARE(personas.size(), std::size_t(2));
-    QCOMPARE(QString::fromStdString(personas[0]->getFirstName()), QString("Ada"));
-    QCOMPARE(QString::fromStdString(personas[1]->getFirstName()), QString("Grace"));
+    QCOMPARE(personas[0].getFirstName(), QString("Ada"));
+    QCOMPARE(personas[1].getFirstName(), QString("Grace"));
 }
 
 /**
@@ -474,7 +487,7 @@ void VaultControllerTest::getPersonas_returnsPersonas_whenSessionIsOpen()
 void VaultControllerTest::getPersonas_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getPersonas());
 }
@@ -485,14 +498,14 @@ void VaultControllerTest::getPersonas_throws_whenSessionIsNotOpen()
 void VaultControllerTest::addPersona_addsPersona_whenSessionIsOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = makeVaultSession();
 
-    controller.addPersona(makePersona("Ada", "Lovelace"));
+    controller.addPersona("Ada", "Lovelace", QDate::fromJulianDay(2440588), "Address", "000000000");
 
     const auto &personas = controller.getPersonas();
     QCOMPARE(personas.size(), std::size_t(1));
-    QCOMPARE(QString::fromStdString(personas.front()->getFirstName()), QString("Ada"));
+    QCOMPARE(personas.front().getFirstName(), QString("Ada"));
 }
 
 /**
@@ -501,9 +514,11 @@ void VaultControllerTest::addPersona_addsPersona_whenSessionIsOpen()
 void VaultControllerTest::addPersona_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
-    QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.addPersona(makePersona("Ada", "Lovelace")));
+    QVERIFY_THROWS_EXCEPTION(std::runtime_error,
+                             controller.addPersona("Ada", "Lovelace", QDate::fromJulianDay(2440588),
+                                                   "Address", "000000000"));
 }
 
 /**
@@ -512,17 +527,16 @@ void VaultControllerTest::addPersona_throws_whenSessionIsNotOpen()
 void VaultControllerTest::getPersonaById_returnsPersona_whenPersonaExists()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t firstPersonaId = 0;
     int64_t secondPersonaId = 0;
     controller.session = makeVaultSessionWithPersonas(&firstPersonaId, &secondPersonaId);
 
-    const auto &persona = controller.getPersonaById(firstPersonaId);
+    const auto persona = controller.getPersonaById(firstPersonaId);
 
-    QVERIFY(persona != nullptr);
-    QCOMPARE(persona->getId(), firstPersonaId);
-    QCOMPARE(QString::fromStdString(persona->getFirstName()), QString("Ada"));
+    QCOMPARE(persona.getId(), firstPersonaId);
+    QCOMPARE(persona.getFirstName(), QString("Ada"));
 }
 
 /**
@@ -531,7 +545,7 @@ void VaultControllerTest::getPersonaById_returnsPersona_whenPersonaExists()
 void VaultControllerTest::getPersonaById_throws_whenPersonaDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     controller.session = makeVaultSessionWithPersonas(nullptr, nullptr);
 
@@ -544,7 +558,7 @@ void VaultControllerTest::getPersonaById_throws_whenPersonaDoesNotExist()
 void VaultControllerTest::getPersonaById_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getPersonaById(1));
 }
@@ -555,7 +569,7 @@ void VaultControllerTest::getPersonaById_throws_whenSessionIsNotOpen()
 void VaultControllerTest::addEntryToCategory_returnsTrue_whenCategoryExists()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t entryId = 0;
@@ -563,7 +577,7 @@ void VaultControllerTest::addEntryToCategory_returnsTrue_whenCategoryExists()
 
     controller.removeEntryFromCategory(categoryId, entryId);
     QVERIFY(controller.addEntryToCategory(categoryId, std::make_unique<TestEntry>("gmail")));
-    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(1));
+    QCOMPARE(controller.getEntriesInCategory(categoryId).size(), std::size_t(1));
 }
 
 /**
@@ -572,14 +586,14 @@ void VaultControllerTest::addEntryToCategory_returnsTrue_whenCategoryExists()
 void VaultControllerTest::addEntryToCategory_returnsFalse_whenCategoryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t entryId = 0;
     controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
 
     QVERIFY(!controller.addEntryToCategory(categoryId + 1, std::make_unique<TestEntry>("gmail")));
-    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(1));
+    QCOMPARE(controller.getEntriesInCategory(categoryId).size(), std::size_t(1));
 }
 
 /**
@@ -588,7 +602,7 @@ void VaultControllerTest::addEntryToCategory_returnsFalse_whenCategoryDoesNotExi
 void VaultControllerTest::addEntryToCategory_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error,
                              controller.addEntryToCategory(1, std::make_unique<TestEntry>("gmail")));
@@ -600,17 +614,17 @@ void VaultControllerTest::addEntryToCategory_throws_whenSessionIsNotOpen()
 void VaultControllerTest::getEntriesInCategory_returnsEntries_whenCategoryExists()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t entryId = 0;
-    controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
+    controller.session = makeVaultSessionWithWebsite(&categoryId, &entryId);
 
     const auto &entries = controller.getEntriesInCategory(categoryId);
 
     QCOMPARE(entries.size(), std::size_t(1));
     QCOMPARE(entries.front()->getId(), entryId);
-    QCOMPARE(entries.front()->getType(), std::string("TestEntry"));
+    QCOMPARE(entries.front()->getKind(), QEntry::EntryKind::Website);
 }
 
 /**
@@ -619,7 +633,7 @@ void VaultControllerTest::getEntriesInCategory_returnsEntries_whenCategoryExists
 void VaultControllerTest::getEntriesInCategory_returnsEmptyVector_whenCategoryIsEmpty()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = makeVaultSession();
     controller.session->addCategory(std::make_unique<Category>("Passwords"));
 
@@ -635,7 +649,7 @@ void VaultControllerTest::getEntriesInCategory_returnsEmptyVector_whenCategoryIs
 void VaultControllerTest::getEntriesInCategory_returnsEmptyVector_whenCategoryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t entryId = 0;
@@ -652,7 +666,7 @@ void VaultControllerTest::getEntriesInCategory_returnsEmptyVector_whenCategoryDo
 void VaultControllerTest::getEntriesInCategory_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getEntriesInCategory(1));
 }
@@ -663,7 +677,7 @@ void VaultControllerTest::getEntriesInCategory_throws_whenSessionIsNotOpen()
 void VaultControllerTest::getWebsitesByUrl_returnsMatchingWebsites_whenSessionIsOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -675,8 +689,7 @@ void VaultControllerTest::getWebsitesByUrl_returnsMatchingWebsites_whenSessionIs
     const auto websites = controller.getWebsitesByUrl("https://target.example.com");
 
     QCOMPARE(websites.size(), std::size_t(1));
-    QVERIFY(websites.front() != nullptr);
-    QCOMPARE(websites.front()->getId(), targetWebsiteId);
+    QCOMPARE(websites.front().getId(), targetWebsiteId);
 }
 
 /**
@@ -685,7 +698,7 @@ void VaultControllerTest::getWebsitesByUrl_returnsMatchingWebsites_whenSessionIs
 void VaultControllerTest::getWebsitesByUrl_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error,
                              controller.getWebsitesByUrl("https://target.example.com"));
@@ -697,7 +710,7 @@ void VaultControllerTest::getWebsitesByUrl_throws_whenSessionIsNotOpen()
 void VaultControllerTest::getWebsiteById_returnsWebsite_whenWebsiteExists()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -706,20 +719,19 @@ void VaultControllerTest::getWebsiteById_returnsWebsite_whenWebsiteExists()
     controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
                                                   &untouchedWebsiteId);
 
-    const auto *website = controller.getWebsiteById(targetWebsiteId);
+    const auto website = controller.getWebsiteById(targetWebsiteId);
 
-    QVERIFY(website != nullptr);
-    QCOMPARE(website->getId(), targetWebsiteId);
-    QCOMPARE(website->getTitle(), std::string("Target"));
+    QCOMPARE(website.getId(), targetWebsiteId);
+    QCOMPARE(website.getTitle(), QString("Target"));
 }
 
 /**
  * @brief Test getWebsiteById when the website does not exist.
  */
-void VaultControllerTest::getWebsiteById_returnsNullptr_whenWebsiteDoesNotExist()
+void VaultControllerTest::getWebsiteById_throws_whenWebsiteDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -728,7 +740,7 @@ void VaultControllerTest::getWebsiteById_returnsNullptr_whenWebsiteDoesNotExist(
     controller.session = makeLinkedPersonaSession(&personaId, &categoryId, &targetWebsiteId,
                                                   &untouchedWebsiteId);
 
-    QVERIFY(controller.getWebsiteById(NO_ID) == nullptr);
+    QVERIFY_THROWS_EXCEPTION(std::invalid_argument, controller.getWebsiteById(NO_ID));
 }
 
 /**
@@ -737,7 +749,7 @@ void VaultControllerTest::getWebsiteById_returnsNullptr_whenWebsiteDoesNotExist(
 void VaultControllerTest::getWebsiteById_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getWebsiteById(1));
 }
@@ -748,7 +760,7 @@ void VaultControllerTest::getWebsiteById_throws_whenSessionIsNotOpen()
 void VaultControllerTest::searchEntriesInCategory_returnsMatchingEntries_whenSessionIsOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -770,7 +782,7 @@ void VaultControllerTest::searchEntriesInCategory_returnsMatchingEntries_whenSes
 void VaultControllerTest::searchEntriesInCategory_returnsEmptyVector_whenNoEntryMatches()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -790,7 +802,7 @@ void VaultControllerTest::searchEntriesInCategory_returnsEmptyVector_whenNoEntry
 void VaultControllerTest::searchEntriesInCategory_throws_whenCategoryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -809,7 +821,7 @@ void VaultControllerTest::searchEntriesInCategory_throws_whenCategoryDoesNotExis
 void VaultControllerTest::searchEntriesInCategory_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error,
                              controller.searchEntriesInCategory(1, "target"));
@@ -821,7 +833,7 @@ void VaultControllerTest::searchEntriesInCategory_throws_whenSessionIsNotOpen()
 void VaultControllerTest::linkPersonaToEntry_returnsTrue_whenPersonaAndEntryExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -832,16 +844,13 @@ void VaultControllerTest::linkPersonaToEntry_returnsTrue_whenPersonaAndEntryExis
 
     QVERIFY(controller.linkPersonaToEntry(personaId, categoryId, targetWebsiteId));
 
-    const auto &entries = controller.getCategories().front()->getEntries();
-    const auto *targetWebsite = dynamic_cast<const Website *>(entries[0].get());
-    const auto *untouchedWebsite = dynamic_cast<const Website *>(entries[1].get());
+    const auto targetWebsite = controller.getWebsiteById(targetWebsiteId);
+    const auto untouchedWebsite = controller.getWebsiteById(untouchedWebsiteId);
 
-    QVERIFY(targetWebsite != nullptr);
-    QVERIFY(untouchedWebsite != nullptr);
-    QCOMPARE(targetWebsite->getId(), targetWebsiteId);
-    QCOMPARE(targetWebsite->getPersonaId(), personaId);
-    QCOMPARE(untouchedWebsite->getId(), untouchedWebsiteId);
-    QCOMPARE(untouchedWebsite->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
+    QCOMPARE(targetWebsite.getId(), targetWebsiteId);
+    QCOMPARE(targetWebsite.getPersonaId(), personaId);
+    QCOMPARE(untouchedWebsite.getId(), untouchedWebsiteId);
+    QCOMPARE(untouchedWebsite.getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -850,7 +859,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsTrue_whenPersonaAndEntryExis
 void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenPersonaDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -861,10 +870,8 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenPersonaDoesNotExis
 
     QVERIFY(!controller.linkPersonaToEntry(personaId + 1, categoryId, targetWebsiteId));
 
-    const auto *targetWebsite = dynamic_cast<const Website *>(
-        controller.getCategories().front()->getEntries()[0].get());
-    QVERIFY(targetWebsite != nullptr);
-    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
+    const auto targetWebsite = controller.getWebsiteById(targetWebsiteId);
+    QCOMPARE(targetWebsite.getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -873,7 +880,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenPersonaDoesNotExis
 void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenCategoryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -884,10 +891,8 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenCategoryDoesNotExi
 
     QVERIFY(!controller.linkPersonaToEntry(personaId, categoryId + 1, targetWebsiteId));
 
-    const auto *targetWebsite = dynamic_cast<const Website *>(
-        controller.getCategories().front()->getEntries()[0].get());
-    QVERIFY(targetWebsite != nullptr);
-    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
+    const auto targetWebsite = controller.getWebsiteById(targetWebsiteId);
+    QCOMPARE(targetWebsite.getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -896,7 +901,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenCategoryDoesNotExi
 void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -907,10 +912,8 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryDoesNotExist(
 
     QVERIFY(!controller.linkPersonaToEntry(personaId, categoryId, NO_ID));
 
-    const auto *targetWebsite = dynamic_cast<const Website *>(
-        controller.getCategories().front()->getEntries()[0].get());
-    QVERIFY(targetWebsite != nullptr);
-    QCOMPARE(targetWebsite->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
+    const auto targetWebsite = controller.getWebsiteById(targetWebsiteId);
+    QCOMPARE(targetWebsite.getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -919,7 +922,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryDoesNotExist(
 void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryHasWrongType()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t personaId = 0;
     int64_t categoryId = 0;
@@ -930,10 +933,9 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryHasWrongType(
 
     QVERIFY(!controller.linkPersonaToEntry(personaId, categoryId, wrongEntryId));
 
-    const auto *website = dynamic_cast<const Website *>(controller.getCategories().front()->getEntries()[0].get());
-    QVERIFY(website != nullptr);
-    QCOMPARE(website->getId(), websiteId);
-    QCOMPARE(website->getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
+    const auto website = controller.getWebsiteById(websiteId);
+    QCOMPARE(website.getId(), websiteId);
+    QCOMPARE(website.getPersonaId(), static_cast<int64_t>(NO_PERSONA_ID));
 }
 
 /**
@@ -942,7 +944,7 @@ void VaultControllerTest::linkPersonaToEntry_returnsFalse_whenEntryHasWrongType(
 void VaultControllerTest::linkPersonaToEntry_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.linkPersonaToEntry(1, 1, 1));
 }
@@ -953,16 +955,16 @@ void VaultControllerTest::linkPersonaToEntry_throws_whenSessionIsNotOpen()
 void VaultControllerTest::getCategories_returnsCategories_whenSessionIsOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = makeVaultSession();
-    controller.session->addCategory(std::make_unique<Category>("Passwords"));
-    controller.session->addCategory(std::make_unique<Category>("Websites"));
+    controller.addCategory("Passwords");
+    controller.addCategory("Websites");
 
     const auto &categories = controller.getCategories();
 
     QCOMPARE(categories.size(), std::size_t(2));
-    QCOMPARE(QString::fromStdString(categories[0]->getName()), QString("Passwords"));
-    QCOMPARE(QString::fromStdString(categories[1]->getName()), QString("Websites"));
+    QCOMPARE(categories[0].getName(), QString("Passwords"));
+    QCOMPARE(categories[1].getName(), QString("Websites"));
 }
 
 /**
@@ -971,7 +973,7 @@ void VaultControllerTest::getCategories_returnsCategories_whenSessionIsOpen()
 void VaultControllerTest::getCategories_returnsEmptyVector_whenSessionIsOpenButEmpty()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
     controller.session = makeVaultSession();
 
     const auto &categories = controller.getCategories();
@@ -985,7 +987,7 @@ void VaultControllerTest::getCategories_returnsEmptyVector_whenSessionIsOpenButE
 void VaultControllerTest::getCategories_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.getCategories());
 }
@@ -996,14 +998,14 @@ void VaultControllerTest::getCategories_throws_whenSessionIsNotOpen()
 void VaultControllerTest::removeEntryFromCategory_returnsTrue_whenEntryExists()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t entryId = 0;
     controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
 
     QVERIFY(controller.removeEntryFromCategory(categoryId, entryId));
-    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(0));
+    QCOMPARE(controller.getEntriesInCategory(categoryId).size(), std::size_t(0));
 }
 
 /**
@@ -1012,14 +1014,14 @@ void VaultControllerTest::removeEntryFromCategory_returnsTrue_whenEntryExists()
 void VaultControllerTest::removeEntryFromCategory_returnsFalse_whenCategoryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t entryId = 0;
     controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
 
     QVERIFY(!controller.removeEntryFromCategory(categoryId + 1, entryId));
-    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(1));
+    QCOMPARE(controller.getEntriesInCategory(categoryId).size(), std::size_t(1));
 }
 
 /**
@@ -1028,14 +1030,14 @@ void VaultControllerTest::removeEntryFromCategory_returnsFalse_whenCategoryDoesN
 void VaultControllerTest::removeEntryFromCategory_returnsFalse_whenEntryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t entryId = 0;
     controller.session = makeVaultSessionWithCategoryAndEntry(&categoryId, &entryId);
 
     QVERIFY(!controller.removeEntryFromCategory(categoryId, entryId + 1));
-    QCOMPARE(controller.getCategories().front()->getEntries().size(), std::size_t(1));
+    QCOMPARE(controller.getEntriesInCategory(categoryId).size(), std::size_t(1));
 }
 
 /**
@@ -1044,7 +1046,7 @@ void VaultControllerTest::removeEntryFromCategory_returnsFalse_whenEntryDoesNotE
 void VaultControllerTest::removeEntryFromCategory_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.removeEntryFromCategory(1, 1));
 }
@@ -1055,7 +1057,7 @@ void VaultControllerTest::removeEntryFromCategory_throws_whenSessionIsNotOpen()
 void VaultControllerTest::removePersona_returnsTrue_whenPersonaExists()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t firstPersonaId = 0;
     int64_t secondPersonaId = 0;
@@ -1072,7 +1074,7 @@ void VaultControllerTest::removePersona_returnsTrue_whenPersonaExists()
 void VaultControllerTest::removePersona_returnsFalse_whenPersonaDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t firstPersonaId = 0;
     int64_t secondPersonaId = 0;
@@ -1090,7 +1092,7 @@ void VaultControllerTest::removePersona_returnsFalse_whenPersonaDoesNotExist()
 void VaultControllerTest::removePersona_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error, controller.removePersona(1));
 }
@@ -1101,7 +1103,7 @@ void VaultControllerTest::removePersona_throws_whenSessionIsNotOpen()
 void VaultControllerTest::setAliasForWebsite_returnsTrue_whenWebsiteExists()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t websiteId = 0;
@@ -1121,7 +1123,7 @@ void VaultControllerTest::setAliasForWebsite_returnsTrue_whenWebsiteExists()
 void VaultControllerTest::setAliasForWebsite_returnsFalse_whenCategoryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t websiteId = 0;
@@ -1141,7 +1143,7 @@ void VaultControllerTest::setAliasForWebsite_returnsFalse_whenCategoryDoesNotExi
 void VaultControllerTest::setAliasForWebsite_returnsFalse_whenEntryDoesNotExist()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t websiteId = 0;
@@ -1161,7 +1163,7 @@ void VaultControllerTest::setAliasForWebsite_returnsFalse_whenEntryDoesNotExist(
 void VaultControllerTest::setAliasForWebsite_returnsFalse_whenEntryHasWrongType()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     int64_t categoryId = 0;
     int64_t websiteId = 0;
@@ -1182,7 +1184,7 @@ void VaultControllerTest::setAliasForWebsite_returnsFalse_whenEntryHasWrongType(
 void VaultControllerTest::setAliasForWebsite_throws_whenSessionIsNotOpen()
 {
     std::unique_ptr<FakeVaultRepository> repository = std::make_unique<FakeVaultRepository>(true, true);
-    VaultController controller(std::move(repository));
+    VaultController &controller = VaultController::getInstance("vault", std::move(repository));
 
     QVERIFY_THROWS_EXCEPTION(std::runtime_error,
                              controller.setAliasForWebsite(1, 1, "alias-id", "Alias"));

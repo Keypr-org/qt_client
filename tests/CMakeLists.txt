@@ -3,6 +3,12 @@ qt_add_executable(tst_vaultcontroller
     fakevaultrepository.h
     tst_vaultcontroller.cpp
     ../src/vaultcontroller.cpp ../src/vaultcontroller.h
+    ../src/utils/qtypes/QCategory.cpp ../src/utils/qtypes/QCategory.h
+    ../src/utils/qtypes/QCreditCard.cpp ../src/utils/qtypes/QCreditCard.h
+    ../src/utils/qtypes/QEntry.cpp ../src/utils/qtypes/QEntry.h
+    ../src/utils/qtypes/QPersona.cpp ../src/utils/qtypes/QPersona.h
+    ../src/utils/qtypes/QWebsite.cpp ../src/utils/qtypes/QWebsite.h
+    ../src/utils/qtypes/QWifi.cpp ../src/utils/qtypes/QWifi.h
 )
 
 target_link_libraries(tst_vaultcontroller
@@ -30,20 +36,20 @@ target_link_libraries(tst_mailaliascontroller
 
 add_test(NAME tst_mailaliascontroller COMMAND tst_mailaliascontroller)
 
-qt_add_executable(tst_vaultbridge
-    tst_vaultbridge.cpp
-    ../src/vaultbridge.cpp ../src/vaultbridge.h
-    ../src/vaultcontroller.cpp ../src/vaultcontroller.h
-)
+#qt_add_executable(tst_vaultbridge
+#    tst_vaultbridge.cpp
+#    ../src/vaultbridge.cpp ../src/vaultbridge.h
+#    ../src/vaultcontroller.cpp ../src/vaultcontroller.h
+#)
 
-target_include_directories(tst_vaultbridge PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src
-)
+#target_include_directories(tst_vaultbridge PRIVATE
+#    ${CMAKE_CURRENT_SOURCE_DIR}/../src
+#)
 
-target_link_libraries(tst_vaultbridge
-    PRIVATE
-        Qt6::Test
-        keypr-core
-)
+#target_link_libraries(tst_vaultbridge
+#    PRIVATE
+#        Qt6::Test
+#        keypr-core
+#)
 
-add_test(NAME tst_vaultbridge COMMAND tst_vaultbridge)
+#add_test(NAME tst_vaultbridge COMMAND tst_vaultbridge)

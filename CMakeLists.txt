@@ -52,13 +52,19 @@ qt_add_executable(qt_client
     src/mainContent/newpersonaform.h src/mainContent/newpersonaform.cpp src/mainContent/newpersonaform.ui
     src/formOverlay/editpersonaoverlay.h src/formOverlay/editpersonaoverlay.cpp src/formOverlay/editpersonaoverlay.ui
     src/vaultcontroller.h src/vaultcontroller.cpp
-    src/vaultbridge.h src/vaultbridge.cpp
+    #src/vaultbridge.h src/vaultbridge.cpp
     src/jsonfileconfig.h src/jsonfileconfig.cpp
     src/appconfig.h src/appconfig.cpp
     src/vaultstoragesetupdialog.h src/vaultstoragesetupdialog.cpp
     src/settings/settingswindow.h src/settings/settingswindow.cpp src/settings/settingswindow.ui
     src/mailaliasclient.h src/mailaliasclient.cpp
     src/mailaliascontroller.h src/mailaliascontroller.cpp
+    src/utils/qtypes/QCategory.cpp src/utils/qtypes/QCategory.h
+    src/utils/qtypes/QCreditCard.cpp src/utils/qtypes/QCreditCard.h
+    src/utils/qtypes/QEntry.cpp src/utils/qtypes/QEntry.h
+    src/utils/qtypes/QPersona.cpp src/utils/qtypes/QPersona.h
+    src/utils/qtypes/QWebsite.cpp src/utils/qtypes/QWebsite.h
+    src/utils/qtypes/QWifi.cpp src/utils/qtypes/QWifi.h
 )
 
 target_include_directories(qt_client PRIVATE

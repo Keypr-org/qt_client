@@ -3,10 +3,11 @@
 
 #include <QWidget>
 
-#include "vaultbridge.h"
+#include "../../utils/qtypes/QEntry.h"
 
-namespace Ui {
-class CreditCardEntry;
+namespace Ui
+{
+    class CreditCardEntry;
 }
 
 class CreditCardEntry : public QWidget
@@ -29,24 +30,24 @@ public:
      * @brief Populates the widget's fields from the given credit card entry.
      * @param entry Credit card entry data to display and edit.
      */
-    void setEntry(const VaultBridge::EntrySummary &entry);
+    void setEntry(const QEntry &entry);
 
 signals:
     /**
      * @brief Emitted when the user requests deletion of the currently displayed entry.
      * @param id Identifier of the entry to delete.
      */
-    void deleteRequested(QString id);
+    void deleteRequested(qint64 id);
 
     /**
      * @brief Emitted when the user applies edits to the currently displayed entry's fields.
      */
-    void entrySaveRequested(QString id, QString cardHolderName, QString cardNumber,
-                             QString expiration, QString securityCode, QString notes);
+    void entrySaveRequested(qint64 id, QString cardHolderName, QString cardNumber,
+                            QString expiration, QString securityCode, QString notes);
 
 private:
     Ui::CreditCardEntry *ui;
-    QString m_entryId;
+    qint64 m_entryId;
 };
 
 #endif // CREDITCARDENTRY_H

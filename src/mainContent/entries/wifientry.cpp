@@ -2,10 +2,10 @@
 #include "ui_wifientry.h"
 
 #include "component/notificationtooltip.h"
+#include "../../utils/qtypes/QWifi.h"
 
 WifiEntry::WifiEntry(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::WifiEntry)
+    : QWidget(parent), ui(new Ui::WifiEntry)
 {
     ui->setupUi(this);
 
@@ -14,25 +14,18 @@ WifiEntry::WifiEntry(QWidget *parent)
     ui->notesInput->setLabelText("notes (optional");
     ui->notesInput->setInputPlaceholder("Enter notes here...");
 
-    connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
-        if (m_entryId.isEmpty()) {
-            return;
-        }
-        emit deleteRequested(m_entryId);
-    });
+    connect(ui->deleteButton, &QPushButton::clicked, this, [this]()
+            { emit deleteRequested(m_entryId); });
 
-    connect(ui->applyButton, &QPushButton::clicked, this, [this](){
-        if (m_entryId.isEmpty()) {
-            return;
-        }
+    connect(ui->applyButton, &QPushButton::clicked, this, [this]()
+            {
 
         if (ui->nameInput->text().isEmpty() || ui->passwordInput->text().isEmpty()) {
             NotificationTooltip::showErrorToast(this, "Please enter a network name and password.");
             return;
         }
 
-        emit entrySaveRequested(m_entryId, ui->nameInput->text(), ui->passwordInput->text(), ui->notesInput->text());
-    });
+        emit entrySaveRequested(m_entryId, ui->nameInput->text(), ui->passwordInput->text(), ui->notesInput->text()); });
 }
 
 WifiEntry::~WifiEntry()
@@ -40,12 +33,17 @@ WifiEntry::~WifiEntry()
     delete ui;
 }
 
-void WifiEntry::setEntry(const VaultBridge::EntrySummary &entry)
+void WifiEntry::setEntry(const QEntry &entry)
 {
-    m_entryId = entry.id;
+    if (entry.getKind() != QEntry::EntryKind::Wifi)
+    {
+        return;
+    }
+    auto *wifiEntry = dynamic_cast<const QWifi *>(&entry);
+    m_entryId = wifiEntry->getId();
 
-    ui->titleLabel->setText(entry.networkName);
-    ui->nameInput->setText(entry.networkName);
-    ui->passwordInput->setText(entry.password);
-    ui->notesInput->setText(entry.notes);
+    ui->titleLabel->setText(wifiEntry->getNetworkName());
+    ui->nameInput->setText(wifiEntry->getNetworkName());
+    ui->passwordInput->setText(wifiEntry->getPassword());
+    ui->notesInput->setText(wifiEntry->getNotes());
 }

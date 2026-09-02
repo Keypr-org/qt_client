@@ -5,14 +5,16 @@
 
 #include <memory>
 
+#include "vaultcontroller.h"
+
 QT_BEGIN_NAMESPACE
-namespace Ui {
-class MainWindow;
+namespace Ui
+{
+    class MainWindow;
 }
 QT_END_NAMESPACE
 
 class CreateVaultOverlay;
-class VaultBridge;
 
 class MainWindow : public QMainWindow
 {
@@ -29,7 +31,5 @@ protected:
 private:
     Ui::MainWindow *ui;
     CreateVaultOverlay *m_createVaultOverlay;
-    std::unique_ptr<VaultBridge> m_vaultBridge;
-
 };
 #endif // MAINWINDOW_H
