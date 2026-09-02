@@ -45,7 +45,7 @@ VaultController::UnlockResult VaultController::unlockVault(const QString &master
     const QString path = vaultFilePath(vaultName);
     try
     {
-        session = repository->unlockVault(masterPassword.toStdString(), vaultName.toStdString());
+        session = repository->unlockVault(masterPassword.toStdString(), path.toStdString());
         if (session == nullptr)
         {
             return UnlockResult::IncorrectPasswordOrCorrupted;
@@ -306,9 +306,9 @@ bool VaultController::addWebsiteEntry(qint64 categoryId, const QString &title, c
         throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
     }
 
-    return addEntryToCategory(categoryId, std::make_unique<Website>(title.toStdString(), username.toStdString(),
-                                                                    password.toStdString(), url.toStdString(),
-                                                                    comments.toStdString(), notes.toStdString()));
+    return addEntryToCategory(categoryId, std::make_unique<Website>(notes.toStdString(), title.toStdString(),
+                                                                    username.toStdString(), password.toStdString(),
+                                                                    url.toStdString(), comments.toStdString()));
 }
 
 bool VaultController::addWifiEntry(qint64 categoryId, const QString &networkName, const QString &password,

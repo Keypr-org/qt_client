@@ -32,8 +32,8 @@ SettingsWindow::SettingsWindow(QWidget *parent)
         const QString sourceEmail = ui->sourceEmailInput->text().trimmed();
         const QString apiKey = ui->apiKeyInput->text().trimmed();
 
-        if (sourceEmail.isEmpty() || apiKey.isEmpty()) {
-            ui->notificationTooltip->showError("Please fill in both the source email and API key.");
+        if (sourceEmail.isEmpty() != apiKey.isEmpty()) {
+            ui->notificationTooltip->showError("Please fill in both the source email and API key, or leave both empty.");
             return;
         }
 

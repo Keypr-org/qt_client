@@ -3,13 +3,31 @@
 #include "vaultstoragesetupdialog.h"
 
 #include <QApplication>
+#include <QFont>
 
+namespace {
+void applyPlatformFont()
+{
+#if defined(Q_OS_WIN)
+    QFont font;
+    font.setFamilies({"Segoe UI", "Segoe UI Variable Text", "Tahoma", "sans-serif"});
+    QApplication::setFont(font);
+#elif defined(Q_OS_LINUX)
+    QFont font;
+    font.setFamilies({"Noto Sans", "Cantarell", "Ubuntu", "DejaVu Sans", "sans-serif"});
+    QApplication::setFont(font);
+#endif
+    // macOS: leave Qt's default, which already resolves to the system UI font.
+}
+}
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QApplication::setApplicationName("Keypr");
     QApplication::setApplicationDisplayName("Keypr");
+
+    applyPlatformFont();
 
     AppConfig config = AppConfig::load();
     if (!config.hasValidVaultStoragePath()) {
