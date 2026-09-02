@@ -594,7 +594,7 @@ QString VaultController::sanitizedVaultFileStem(const QString &vaultName) const
     return sanitized;
 }
 
-bool VaultController::addEntryToCategory(qint64 categoryId, std::unique_ptr<Entry> entry)
+bool VaultController::addEntryToCategory(int64_t categoryId, std::unique_ptr<Entry> entry)
 {
     if (session == nullptr)
     {
