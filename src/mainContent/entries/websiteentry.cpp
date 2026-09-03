@@ -6,15 +6,14 @@
 
 #include <QAction>
 #include <QClipboard>
-#include <QDateTime>
 #include <QGuiApplication>
 #include <QMenu>
 #include <QPoint>
 #include <QToolButton>
+#include "../../utils/qtypes/QWebsite.h"
 
 WebsiteEntry::WebsiteEntry(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::WebsiteEntry)
+    : QWidget(parent), ui(new Ui::WebsiteEntry)
 {
     ui->setupUi(this);
 
@@ -29,60 +28,38 @@ WebsiteEntry::WebsiteEntry(QWidget *parent)
 
     ui->selectedPersonaName->setText("No persona linked");
 
-    connect(ui->changeLink, &QPushButton::clicked, this, [this](){
-        openPersonaPicker();
-    });
+    connect(ui->changeLink, &QPushButton::clicked, this, [this]()
+            { openPersonaPicker(); });
 
-    connect(ui->unlinkLink, &QPushButton::clicked, this, [this](){
-        unlinkPersona();
-    });
+    connect(ui->unlinkLink, &QPushButton::clicked, this, [this]()
+            { unlinkPersona(); });
 
-    connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
-        if (!m_entry) {
+    connect(ui->deleteButton, &QPushButton::clicked, this, [this]()
+            { emit deleteRequested(m_entryId); });
+
+    connect(ui->generateAliasButton, &QPushButton::clicked, this, [this]()
+            { generateAlias(); });
+
+    connect(ui->deleteAliasButton, &QPushButton::clicked, this, [this]()
+            { deleteAlias(); });
+
+    connect(ui->copyAliasButton, &QToolButton::clicked, this, [this]()
+            {
+        if (m_alias.isEmpty()) {
             return;
         }
-        emit deleteRequested(m_entry->id);
-    });
+        QGuiApplication::clipboard()->setText(m_alias);
+        NotificationTooltip::showSuccessToast(this, "Alias copied to clipboard."); });
 
-    connect(ui->generateAliasButton, &QPushButton::clicked, this, [this](){
-        generateAlias();
-    });
-
-    connect(ui->deleteAliasButton, &QPushButton::clicked, this, [this](){
-        deleteAlias();
-    });
-
-    connect(ui->copyAliasButton, &QToolButton::clicked, this, [this](){
-        if (!m_entry || m_entry->aliasEmail.isEmpty()) {
-            return;
-        }
-        QGuiApplication::clipboard()->setText(m_entry->aliasEmail);
-        NotificationTooltip::showSuccessToast(this, "Alias copied to clipboard.");
-    });
-
-    connect(ui->applyButton, &QPushButton::clicked, this, [this](){
-        if (!m_entry) {
-            return;
-        }
-
+    connect(ui->applyButton, &QPushButton::clicked, this, [this]()
+            {
         if (ui->passwordInput->text().isEmpty()) {
             NotificationTooltip::showErrorToast(this, "Password cannot be empty.");
             return;
         }
 
-        m_entry->username = ui->usernameInput->text();
-        m_entry->password = ui->passwordInput->text();
-        m_entry->url = ui->urlInput->text();
-        m_entry->description = ui->descriptionInput->text();
-        m_entry->notes = ui->notesInput->text();
-        m_entry->secondaryInfo = m_entry->username;
-        m_entry->lastUpdated = QDateTime::currentDateTime();
-
-        ui->subtitle->setText(m_entry->url);
-
-        emit entryUpdated(m_entry->id);
-        NotificationTooltip::showSuccessToast(this, "Website entry updated successfully.");
-    });
+        emit entrySaveRequested(m_entryId, ui->usernameInput->text(), ui->passwordInput->text(),
+                                 ui->urlInput->text(), ui->descriptionInput->text(), ui->notesInput->text()); });
 }
 
 WebsiteEntry::~WebsiteEntry()
@@ -90,71 +67,68 @@ WebsiteEntry::~WebsiteEntry()
     delete ui;
 }
 
-void WebsiteEntry::setEntry(const std::shared_ptr<WebsiteEntryData> &entry)
+void WebsiteEntry::setEntry(const QEntry &entry)
 {
-    if (!entry) {
+    if (entry.getKind() != QEntry::EntryKind::Website)
+    {
         return;
     }
+    auto *websiteEntry = dynamic_cast<const QWebsite *>(&entry);
+    m_entryId = websiteEntry->getId();
+    m_personaId = websiteEntry->getPersonaId();
+    m_aliasId = websiteEntry->getAliasId();
+    m_alias = websiteEntry->getAlias();
 
-    m_entry = entry;
+    ui->title->setText(websiteEntry->getTitle());
+    ui->subtitle->setText(websiteEntry->getUrl());
 
-    ui->title->setText(entry->primaryInfo);
-    ui->subtitle->setText(entry->url);
-
-    ui->usernameInput->setText(entry->username);
-    ui->passwordInput->setText(entry->password);
-    ui->urlInput->setText(entry->url);
-    ui->descriptionInput->setText(entry->description);
-    ui->notesInput->setText(entry->notes);
+    ui->usernameInput->setText(websiteEntry->getUsername());
+    ui->passwordInput->setText(websiteEntry->getPassword());
+    ui->urlInput->setText(websiteEntry->getUrl());
+    ui->descriptionInput->setText(websiteEntry->getComments());
+    ui->notesInput->setText(websiteEntry->getNotes());
 
     refreshPersonaDisplay();
     refreshAliasDisplay();
 }
 
-void WebsiteEntry::setPersonaRepository(PersonaRepository *repository)
+void WebsiteEntry::setAvailablePersonas(const QList<QPersona> &personas)
 {
-    m_personaRepository = repository;
+    m_availablePersonas = personas;
+    refreshPersonaDisplay();
 }
 
 void WebsiteEntry::refreshPersonaDisplay()
 {
-    if (!m_entry) {
-        return;
+    if (m_personaId >= 0)
+    {
+        for (const auto &persona : m_availablePersonas)
+        {
+            if (persona.getId() == m_personaId)
+            {
+                ui->selectedPersonaName->setText(persona.getFirstName() + " " + persona.getLastName());
+                return;
+            }
+        }
     }
 
-    PersonaData persona;
-    const bool linked = !m_entry->personaId.isEmpty()
-        && m_personaRepository
-        && m_personaRepository->findById(m_entry->personaId, persona);
-
-    if (linked) {
-        ui->selectedPersonaName->setText(persona.firstName + " " + persona.lastName);
-    } else {
-        m_entry->personaId.clear();
-        ui->selectedPersonaName->setText("No persona linked");
-    }
+    ui->selectedPersonaName->setText("No persona linked");
 }
 
 void WebsiteEntry::openPersonaPicker()
 {
-    if (!m_entry) {
-        return;
-    }
-
-    if (!m_personaRepository || m_personaRepository->personas().isEmpty()) {
+    if (m_availablePersonas.isEmpty())
+    {
         NotificationTooltip::showErrorToast(this, "No persona available. Create one first.");
         return;
     }
 
     QMenu menu(this);
-    for (const auto &persona : m_personaRepository->personas()) {
-        QAction *action = menu.addAction(persona.firstName + " " + persona.lastName);
-        connect(action, &QAction::triggered, this, [this, persona](){
-            m_entry->personaId = persona.id;
-            refreshPersonaDisplay();
-            emit entryUpdated(m_entry->id);
-            NotificationTooltip::showSuccessToast(this, "Persona linked successfully.");
-        });
+    for (const auto &persona : m_availablePersonas)
+    {
+        QAction *action = menu.addAction(persona.getFirstName() + " " + persona.getLastName());
+        connect(action, &QAction::triggered, this, [this, persona]()
+                { emit personaLinkRequested(m_entryId, persona.getId()); });
     }
 
     menu.exec(ui->changeLink->mapToGlobal(QPoint(0, ui->changeLink->height())));
@@ -162,84 +136,73 @@ void WebsiteEntry::openPersonaPicker()
 
 void WebsiteEntry::unlinkPersona()
 {
-    if (!m_entry) {
-        return;
-    }
-
-    if (m_entry->personaId.isEmpty()) {
+    if (m_personaId < 0)
+    {
         NotificationTooltip::showErrorToast(this, "No persona linked to unlink.");
         return;
     }
 
-    m_entry->personaId.clear();
-    refreshPersonaDisplay();
-    emit entryUpdated(m_entry->id);
-    NotificationTooltip::showSuccessToast(this, "Persona unlinked successfully.");
+    emit personaUnlinkRequested(m_entryId);
 }
 
 void WebsiteEntry::generateAlias()
 {
-    if (!m_entry) {
-        return;
-    }
-
     MailAliasController mailAliasController;
 
-    if (!mailAliasController.hasCredentials()) {
+    if (!mailAliasController.hasCredentials())
+    {
         NotificationTooltip::showErrorToast(this, "Set your Postscale API key and source email in Settings before generating an alias.");
         return;
     }
 
-    const auto alias = mailAliasController.createAlias(m_entry->primaryInfo.toStdString());
+    const auto alias = mailAliasController.createAlias(ui->title->text().toStdString());
 
-    if (!alias) {
+    if (!alias)
+    {
         NotificationTooltip::showErrorToast(this, QString("Failed to create alias: %1").arg(QString::fromStdString(mailAliasController.lastError())));
         return;
     }
 
-    m_entry->aliasEmail = QString::fromStdString(alias->fullAddress());
-    m_entry->aliasId = QString::fromStdString(alias->id);
-    refreshAliasDisplay();
-    emit entryUpdated(m_entry->id);
-    NotificationTooltip::showSuccessToast(this, "Email alias created successfully.");
+    emit aliasSetRequested(m_entryId, QString::fromStdString(alias->id), QString::fromStdString(alias->fullAddress()));
 }
 
 void WebsiteEntry::deleteAlias()
 {
-    if (!m_entry || m_entry->aliasEmail.isEmpty()) {
+    if (m_alias.isEmpty())
+    {
         return;
     }
 
-    if (!m_entry->aliasId.isEmpty()) {
+    if (!m_aliasId.isEmpty())
+    {
         MailAliasController mailAliasController;
 
-        if (!mailAliasController.hasCredentials()) {
+        if (!mailAliasController.hasCredentials())
+        {
             NotificationTooltip::showErrorToast(this, "Set your Postscale API key and source email in Settings before deleting an alias.");
             return;
         }
 
-        if (!mailAliasController.deleteAlias(m_entry->aliasId.toStdString())) {
+        if (!mailAliasController.deleteAlias(m_aliasId.toStdString()))
+        {
             NotificationTooltip::showErrorToast(this, QString("Failed to delete alias: %1").arg(QString::fromStdString(mailAliasController.lastError())));
             return;
         }
     }
 
-    m_entry->aliasEmail.clear();
-    m_entry->aliasId.clear();
-    refreshAliasDisplay();
-    emit entryUpdated(m_entry->id);
-    NotificationTooltip::showSuccessToast(this, "Alias removed from this entry.");
+    emit aliasClearRequested(m_entryId);
 }
 
 void WebsiteEntry::refreshAliasDisplay()
 {
-    const bool hasAlias = m_entry && !m_entry->aliasEmail.isEmpty();
+    const bool hasAlias = !m_alias.isEmpty();
 
     ui->aliasFormWrapper->setVisible(!hasAlias);
     ui->widgetAliasEmail->setVisible(hasAlias);
     ui->deleteAliasButton->setVisible(hasAlias);
 
-    if (hasAlias) {
-        ui->aliasEmailLabel->setText(m_entry->aliasEmail);
+    if (hasAlias)
+    {
+        ui->aliasEmailLabel->setText(m_alias);
     }
 }

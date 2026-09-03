@@ -28,9 +28,6 @@ CreateCategoryOverlay::CreateCategoryOverlay(QWidget *parent)
         }
 
         emit categoryCreated(name);
-        clearForm();
-        hide();
-        NotificationTooltip::showSuccessToast(parentWidget(), "Category created successfully.");
     });
 }
 

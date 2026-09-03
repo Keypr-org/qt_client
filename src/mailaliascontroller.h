@@ -1,7 +1,7 @@
 #pragma once
 
+#include "appconfig.h"
 #include "mailaliasclient.h"
-#include "mailaliasconfig.h"
 
 #include <memory>
 #include <optional>
@@ -14,15 +14,15 @@
 class MailAliasController {
 public:
     /**
-     * @brief Load the persisted config from disk (see MailAliasConfig::load()).
+     * @brief Load the persisted config from disk (see AppConfig::load()).
      */
     MailAliasController();
-    explicit MailAliasController(MailAliasConfig config);
+    explicit MailAliasController(AppConfig config);
 
     /**
      * @brief Constructs the controller with an explicit config and client, for testing.
      */
-    MailAliasController(MailAliasConfig config, std::unique_ptr<MailAliasClient> client);
+    MailAliasController(AppConfig config, std::unique_ptr<MailAliasClient> client);
 
     /**
      * @brief Update the API key and source email, persisting them to disk.
@@ -55,7 +55,7 @@ public:
     const std::string &lastError() const;
 
 private:
-    MailAliasConfig config;
+    AppConfig config;
     std::unique_ptr<MailAliasClient> client;
     std::string error;
 };

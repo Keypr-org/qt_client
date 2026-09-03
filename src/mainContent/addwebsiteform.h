@@ -2,9 +2,6 @@
 #define ADDWEBSITEFORM_H
 
 #include <QWidget>
-#include <memory>
-
-#include "model/websiteentrydata.h"
 
 namespace Ui {
 class AddWebsiteForm;
@@ -45,9 +42,9 @@ signals:
 
     /**
      * @brief Emitted when the user submits the form with a valid new website entry.
-     * @param entry Website entry data built from the form fields.
      */
-    void createWebsiteEntry(std::shared_ptr<WebsiteEntryData> entry);
+    void createWebsiteEntry(QString title, QString username, QString password, QString url,
+                             QString description, QString notes);
 
     /**
      * @brief Emitted when the user cancels creating a new website entry.

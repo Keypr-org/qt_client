@@ -3,20 +3,18 @@
 
 #include <QPainter>
 #include <QStyleOption>
+#include <QDate>
 
 PersonaItem::PersonaItem(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::PersonaItem)
+    : QWidget(parent), ui(new Ui::PersonaItem)
 {
     ui->setupUi(this);
 
-    connect(ui->modifyButton, &QPushButton::clicked, this, [this](){
-        emit modifyRequested(m_persona);
-    });
+    connect(ui->modifyButton, &QPushButton::clicked, this, [this]()
+            { emit modifyRequested(*m_persona.get()); });
 
-    connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
-        emit deleteRequested(m_persona.id);
-    });
+    connect(ui->deleteButton, &QPushButton::clicked, this, [this]()
+            { emit deleteRequested(m_persona->getId()); });
 }
 
 PersonaItem::~PersonaItem()
@@ -32,28 +30,28 @@ void PersonaItem::paintEvent(QPaintEvent *)
     style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
 }
 
-const PersonaData &PersonaItem::persona() const
+const QPersona PersonaItem::persona() const
 {
-    return m_persona;
+    return *m_persona.get();
 }
 
-void PersonaItem::setPersona(const PersonaData &persona)
+void PersonaItem::setPersona(const QPersona &persona)
 {
-    m_persona = persona;
+    m_persona = std::make_unique<QPersona>(persona);
 
-    ui->name->setText(persona.firstName + " " + persona.lastName);
+    ui->name->setText(persona.getFirstName() + " " + persona.getLastName());
 
     QString initials;
-    if (!persona.firstName.isEmpty()) {
-        initials += persona.firstName.at(0).toUpper();
+    if (!persona.getFirstName().isEmpty())
+    {
+        initials += persona.getFirstName().at(0).toUpper();
     }
-    if (!persona.lastName.isEmpty()) {
-        initials += persona.lastName.at(0).toUpper();
+    if (!persona.getLastName().isEmpty())
+    {
+        initials += persona.getLastName().at(0).toUpper();
     }
     ui->label->setText(initials);
 
-    ui->locationValue->setText(persona.country);
-    ui->birthdayValue->setText(persona.birthday.toString("MMM d, yyyy"));
-    ui->genderValue->setText(persona.gender);
-    ui->addressValue->setText(persona.address);
+    ui->birthdayValue->setText(persona.getDateOfBirth().toString("MMM d, yyyy"));
+    ui->addressValue->setText(persona.getAddress());
 }

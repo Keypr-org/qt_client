@@ -29,9 +29,29 @@ public:
      */
     void setVaultName(const QString &name);
 
+    /**
+     * @brief Called by the owner once the unlock attempt succeeded, to complete the transition.
+     */
+    void reportUnlockSuccess();
+
+    /**
+     * @brief Called by the owner when the unlock attempt failed, to display the given error.
+     * @param message Error message to display to the user.
+     */
+    void reportUnlockError(const QString &message);
+
 signals:
     /**
-     * @brief Emitted when the user successfully unlocks the vault.
+     * @brief Emitted when the user submits the form to attempt unlocking the vault. The owner
+     * is responsible for performing the actual check and calling reportUnlockSuccess() or
+     * reportUnlockError() with the result.
+     * @param vaultName Name of the vault to unlock.
+     * @param password Master password entered by the user.
+     */
+    void unlockAttempted(const QString &vaultName, const QString &password);
+
+    /**
+     * @brief Emitted when the vault has been successfully unlocked.
      * @param name Name of the vault that was unlocked.
      */
     void vaultUnlocked(const QString &name);

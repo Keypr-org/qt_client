@@ -1,30 +1,36 @@
 #ifndef RANDOMPERSONA_H
 #define RANDOMPERSONA_H
 
-#include <QStringList>
-
-#include "model/persona.h"
+#include <QDate>
+#include <QString>
 
 /**
- * @brief Generates synthetic persona data (name, gender, birthday, country, address)
- * for use as fake test/demo identities.
+ * @brief Generates synthetic persona data (name, birthday, address, phone) for use as fake
+ * test/demo identities. Fields mirror keypr-core's Persona entity: no gender or country, since
+ * the real entity has neither.
  */
 class RandomPersona
 {
 public:
+    struct Generated {
+        QString firstName;
+        QString lastName;
+        QDate birthday;
+        QString address;
+        QString phone;
+    };
+
     /**
-     * @brief Generates a persona with randomized name, gender, birthday and, if a
-     * non-empty country list is given, a randomly picked country.
-     * @param countries Candidate countries to pick from; skipped when empty.
-     * @return Randomly generated persona data (id left empty).
+     * @brief Generates a persona with a randomized name, birthday, address and phone number.
+     * @return Randomly generated persona data.
      */
-    static PersonaData generate(const QStringList &countries = {});
+    static Generated generate();
 
 private:
     RandomPersona() = delete;
 
     /**
-     * @brief Picks a random gender.
+     * @brief Picks a random gender, used only to pick a matching first-name pool.
      * @return "Male" or "Female".
      */
     static QString randomGender();
@@ -53,6 +59,12 @@ private:
      * @return Formatted address string, e.g. "123 Maple Street, Springfield, 54321".
      */
     static QString randomAddress();
+
+    /**
+     * @brief Builds a random but credible-looking phone number.
+     * @return Formatted phone number, e.g. "+1 555-123-4567".
+     */
+    static QString randomPhone();
 };
 
 #endif // RANDOMPERSONA_H

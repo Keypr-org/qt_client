@@ -2,12 +2,10 @@
 #include "ui_wifientry.h"
 
 #include "component/notificationtooltip.h"
-
-#include <QDateTime>
+#include "../../utils/qtypes/QWifi.h"
 
 WifiEntry::WifiEntry(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::WifiEntry)
+    : QWidget(parent), ui(new Ui::WifiEntry)
 {
     ui->setupUi(this);
 
@@ -16,34 +14,18 @@ WifiEntry::WifiEntry(QWidget *parent)
     ui->notesInput->setLabelText("notes (optional");
     ui->notesInput->setInputPlaceholder("Enter notes here...");
 
-    connect(ui->deleteButton, &QPushButton::clicked, this, [this](){
-        if (!m_entry) {
-            return;
-        }
-        emit deleteRequested(m_entry->id);
-    });
+    connect(ui->deleteButton, &QPushButton::clicked, this, [this]()
+            { emit deleteRequested(m_entryId); });
 
-    connect(ui->applyButton, &QPushButton::clicked, this, [this](){
-        if (!m_entry) {
-            return;
-        }
+    connect(ui->applyButton, &QPushButton::clicked, this, [this]()
+            {
 
         if (ui->nameInput->text().isEmpty() || ui->passwordInput->text().isEmpty()) {
             NotificationTooltip::showErrorToast(this, "Please enter a network name and password.");
             return;
         }
 
-        m_entry->ssid = ui->nameInput->text();
-        m_entry->password = ui->passwordInput->text();
-        m_entry->notes = ui->notesInput->text();
-        m_entry->primaryInfo = m_entry->ssid;
-        m_entry->lastUpdated = QDateTime::currentDateTime();
-
-        ui->titleLabel->setText(m_entry->ssid);
-
-        emit entryUpdated(m_entry->id);
-        NotificationTooltip::showSuccessToast(this, "Wifi entry updated successfully.");
-    });
+        emit entrySaveRequested(m_entryId, ui->nameInput->text(), ui->passwordInput->text(), ui->notesInput->text()); });
 }
 
 WifiEntry::~WifiEntry()
@@ -51,16 +33,17 @@ WifiEntry::~WifiEntry()
     delete ui;
 }
 
-void WifiEntry::setEntry(const std::shared_ptr<WifiEntryData> &entry)
+void WifiEntry::setEntry(const QEntry &entry)
 {
-    if (!entry) {
+    if (entry.getKind() != QEntry::EntryKind::Wifi)
+    {
         return;
     }
+    auto *wifiEntry = dynamic_cast<const QWifi *>(&entry);
+    m_entryId = wifiEntry->getId();
 
-    m_entry = entry;
-
-    ui->titleLabel->setText(entry->ssid);
-    ui->nameInput->setText(entry->ssid);
-    ui->passwordInput->setText(entry->password);
-    ui->notesInput->setText(entry->notes);
+    ui->titleLabel->setText(wifiEntry->getNetworkName());
+    ui->nameInput->setText(wifiEntry->getNetworkName());
+    ui->passwordInput->setText(wifiEntry->getPassword());
+    ui->notesInput->setText(wifiEntry->getNotes());
 }

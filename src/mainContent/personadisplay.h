@@ -1,15 +1,15 @@
 #ifndef PERSONADISPLAY_H
 #define PERSONADISPLAY_H
 
-#include <QMap>
 #include <QWidget>
 
-#include "model/persona.h"
+#include "../utils/qtypes/QPersona.h"
 
 class PersonaItem;
 
-namespace Ui {
-class PersonaDisplay;
+namespace Ui
+{
+    class PersonaDisplay;
 }
 
 class PersonaDisplay : public QWidget
@@ -29,22 +29,23 @@ public:
     ~PersonaDisplay();
 
     /**
-     * @brief Adds a new persona card to the grid.
-     * @param persona Persona to display.
+     * @brief Loads and displays every persona from the vault, replacing the current grid.
      */
-    void addPersona(const PersonaData &persona);
+    void loadPersonas();
 
     /**
-     * @brief Refreshes the card matching the given persona's id with its new data.
-     * @param persona Updated persona data.
+     * @brief Creates a new persona in the vault and reloads the grid on success.
+     * @return true on success.
      */
-    void updatePersona(const PersonaData &persona);
+    bool addPersona(const QString &firstName, const QString &lastName, const QDate &dateOfBirth,
+                    const QString &address, const QString &phone);
 
     /**
-     * @brief Removes a persona card from the grid and re-packs the remaining cards.
-     * @param id Id of the persona to remove.
+     * @brief Updates an existing persona's fields and reloads the grid on success.
+     * @return true on success.
      */
-    void removePersona(const QString &id);
+    bool updatePersona(qint64 id, const QString &firstName, const QString &lastName,
+                       const QDate &dateOfBirth, const QString &address, const QString &phone);
 
 signals:
     /**
@@ -56,20 +57,12 @@ signals:
      * @brief Emitted when the user requests to edit an existing persona.
      * @param persona Persona to edit.
      */
-    void modifyPersonaRequested(PersonaData persona);
-
-    /**
-     * @brief Emitted when the user requests to delete a persona.
-     * @param id Id of the persona to delete.
-     */
-    void deletePersonaRequested(QString id);
+    void modifyPersonaRequested(const QPersona persona);
 
 private:
     Ui::PersonaDisplay *ui;
 
     static const int GRID_COLUMNS = 2;
-    int m_personaCount = 0;
-    QMap<QString, PersonaItem *> m_personaItems;
 };
 
 #endif // PERSONADISPLAY_H

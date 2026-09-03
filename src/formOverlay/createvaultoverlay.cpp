@@ -43,9 +43,6 @@ CreateVaultOverlay::CreateVaultOverlay(QWidget *parent)
         }
 
         emit vaultCreated(name, password);
-        clearForm();
-        hide();
-        NotificationTooltip::showSuccessToast(parentWidget(), "Vault created successfully.");
     });
 }
 

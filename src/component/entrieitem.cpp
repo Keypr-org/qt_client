@@ -118,5 +118,5 @@ void EntrieItem::setSecondaryInfo(const QString &text) {
 }
 
 void EntrieItem::setLastUpdate(const QString &text) {
-    ui->lastUpdateLabel->setText(text + "ago");
+    ui->lastUpdateLabel->setText(text + " ago");
 }

@@ -3,48 +3,114 @@
 #include "mainContent/entries/websiteentry.h"
 #include "mainContent/entries/wifientry.h"
 #include "mainContent/entries/creditcardentry.h"
-#include "model/websiteentrydata.h"
-#include "model/wifientrydata.h"
-#include "model/creditcardentrydata.h"
+#include "component/notificationtooltip.h"
 #include "ui_viewentries.h"
 
 #include <QLabel>
+#include <QSet>
 #include <QVBoxLayout>
 
-EntrieItem::IconType iconForType(EntryType type)
+#include <utility>
+
+#include "vaultcontroller.h"
+
+#include "../utils/qtypes/QWebsite.h"
+#include "../utils/qtypes/QWifi.h"
+#include "../utils/qtypes/QCreditCard.h"
+
+namespace
 {
-    switch (type) {
-    case EntryType::Website:
+    EntrieItem::IconType iconForKind(QEntry::EntryKind kind)
+    {
+        switch (kind)
+        {
+        case QEntry::EntryKind::Website:
+            return EntrieItem::IconType::WebSite;
+        case QEntry::EntryKind::Wifi:
+            return EntrieItem::IconType::Wifi;
+        case QEntry::EntryKind::CreditCard:
+            return EntrieItem::IconType::CreditCard;
+        }
+
         return EntrieItem::IconType::WebSite;
-    case EntryType::Wifi:
-        return EntrieItem::IconType::Wifi;
-    case EntryType::CreditCard:
-        return EntrieItem::IconType::CreditCard;
     }
 
-    return EntrieItem::IconType::WebSite;
-}
+    QString typeLabelForKind(QEntry::EntryKind kind)
+    {
+        switch (kind)
+        {
+        case QEntry::EntryKind::Website:
+            return "Website";
+        case QEntry::EntryKind::Wifi:
+            return "Wifi";
+        case QEntry::EntryKind::CreditCard:
+            return "Card";
+        }
 
-QString typeLabelForType(EntryType type)
-{
-    switch (type) {
-    case EntryType::Website:
-        return "Website";
-    case EntryType::Wifi:
-        return "Wifi";
-    case EntryType::CreditCard:
-        return "Card";
+        return QString();
     }
 
-    return QString();
+    QString maskedCardNumber(const QString &cardNumber)
+    {
+        return cardNumber.length() >= 4 ? "•••• " + cardNumber.right(4) : "•••• " + cardNumber;
+    }
+
+    QString relativeLastUpdateText(const QDateTime &lastUpdated)
+    {
+        const qint64 secondsAgo = qMax<qint64>(0, lastUpdated.secsTo(QDateTime::currentDateTime()));
+        const qint64 hoursAgo = secondsAgo / 3600;
+
+        if (hoursAgo < 24)
+        {
+            return QString("%1h").arg(hoursAgo);
+        }
+
+        return QString("%1d").arg(hoursAgo / 24);
+    }
+
+    QString primaryInfoFor(const std::unique_ptr<QEntry> &entry)
+    {
+        if (auto *websiteEntry = dynamic_cast<const QWebsite *>(entry.get()))
+        {
+            return websiteEntry->getTitle();
+        }
+        else if (auto *wifiEntry = dynamic_cast<const QWifi *>(entry.get()))
+        {
+            return wifiEntry->getNetworkName();
+        }
+        else if (auto *cardEntry = dynamic_cast<const QCreditCard *>(entry.get()))
+        {
+            return maskedCardNumber(cardEntry->getCardNumber());
+        }
+
+        return QString();
+    }
+
+    QString secondaryInfoFor(const std::unique_ptr<QEntry> &entry)
+    {
+
+        if (auto *websiteEntry = dynamic_cast<const QWebsite *>(entry.get()))
+        {
+            return websiteEntry->getUsername();
+        }
+        else if (auto *wifiEntry = dynamic_cast<const QWifi *>(entry.get()))
+        {
+            return QString();
+        }
+        else if (auto *cardEntry = dynamic_cast<const QCreditCard *>(entry.get()))
+        {
+            return cardEntry->getCardHolderName();
+        }
+
+        return QString();
+    }
 }
 
 ViewEntries::ViewEntries(QWidget *parent)
-    : QWidget(parent)
-    , ui(new Ui::ViewEntries)
-    , m_repository(new EntryRepository(this))
+    : QWidget(parent), ui(new Ui::ViewEntries)
 {
     ui->setupUi(this);
+    ui->newItemButton->setEnabled(false);
 
     m_emptyDetailPage = new QWidget(this);
     auto *emptyLayout = new QVBoxLayout(m_emptyDetailPage);
@@ -70,45 +136,111 @@ ViewEntries::ViewEntries(QWidget *parent)
 
     populateList();
 
-    connect(ui->newItemButton, &QPushButton::clicked, this, [this](){
-        emit newEntry();
-    });
+    connect(ui->newItemButton, &QPushButton::clicked, this, [this]()
+            { emit newEntry(); });
 
-    connect(ui->searchInput, &QLineEdit::textChanged, this, [this](const QString &text){
+    connect(ui->searchInput, &QLineEdit::textChanged, this, [this](const QString &text)
+            {
         m_searchFilter = text;
-        populateList();
-    });
+        refreshEntries(); });
 
-    connect(ui->entriesList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item){
-        const QString id = item->data(Qt::UserRole).toString();
-        if (auto entry = m_repository->findById(id)) {
-            showEntryDetails(entry);
+    connect(ui->entriesList, &QListWidget::itemClicked, this, [this](QListWidgetItem *item)
+            {
+        const qint64 id = item->data(Qt::UserRole).toLongLong();
+        if (const auto *entry = findEntry(id)) {
+            showEntryDetails(*entry);
+        } });
+
+    connect(m_websiteEntryView, &WebsiteEntry::deleteRequested, this, [this](qint64 id)
+            { handleDeleteRequested(id); });
+    connect(m_wifiEntryView, &WifiEntry::deleteRequested, this, [this](qint64 id)
+            { handleDeleteRequested(id); });
+    connect(m_creditCardEntryView, &CreditCardEntry::deleteRequested, this, [this](qint64 id)
+            { handleDeleteRequested(id); });
+
+    connect(m_websiteEntryView, &WebsiteEntry::entrySaveRequested, this,
+            [this](qint64 id, const QString &username, const QString &password,
+                   const QString &url, const QString &description, const QString &notes)
+            {
+                auto &controller = VaultController::getInstance();
+                if (!controller.updateWebsiteEntry(m_currentCategoryId, id, username, password, url, description, notes))
+                {
+                    NotificationTooltip::showErrorToast(this, "Failed to update the website entry.");
+                    return;
+                }
+                reloadAndReselect(id);
+                NotificationTooltip::showSuccessToast(this, "Website entry updated successfully.");
+            });
+
+    connect(m_wifiEntryView, &WifiEntry::entrySaveRequested, this,
+            [this](qint64 id, const QString &networkName, const QString &password, const QString &notes)
+            {
+                auto &controller = VaultController::getInstance();
+                if (!controller.updateWifiEntry(m_currentCategoryId, id, networkName, password, notes))
+                {
+                    NotificationTooltip::showErrorToast(this, "Failed to update the wifi entry.");
+                    return;
+                }
+                reloadAndReselect(id);
+                NotificationTooltip::showSuccessToast(this, "Wifi entry updated successfully.");
+            });
+
+    connect(m_creditCardEntryView, &CreditCardEntry::entrySaveRequested, this,
+            [this](qint64 id, const QString &cardHolderName, const QString &cardNumber,
+                   const QString &expiration, const QString &securityCode, const QString &notes)
+            {
+                auto &controller = VaultController::getInstance();
+                if (!controller.updateCreditCardEntry(m_currentCategoryId, id, cardHolderName, cardNumber, expiration, securityCode, notes))
+                {
+                    NotificationTooltip::showErrorToast(this, "Failed to update the credit card entry.");
+                    return;
+                }
+                reloadAndReselect(id);
+                NotificationTooltip::showSuccessToast(this, "Credit card entry updated successfully.");
+            });
+
+    connect(m_websiteEntryView, &WebsiteEntry::personaLinkRequested, this, [this](qint64 id, qint64 personaId)
+            {
+        auto &controller = VaultController::getInstance();
+        if (!controller.linkPersonaToEntry(personaId, m_currentCategoryId, id)) {
+            NotificationTooltip::showErrorToast(this, "Failed to link the persona.");
+            return;
         }
-    });
+        reloadAndReselect(id);
+        NotificationTooltip::showSuccessToast(this, "Persona linked successfully."); });
 
-    connect(m_websiteEntryView, &WebsiteEntry::deleteRequested, this, [this](const QString &id){
-        handleDeleteRequested(id);
-    });
+    connect(m_websiteEntryView, &WebsiteEntry::personaUnlinkRequested, this, [this](qint64 id)
+            {
+        auto &controller = VaultController::getInstance();
+        if (!controller.unlinkPersonaFromEntry(m_currentCategoryId, id)) {
+            NotificationTooltip::showErrorToast(this, "Failed to unlink the persona.");
+            return;
+        }
+        reloadAndReselect(id);
+        NotificationTooltip::showSuccessToast(this, "Persona unlinked successfully."); });
 
-    connect(m_wifiEntryView, &WifiEntry::deleteRequested, this, [this](const QString &id){
-        handleDeleteRequested(id);
-    });
+    connect(m_websiteEntryView, &WebsiteEntry::aliasSetRequested, this,
+            [this](qint64 id, const QString &aliasId, const QString &alias)
+            {
+                auto &controller = VaultController::getInstance();
+                if (!controller.setAliasForWebsite(m_currentCategoryId, id, aliasId, alias))
+                {
+                    NotificationTooltip::showErrorToast(this, "Failed to save the alias.");
+                    return;
+                }
+                reloadAndReselect(id);
+                NotificationTooltip::showSuccessToast(this, "Email alias created successfully.");
+            });
 
-    connect(m_creditCardEntryView, &CreditCardEntry::deleteRequested, this, [this](const QString &id){
-        handleDeleteRequested(id);
-    });
-
-    connect(m_websiteEntryView, &WebsiteEntry::entryUpdated, this, [this](const QString &id){
-        handleEntryUpdated(id);
-    });
-
-    connect(m_wifiEntryView, &WifiEntry::entryUpdated, this, [this](const QString &id){
-        handleEntryUpdated(id);
-    });
-
-    connect(m_creditCardEntryView, &CreditCardEntry::entryUpdated, this, [this](const QString &id){
-        handleEntryUpdated(id);
-    });
+    connect(m_websiteEntryView, &WebsiteEntry::aliasClearRequested, this, [this](qint64 id)
+            {
+        auto &controller = VaultController::getInstance();
+        if (!controller.setAliasForWebsite(m_currentCategoryId, id, "", "")) {
+            NotificationTooltip::showErrorToast(this, "Failed to remove the alias.");
+            return;
+        }
+        reloadAndReselect(id);
+        NotificationTooltip::showSuccessToast(this, "Alias removed from this entry."); });
 }
 
 ViewEntries::~ViewEntries()
@@ -116,32 +248,69 @@ ViewEntries::~ViewEntries()
     delete ui;
 }
 
-EntryRepository *ViewEntries::repository() const
+void ViewEntries::loadCategory(qint64 categoryId)
 {
-    return m_repository;
+    m_currentCategoryId = categoryId;
+    m_searchFilter.clear();
+    ui->searchInput->setText("");
+    ui->newItemButton->setEnabled(true);
+    refreshEntries();
+    clearSelection();
 }
 
-void ViewEntries::setPersonaRepository(PersonaRepository *repository)
+void ViewEntries::clearCategory()
 {
-    m_websiteEntryView->setPersonaRepository(repository);
+    m_currentCategoryId = -1;
+    m_searchFilter.clear();
+    ui->searchInput->setText("");
+    ui->newItemButton->setEnabled(false);
+    refreshEntries();
+    clearSelection();
 }
 
-void ViewEntries::refresh()
+bool ViewEntries::createWebsiteEntry(const QString &title, const QString &username, const QString &password,
+                                     const QString &url, const QString &description, const QString &notes)
 {
-    populateList();
-}
+    auto &controller = VaultController::getInstance();
 
-void ViewEntries::refreshCurrentEntryDetails()
-{
-    QListWidgetItem *current = ui->entriesList->currentItem();
-    if (!current) {
-        return;
+    if (!controller.addWebsiteEntry(m_currentCategoryId, title, username, password, url, description, notes))
+    {
+        return false;
     }
 
-    const QString id = current->data(Qt::UserRole).toString();
-    if (auto entry = m_repository->findById(id)) {
-        showEntryDetails(entry);
+    loadCategory(m_currentCategoryId);
+    // selectEntry(id);
+    return true;
+}
+
+bool ViewEntries::createWifiEntry(const QString &networkName, const QString &password, const QString &notes)
+{
+    auto &controller = VaultController::getInstance();
+
+    if (!controller.addWifiEntry(m_currentCategoryId, networkName, password, notes))
+    {
+        return false;
     }
+
+    loadCategory(m_currentCategoryId);
+    // selectEntry(id);
+    return true;
+}
+
+bool ViewEntries::createCreditCardEntry(const QString &cardHolderName, const QString &cardNumber,
+                                        const QString &expiration, const QString &securityCode,
+                                        const QString &notes)
+{
+    auto &controller = VaultController::getInstance();
+
+    if (!controller.addCreditCardEntry(m_currentCategoryId, cardHolderName, cardNumber, expiration, securityCode, notes))
+    {
+        return false;
+    }
+
+    loadCategory(m_currentCategoryId);
+    // selectEntry(id);
+    return true;
 }
 
 void ViewEntries::clearSelection()
@@ -152,111 +321,166 @@ void ViewEntries::clearSelection()
 
 void ViewEntries::populateList()
 {
-    while (ui->entriesList->count() > 0) {
+    while (ui->entriesList->count() > 0)
+    {
         QListWidgetItem *item = ui->entriesList->item(0);
         delete ui->entriesList->itemWidget(item);
         delete ui->entriesList->takeItem(0);
     }
 
-    for (const auto &entry : m_repository->entries()) {
-        if (!matchesFilter(entry)) {
-            continue;
-        }
-
+    for (qsizetype i = 0; i < m_entries.size(); ++i)
+    {
+        const auto &entry = m_entries.at(i);
         auto *itemWidget = new EntrieItem(this);
-        itemWidget->setIcon(iconForType(entry->type));
-        itemWidget->setPrimaryInfo(entry->primaryInfo);
-        itemWidget->setSecondaryInfo(entry->secondaryInfo);
+        itemWidget->setIcon(iconForKind(entry->getKind()));
+        itemWidget->setPrimaryInfo(primaryInfoFor(entry));
+        itemWidget->setSecondaryInfo(secondaryInfoFor(entry));
+        itemWidget->setLastUpdate(relativeLastUpdateText(entry->getLastModifiedDate()));
 
         auto *listItem = new QListWidgetItem(ui->entriesList);
-        listItem->setData(Qt::UserRole, entry->id);
+        listItem->setData(Qt::UserRole, entry->getId());
         listItem->setSizeHint(itemWidget->sizeHint());
 
         ui->entriesList->setItemWidget(listItem, itemWidget);
     }
 }
 
-bool ViewEntries::matchesFilter(const std::shared_ptr<Entry> &entry) const
+void ViewEntries::refreshEntries()
 {
-    if (m_searchFilter.isEmpty()) {
-        return true;
+    auto &controller = VaultController::getInstance();
+
+    if (m_searchFilter.isEmpty())
+    {
+        m_entries = controller.getEntriesInCategory(m_currentCategoryId);
+        populateList();
+        return;
     }
 
-    if (entry->primaryInfo.contains(m_searchFilter, Qt::CaseInsensitive)) {
-        return true;
+    // VaultController::searchEntriesInCategory() matches entry content (notes, and per-kind
+    // fields like title/username/url/comments/alias, network name, or cardholder name) but has
+    // no concept of "kind" at all, so entries that only match by kind label (e.g. typing "wifi"
+    // or "card") are merged in separately, client-side.
+    m_entries = controller.searchEntriesInCategory(m_currentCategoryId, m_searchFilter);
+
+    QSet<qint64> matchedIds;
+    for (qsizetype i = 0; i < m_entries.size(); ++i)
+    {
+        const auto &entry = m_entries.at(i);
+        matchedIds.insert(entry->getId());
     }
 
-    if (entry->secondaryInfo.contains(m_searchFilter, Qt::CaseInsensitive)) {
-        return true;
+    for (auto &entry : controller.getEntriesInCategory(m_currentCategoryId))
+    {
+        if (matchedIds.contains(entry->getId()))
+        {
+            continue;
+        }
+        if (typeLabelForKind(entry->getKind()).contains(m_searchFilter, Qt::CaseInsensitive))
+        {
+            m_entries.push_back(std::move(entry));
+        }
     }
 
-    if (typeLabelForType(entry->type).contains(m_searchFilter, Qt::CaseInsensitive)) {
-        return true;
-    }
-
-    return false;
+    populateList();
 }
 
-void ViewEntries::showEntryDetails(const std::shared_ptr<Entry> &entry)
+const QEntry *ViewEntries::findEntry(qint64 id) const
 {
-    switch (entry->type) {
-    case EntryType::Website:
-        m_websiteEntryView->setEntry(std::static_pointer_cast<WebsiteEntryData>(entry));
+    for (qsizetype i = 0; i < m_entries.size(); ++i)
+    {
+        const auto &entry = m_entries.at(i);
+        if (entry->getId() == id)
+        {
+            return entry.get();
+        }
+    }
+    return nullptr;
+}
+
+void ViewEntries::showEntryDetails(const QEntry &entry)
+{
+    auto &controller = VaultController::getInstance();
+    switch (entry.getKind())
+    {
+    case QEntry::EntryKind::Website:
+        m_websiteEntryView->setAvailablePersonas(controller.getPersonas());
+        m_websiteEntryView->setEntry(entry);
         m_detailStack->setCurrentWidget(m_websiteEntryView);
         break;
 
-    case EntryType::Wifi:
-        m_wifiEntryView->setEntry(std::static_pointer_cast<WifiEntryData>(entry));
+    case QEntry::EntryKind::Wifi:
+        m_wifiEntryView->setEntry(entry);
         m_detailStack->setCurrentWidget(m_wifiEntryView);
         break;
 
-    case EntryType::CreditCard:
-        m_creditCardEntryView->setEntry(std::static_pointer_cast<CreditCardEntryData>(entry));
+    case QEntry::EntryKind::CreditCard:
+        m_creditCardEntryView->setEntry(entry);
         m_detailStack->setCurrentWidget(m_creditCardEntryView);
         break;
     }
 }
 
-void ViewEntries::handleDeleteRequested(const QString &id)
+void ViewEntries::selectEntry(qint64 id)
 {
-    m_repository->removeEntry(id);
-    refresh();
-    clearSelection();
-}
-
-void ViewEntries::handleEntryUpdated(const QString &id)
-{
-    populateList();
-
-    for (int i = 0; i < ui->entriesList->count(); ++i) {
+    for (int i = 0; i < ui->entriesList->count(); ++i)
+    {
         QListWidgetItem *item = ui->entriesList->item(i);
-        if (item->data(Qt::UserRole).toString() == id) {
+        if (item->data(Qt::UserRole).toLongLong() == id)
+        {
             ui->entriesList->setCurrentItem(item);
-            break;
+            // setCurrentItem() only updates the list row's visual selection; the detail pane
+            // needs to be explicitly repopulated with the freshly-reloaded data (e.g. so a
+            // just-created alias or a just-linked persona actually shows up after
+            // reloadAndReselect(), instead of leaving the pane showing what it had before).
+            if (const auto *entry = findEntry(id))
+            {
+                showEntryDetails(*entry);
+            }
+            return;
         }
     }
+}
+
+void ViewEntries::reloadAndReselect(qint64 id)
+{
+    refreshEntries();
+    selectEntry(id);
+}
+
+void ViewEntries::handleDeleteRequested(qint64 id)
+{
+    auto &controller = VaultController::getInstance();
+    if (!controller.removeEntryFromCategory(m_currentCategoryId, id))
+    {
+        NotificationTooltip::showErrorToast(this, "Failed to delete the entry.");
+        return;
+    }
+    refreshEntries();
+    clearSelection();
 }
 
 void ViewEntries::on_entriesList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
-    if (previous) {
+    if (previous)
+    {
         EntrieItem *previousItem =
             qobject_cast<EntrieItem *>(
-                ui->entriesList->itemWidget(previous)
-                );
+                ui->entriesList->itemWidget(previous));
 
-        if (previousItem) {
+        if (previousItem)
+        {
             previousItem->setSelected(false);
         }
     }
 
-    if (current) {
+    if (current)
+    {
         EntrieItem *newItem =
             qobject_cast<EntrieItem *>(
-                ui->entriesList->itemWidget(current)
-                );
+                ui->entriesList->itemWidget(current));
 
-        if (newItem) {
+        if (newItem)
+        {
             newItem->setSelected(true);
         }
     }

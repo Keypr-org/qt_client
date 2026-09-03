@@ -3,10 +3,11 @@
 
 #include <QWidget>
 
-#include "model/persona.h"
+#include "../utils/qtypes/QPersona.h"
 
-namespace Ui {
-class PersonaItem;
+namespace Ui
+{
+    class PersonaItem;
 }
 
 class PersonaItem : public QWidget
@@ -28,24 +29,24 @@ public:
      * @brief Sets the persona data displayed by this card.
      * @param persona The persona to display.
      */
-    void setPersona(const PersonaData &persona);
+    void setPersona(const QPersona &persona);
     /**
      * @brief Returns the persona currently displayed by this card.
      * @return The current persona data.
      */
-    const PersonaData &persona() const;
+    const QPersona persona() const;
 
 signals:
     /**
      * @brief Emitted when the user requests to modify this persona (e.g. via the edit button).
      * @param persona The persona to modify.
      */
-    void modifyRequested(PersonaData persona);
+    void modifyRequested(const QPersona persona);
     /**
      * @brief Emitted when the user requests to delete this persona (e.g. via the delete button).
      * @param id ID of the persona to delete.
      */
-    void deleteRequested(QString id);
+    void deleteRequested(qint64 id);
 
 protected:
     /**
@@ -56,7 +57,7 @@ protected:
 
 private:
     Ui::PersonaItem *ui;
-    PersonaData m_persona;
+    std::unique_ptr<QPersona> m_persona;
 };
 
 #endif // PERSONAITEM_H

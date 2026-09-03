@@ -4,8 +4,11 @@
 #include <QWidget>
 #include <QtWidgets/qlistwidget.h>
 
-namespace Ui {
-class CategoriesSelection;
+#include "../utils/qtypes/QCategory.h"
+
+namespace Ui
+{
+    class CategoriesSelection;
 }
 
 class CategoriesSelection : public QWidget
@@ -26,9 +29,17 @@ public:
 
     /**
      * @brief Appends a new category entry to the list.
+     * @param id Identifier of the category to add.
      * @param name Name of the category to add.
      */
-    void addCategory(const QString &name);
+    void addCategory(qint64 id, const QString &name);
+
+    /**
+     * @brief Replaces the displayed categories with the given list, selecting the first one
+     * (if any) to match the initial-selection behavior of the previous placeholder list.
+     * @param categories Categories to display, in order.
+     */
+    void setCategories(const QList<QCategory> &categories);
 
     /**
      * @brief Updates the displayed name of the currently open vault.
@@ -49,8 +60,9 @@ signals:
 
     /**
      * @brief Emitted when the user selects a different category.
+     * @param categoryId Identifier of the newly selected category.
      */
-    void categorySelected();
+    void categorySelected(qint64 categoryId);
 
     /**
      * @brief Emitted when the user re-selects the already-selected category.
@@ -78,6 +90,12 @@ private slots:
 private:
     Ui::CategoriesSelection *ui;
     QListWidgetItem *m_lastClickedCategory = nullptr;
+
+    /**
+     * @brief Clears the icon and selection state of every category row (e.g. when switching to
+     * the Personas frame), forcing an immediate repaint.
+     */
+    void deselectAllCategories();
 
     /**
      * @brief Swaps the expand/collapse arrow icon to reflect the panel's expanded state.

@@ -3,9 +3,6 @@
 
 #include "component/notificationtooltip.h"
 
-#include <QDateTime>
-#include <QUuid>
-
 WifiForm::WifiForm(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::WifiForm)
@@ -28,15 +25,7 @@ WifiForm::WifiForm(QWidget *parent)
             return;
         }
 
-        auto entry = std::make_shared<WifiEntryData>(
-            QUuid::createUuid().toString(),
-            ui->nameInput->text(),
-            ui->passwordInput->text(),
-            ui->notesInput->text(),
-            QDateTime::currentDateTime());
-
-        emit createNewWifiEntry(entry);
-        clearForm();
+        emit createNewWifiEntry(ui->nameInput->text(), ui->passwordInput->text(), ui->notesInput->text());
     });
 }
 

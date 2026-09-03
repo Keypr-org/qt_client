@@ -1,15 +1,18 @@
 #include "mailaliascontroller.h"
 
 MailAliasController::MailAliasController()
-    : config(MailAliasConfig::load()), client(std::make_unique<PostscaleClient>()) {}
+    : config(AppConfig::load()), client(std::make_unique<PostscaleClient>()) {}
 
-MailAliasController::MailAliasController(MailAliasConfig config)
+MailAliasController::MailAliasController(AppConfig config)
     : config(std::move(config)), client(std::make_unique<PostscaleClient>()) {}
 
-MailAliasController::MailAliasController(MailAliasConfig config, std::unique_ptr<MailAliasClient> client)
+MailAliasController::MailAliasController(AppConfig config, std::unique_ptr<MailAliasClient> client)
     : config(std::move(config)), client(std::move(client)) {}
 
 bool MailAliasController::setCredentials(const std::string &apiKey, const std::string &sourceEmail) {
+    // Reload from disk first so we don't clobber other AppConfig fields (e.g. vaultStoragePath)
+    // that may have been saved elsewhere since this controller was constructed.
+    config = AppConfig::load();
     config.apiKey = QString::fromStdString(apiKey);
     config.sourceEmail = QString::fromStdString(sourceEmail);
     return config.save();

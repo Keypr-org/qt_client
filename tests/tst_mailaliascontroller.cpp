@@ -1,6 +1,7 @@
 #include <QtTest/QtTest>
 #include <memory>
 #include "fakemailaliasclient.h"
+#include "../src/appconfig.h"
 #include "../src/mailaliascontroller.h"
 
 class MailAliasControllerTest : public QObject {
@@ -21,7 +22,7 @@ private slots:
  * @brief hasCredentials() should be false when the config has no API key or source email.
  */
 void MailAliasControllerTest::hasCredentials_returnsFalse_whenNothingConfigured() {
-    MailAliasController controller(MailAliasConfig{}, std::make_unique<FakeMailAliasClient>(std::nullopt));
+    MailAliasController controller(AppConfig{}, std::make_unique<FakeMailAliasClient>(std::nullopt));
 
     QVERIFY(!controller.hasCredentials());
 }
@@ -33,7 +34,7 @@ void MailAliasControllerTest::createAlias_returnsNullopt_whenCredentialsMissing(
     auto fakeClient = std::make_unique<FakeMailAliasClient>(std::nullopt);
     FakeMailAliasClient *fakeClientPtr = fakeClient.get();
 
-    MailAliasController controller(MailAliasConfig{}, std::move(fakeClient));
+    MailAliasController controller(AppConfig{}, std::move(fakeClient));
 
     QVERIFY(!controller.createAlias("some-site").has_value());
     QCOMPARE(fakeClientPtr->callCount, 0);
@@ -44,7 +45,7 @@ void MailAliasControllerTest::createAlias_returnsNullopt_whenCredentialsMissing(
  * @brief createAlias() should return the alias produced by the client when all data is provided.
  */
 void MailAliasControllerTest::createAlias_returnsAlias_whenCredentialsProvidedAndClientSucceeds() {
-    MailAliasConfig config;
+    AppConfig config;
     config.apiKey = "ps_live_test";
     config.sourceEmail = "user@example.com";
 
@@ -67,7 +68,7 @@ void MailAliasControllerTest::createAlias_returnsAlias_whenCredentialsProvidedAn
  * @brief createAlias() should forward the configured API key, source email and description to the client.
  */
 void MailAliasControllerTest::createAlias_forwardsSourceEmailAndDescriptionToClient() {
-    MailAliasConfig config;
+    AppConfig config;
     config.apiKey = "ps_live_test";
     config.sourceEmail = "user@example.com";
 
@@ -91,7 +92,7 @@ void MailAliasControllerTest::createAlias_forwardsSourceEmailAndDescriptionToCli
  * @brief createAlias() should surface the client's error message and return nullopt on failure.
  */
 void MailAliasControllerTest::createAlias_returnsNulloptAndSetsError_whenClientFails() {
-    MailAliasConfig config;
+    AppConfig config;
     config.apiKey = "ps_live_test";
     config.sourceEmail = "user@example.com";
 
@@ -110,7 +111,7 @@ void MailAliasControllerTest::deleteAlias_returnsFalse_whenApiKeyMissing() {
     auto fakeClient = std::make_unique<FakeMailAliasClient>(std::nullopt);
     FakeMailAliasClient *fakeClientPtr = fakeClient.get();
 
-    MailAliasController controller(MailAliasConfig{}, std::move(fakeClient));
+    MailAliasController controller(AppConfig{}, std::move(fakeClient));
 
     QVERIFY(!controller.deleteAlias("alias-id"));
     QCOMPARE(fakeClientPtr->deleteCallCount, 0);
@@ -121,7 +122,7 @@ void MailAliasControllerTest::deleteAlias_returnsFalse_whenApiKeyMissing() {
  * @brief deleteAlias() should forward the configured API key and alias id to the client and return true on success.
  */
 void MailAliasControllerTest::deleteAlias_forwardsAliasIdToClient_andReturnsTrue_onSuccess() {
-    MailAliasConfig config;
+    AppConfig config;
     config.apiKey = "ps_live_test";
     config.sourceEmail = "user@example.com";
 
@@ -141,7 +142,7 @@ void MailAliasControllerTest::deleteAlias_forwardsAliasIdToClient_andReturnsTrue
  * @brief deleteAlias() should surface the client's error message and return false on failure.
  */
 void MailAliasControllerTest::deleteAlias_returnsFalseAndSetsError_whenClientFails() {
-    MailAliasConfig config;
+    AppConfig config;
     config.apiKey = "ps_live_test";
     config.sourceEmail = "user@example.com";
 

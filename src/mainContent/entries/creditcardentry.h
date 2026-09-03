@@ -2,12 +2,12 @@
 #define CREDITCARDENTRY_H
 
 #include <QWidget>
-#include <memory>
 
-#include "model/creditcardentrydata.h"
+#include "../../utils/qtypes/QEntry.h"
 
-namespace Ui {
-class CreditCardEntry;
+namespace Ui
+{
+    class CreditCardEntry;
 }
 
 class CreditCardEntry : public QWidget
@@ -30,24 +30,24 @@ public:
      * @brief Populates the widget's fields from the given credit card entry.
      * @param entry Credit card entry data to display and edit.
      */
-    void setEntry(const std::shared_ptr<CreditCardEntryData> &entry);
+    void setEntry(const QEntry &entry);
 
 signals:
     /**
      * @brief Emitted when the user requests deletion of the currently displayed entry.
      * @param id Identifier of the entry to delete.
      */
-    void deleteRequested(QString id);
+    void deleteRequested(qint64 id);
 
     /**
-     * @brief Emitted after the currently displayed entry has been edited and applied.
-     * @param id Identifier of the updated entry.
+     * @brief Emitted when the user applies edits to the currently displayed entry's fields.
      */
-    void entryUpdated(QString id);
+    void entrySaveRequested(qint64 id, QString cardHolderName, QString cardNumber,
+                            QString expiration, QString securityCode, QString notes);
 
 private:
     Ui::CreditCardEntry *ui;
-    std::shared_ptr<CreditCardEntryData> m_entry;
+    qint64 m_entryId;
 };
 
 #endif // CREDITCARDENTRY_H

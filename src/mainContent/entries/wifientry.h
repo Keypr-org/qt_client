@@ -2,12 +2,12 @@
 #define WIFIENTRY_H
 
 #include <QWidget>
-#include <memory>
 
-#include "model/wifientrydata.h"
+#include "../../utils/qtypes/QEntry.h"
 
-namespace Ui {
-class WifiEntry;
+namespace Ui
+{
+    class WifiEntry;
 }
 
 class WifiEntry : public QWidget
@@ -30,24 +30,23 @@ public:
      * @brief Populates the widget's fields from the given wifi entry.
      * @param entry Wifi entry data to display and edit.
      */
-    void setEntry(const std::shared_ptr<WifiEntryData> &entry);
+    void setEntry(const QEntry &entry);
 
 signals:
     /**
      * @brief Emitted when the user requests deletion of the currently displayed entry.
      * @param id Identifier of the entry to delete.
      */
-    void deleteRequested(QString id);
+    void deleteRequested(qint64 id);
 
     /**
-     * @brief Emitted after the currently displayed entry has been edited and applied.
-     * @param id Identifier of the updated entry.
+     * @brief Emitted when the user applies edits to the currently displayed entry's fields.
      */
-    void entryUpdated(QString id);
+    void entrySaveRequested(qint64 id, QString networkName, QString password, QString notes);
 
 private:
     Ui::WifiEntry *ui;
-    std::shared_ptr<WifiEntryData> m_entry;
+    qint64 m_entryId;
 };
 
 #endif // WIFIENTRY_H
