@@ -66,8 +66,26 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
+      - name: Determine build parallelism on Linux
+        if: runner.os == 'Linux'
+        id: linux_cpu
+        shell: bash
+        run: echo "jobs=$(nproc)" >> "$GITHUB_OUTPUT"
+
+      - name: Determine build parallelism on macOS
+        if: runner.os == 'macOS'
+        id: macos_cpu
+        shell: bash
+        run: echo "jobs=$(sysctl -n hw.ncpu)" >> "$GITHUB_OUTPUT"
+
+      - name: Determine build parallelism on Windows
+        if: runner.os == 'Windows'
+        id: windows_cpu
+        shell: pwsh
+        run: Add-Content -Path $env:GITHUB_OUTPUT -Value "jobs=$env:NUMBER_OF_PROCESSORS"
+
       - name: Build
-        run: cmake --build build --config Release
+        run: cmake --build build --config Release --parallel ${{ steps.linux_cpu.outputs.jobs || steps.macos_cpu.outputs.jobs || steps.windows_cpu.outputs.jobs }}
 
       - name: Test
         working-directory: build
