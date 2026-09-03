@@ -70,7 +70,7 @@ public:
      * @brief Lock the current vault.
      * @param filename The name of the vault file to lock.
      * @return true if the vault is locked, false otherwise.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      * @throws std::runtime_error if no filename is provided and the path to vaults is not set.
      */
     bool lockVault(const QString &filename = "");
@@ -84,14 +84,14 @@ public:
     /**
      * @brief Get the categories in the current vault.
      * @return The categories in the current vault.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     const QList<QCategory> getCategories() const;
 
     /**
      * @brief Add a category to the current vault.
      * @param name The name of the category to add.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     void addCategory(const QString &name);
 
@@ -99,14 +99,14 @@ public:
      * @brief Get the entries in a category.
      * @param categoryId The ID of the category.
      * @return A list of pointers to the entries in the category or an empty list if the category is not found.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     std::vector<std::unique_ptr<QEntry>> getEntriesInCategory(qint64 categoryId) const;
 
     /**
      * @brief Get the personas in the current vault.
      * @return The personas in the current vault.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     const QList<QPersona> getPersonas() const;
 
@@ -117,7 +117,7 @@ public:
      * @param dateOfBirth The date of birth of the persona.
      * @param address The address of the persona.
      * @param phone The phone number of the persona.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     void addPersona(const QString &firstName, const QString &lastName, const QDate &dateOfBirth,
                     const QString &address, const QString &phone);
@@ -126,7 +126,7 @@ public:
      * @brief Remove a persona.
      * @param personaId The ID of the persona to remove.
      * @return true if the persona is removed, false otherwise.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool removePersona(qint64 personaId);
 
@@ -139,7 +139,7 @@ public:
      * @param address The new address of the persona.
      * @param phone The new phone number of the persona.
      * @return true if the persona is updated, false otherwise.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool updatePersona(qint64 personaId, const QString &firstName, const QString &lastName,
                        const QDate &dateOfBirth, const QString &address, const QString &phone);
@@ -150,7 +150,7 @@ public:
      * @param categoryId The ID of the category containing the entry.
      * @param entryId The ID of the entry to link the persona to.
      * @return true if the persona is linked, false otherwise.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool linkPersonaToEntry(qint64 personaId, qint64 categoryId, qint64 entryId);
 
@@ -159,7 +159,7 @@ public:
      * @param categoryId The ID of the category containing the entry.
      * @param entryId The ID of the entry to unlink the persona from.
      * @return true if the persona is unlinked, false otherwise.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool unlinkPersonaFromEntry(qint64 categoryId, qint64 entryId);
 
@@ -167,7 +167,7 @@ public:
      * @brief Get a persona by its ID.
      * @param personaId The ID of the persona to get.
      * @return A reference to the persona with the specified ID.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     const QPersona getPersonaById(qint64 personaId) const;
 
@@ -257,7 +257,7 @@ public:
      * @param categoryId The ID of the category.
      * @param entryId The ID of the entry to remove.
      * @return true if the entry is removed, false otherwise.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool removeEntryFromCategory(qint64 categoryId, qint64 entryId);
 
@@ -265,7 +265,7 @@ public:
      * @brief Get all websites by their URL.
      * @param url The URL to search for.
      * @return A list of pointers to the websites with the specified URL.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     std::vector<QWebsite> getWebsitesByUrl(const QString &url) const;
 
@@ -273,7 +273,7 @@ public:
      * @brief Get a website by its ID.
      * @param entryId The ID of the website to get.
      * @return A pointer to the website with the specified ID, or nullptr if not found.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     const QWebsite getWebsiteById(qint64 entryId) const;
 
@@ -284,7 +284,7 @@ public:
      * @param aliasId The ID of the alias to set.
      * @param alias The alias to set.
      * @return true if the alias is set, false otherwise.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool setAliasForWebsite(qint64 categoryId, qint64 entryId, const QString &aliasId, const QString &alias);
 
@@ -293,7 +293,7 @@ public:
      * @param categoryId The ID of the category to search in.
      * @param searchTerm The term to search for in the entries' notes, title, username, comments, ...
      * @return A vector of pointers to the entries that match the search term.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     std::vector<std::unique_ptr<QEntry>> searchEntriesInCategory(qint64 categoryId, const QString &searchTerm) const;
 
@@ -322,7 +322,7 @@ private:
      * @param categoryId The ID of the category to add the entry to.
      * @param entry The entry to add.
      * @return true if the entry is added, false otherwise.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     bool addEntryToCategory(int64_t categoryId, std::unique_ptr<Entry> entry);
 
@@ -331,7 +331,7 @@ private:
      * @param categoryId The ID of the category containing the entry.
      * @param entryId The ID of the entry to get.
      * @return A reference to the entry with the specified ID, or a reference to a nullptr if not found.
-     * @throws std::runtime_error if the vault session is not initialized (i.e., no vault is unlocked).
+     * @throws VaultNotUnlockedError if the vault session is not initialized (i.e., no vault is unlocked).
      */
     const std::unique_ptr<Entry> &getEntryByIdFromCategory(int64_t categoryId, int64_t entryId) const;
 
@@ -342,4 +342,16 @@ private:
     static std::unique_ptr<VaultController> instance;
 
     friend class VaultControllerTest;
+};
+
+class VaultControllerError : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+};
+
+class VaultNotUnlockedError : public VaultControllerError
+{
+public:
+    using VaultControllerError::VaultControllerError;
 };
