@@ -247,6 +247,9 @@ ctest --test-dir build/debug --output-on-failure
 
 ## Native Messaging
 
+> [!DANGER]
+> The Web extension will only work with the Keypr desktop client if you compile it from source with the commands shown above, but if you download the prebuilt binaries from the releases page, it won't work as the CMake script intalling the manifest file required for the extension to work won't run.
+
 Keypr supports [Chromium Native Messaging](https://developer.chrome.com/docs/apps/nativeMessaging/)
 for the browser extension. The host name is `com.keypr.native`, and the
 generated manifest allows only the extension origin
