@@ -76,14 +76,14 @@ bool VaultController::lockVault(const QString &filename)
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     std::string path;
     if (filename.isEmpty())
     {
         if (pathToVaults.empty())
         {
-            throw std::runtime_error("Path to vaults is not set. Please provide a path to the vaults.");
+            throw VaultNotUnlockedError("Path to vaults is not set. Please provide a path to the vaults.");
         }
         std::string vaultName = session->getName();
         std::transform(vaultName.begin(), vaultName.end(), vaultName.begin(),
@@ -120,7 +120,7 @@ const QString VaultController::getVaultName() const
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     return QString::fromStdString(session->getName());
 }
@@ -129,7 +129,7 @@ const QList<QCategory> VaultController::getCategories() const
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
 
     QList<QCategory> categories;
@@ -144,7 +144,7 @@ void VaultController::addCategory(const QString &name)
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     session->addCategory(std::make_unique<Category>(name.toStdString()));
 }
@@ -153,7 +153,7 @@ std::vector<std::unique_ptr<QEntry>> VaultController::getEntriesInCategory(qint6
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -187,7 +187,7 @@ const QList<QPersona> VaultController::getPersonas() const
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
 
     QList<QPersona> personas;
@@ -203,7 +203,7 @@ void VaultController::addPersona(const QString &firstName, const QString &lastNa
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     const qint64 days = dateOfBirth.toJulianDay() - 2440588;
     session->addPersona(std::make_unique<Persona>(firstName.toStdString(), lastName.toStdString(),
@@ -215,7 +215,7 @@ bool VaultController::removePersona(qint64 personaId)
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -233,7 +233,7 @@ bool VaultController::updatePersona(qint64 personaId, const QString &firstName, 
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -256,7 +256,7 @@ bool VaultController::linkPersonaToEntry(qint64 personaId, qint64 categoryId, qi
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -285,7 +285,7 @@ bool VaultController::unlinkPersonaFromEntry(qint64 categoryId, qint64 entryId)
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -312,7 +312,7 @@ const QPersona VaultController::getPersonaById(qint64 personaId) const
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -330,7 +330,7 @@ bool VaultController::addWebsiteEntry(qint64 categoryId, const QString &title, c
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
 
     return addEntryToCategory(categoryId, std::make_unique<Website>(notes.toStdString(), title.toStdString(),
@@ -343,7 +343,7 @@ bool VaultController::addWifiEntry(qint64 categoryId, const QString &networkName
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
 
     return addEntryToCategory(categoryId, std::make_unique<Wifi>(networkName.toStdString(), password.toStdString(),
@@ -356,7 +356,7 @@ bool VaultController::addCreditCardEntry(qint64 categoryId, const QString &cardH
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
 
     return addEntryToCategory(categoryId, std::make_unique<CreditCard>(cardHolderName.toStdString(), cardNumber.toStdString(),
@@ -369,7 +369,7 @@ bool VaultController::updateWebsiteEntry(const qint64 categoryId, const qint64 e
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -405,7 +405,7 @@ bool VaultController::updateWifiEntry(const qint64 categoryId, const qint64 entr
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -440,7 +440,7 @@ bool VaultController::updateCreditCardEntry(const qint64 categoryId, const qint6
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -475,7 +475,7 @@ bool VaultController::removeEntryFromCategory(qint64 categoryId, qint64 entryId)
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -496,11 +496,11 @@ std::vector<QWebsite> VaultController::getWebsitesByUrl(const QString &url) cons
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
 
     std::vector<QWebsite> websites;
-    for (const auto &website : session->getWebsiteByUrl(url.toStdString()))
+    for (const auto &website : session->getWebsitesByUrl(url.toStdString()))
     {
         websites.emplace_back(website);
     }
@@ -511,7 +511,7 @@ const QWebsite VaultController::getWebsiteById(qint64 entryId) const
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
 
     return QWebsite(session->getWebsiteById(entryId));
@@ -521,7 +521,7 @@ bool VaultController::setAliasForWebsite(qint64 categoryId, qint64 entryId, cons
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -546,7 +546,7 @@ std::vector<std::unique_ptr<QEntry>> VaultController::searchEntriesInCategory(qi
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -598,7 +598,7 @@ bool VaultController::addEntryToCategory(int64_t categoryId, std::unique_ptr<Ent
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
     try
     {
@@ -615,7 +615,7 @@ const std::unique_ptr<Entry> &VaultController::getEntryByIdFromCategory(int64_t 
 {
     if (session == nullptr)
     {
-        throw std::runtime_error("Vault session is not initialized. Please unlock a vault first.");
+        throw VaultNotUnlockedError("Vault session is not initialized. Please unlock a vault first.");
     }
 
     const auto &entries = session->getEntriesInCategory(categoryId);
