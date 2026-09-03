@@ -340,4 +340,6 @@ private:
     std::string pathToVaults;
 
     static std::unique_ptr<VaultController> instance;
+
+    friend class VaultControllerTest;
 };

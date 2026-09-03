@@ -5,9 +5,7 @@
 #include <memory>
 #include "fakevaultrepository.h"
 #include "fakevaultsession.h"
-#define private public
 #include "../src/vaultcontroller.h"
-#undef private
 
 #define NO_ID -1
 
