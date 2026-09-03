@@ -1,0 +1,34 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>icons/icon-logo.png</file>
+        <file>icons/icon-lock.png</file>
+        <file>icons/icon-lock-red.png</file>
+        <file>icons/icon-shield.png</file>
+        <file>icons/icon-eye.png</file>
+        <file>icons/icon-container.png</file>
+        <file>icons/alert-triangle.png</file>
+        <file>icons/chevron-down.png</file>
+        <file>icons/icon-plus.png</file>
+        <file>icons/icon-search.png</file>
+        <file>icons/icon-globe.png</file>
+        <file>icons/icon-credit-card-purple.png</file>
+        <file>icons/icon-credit-card.png</file>
+        <file>icons/icon-globe-purple.png</file>
+        <file>icons/icon-wifi-purple.png</file>
+        <file>icons/icon-wifi.png</file>
+        <file>icons/shield-icon-container.png</file>
+        <file>icons/icon-personas.png</file>
+        <file>icons/icon-folder.png</file>
+        <file>icons/icon-open-folder.png</file>
+        <file>icons/icon-trash.png</file>
+        <file>icons/icon-pencil.png</file>
+        <file>icons/icon-persona.png</file>
+        <file>icons/icon-persona-purple.png</file>
+        <file>icons/icon-check-green.png</file>
+        <file>icons/icon-copy-green.png</file>
+        <file>icons/icon-email-purple.png</file>
+        <file>icons/icon-copy.png</file>
+        <file>icons/icon-regenerate.png</file>
+        <file>icons/icon-personas-purple.png</file>
+    </qresource>
+</RCC>
