@@ -1,6 +1,5 @@
 #include "nativemessaging.h"
 
-#include <QDebug>
 #include <QThread>
 #include <QMutexLocker>
 
@@ -17,17 +16,18 @@
 
 NativeMessaging::NativeMessaging(QObject *parent)
     : QObject{parent}
-{}
+{
+}
 
 NativeMessaging::~NativeMessaging()
 {
     stop();
 }
 
-void NativeMessaging::start() {
-    m_thread = QThread::create([this]() {
-        readMessages();
-    });
+void NativeMessaging::start()
+{
+    m_thread = QThread::create([this]()
+                               { readMessages(); });
 
     m_thread->setParent(this);
 
@@ -37,12 +37,15 @@ void NativeMessaging::start() {
     m_thread->start();
 }
 
-void NativeMessaging::stop() {
-    if (m_thread == nullptr) {
+void NativeMessaging::stop()
+{
+    if (m_thread == nullptr)
+    {
         return;
     }
 
-    if (m_thread->isRunning()) {
+    if (m_thread->isRunning())
+    {
         // Best-effort: closing the descriptor unblocks the read loop on some
         // platforms/setups, but POSIX leaves the effect of closing an fd
         // while another thread is blocked reading it unspecified, so it
@@ -57,7 +60,8 @@ void NativeMessaging::stop() {
     m_thread = nullptr;
 }
 
-void NativeMessaging::closeStandardInput() {
+void NativeMessaging::closeStandardInput()
+{
     // Deliberately closes the raw descriptor (0) rather than going through
     // fileno(stdin)/_fileno(stdin): those lock the FILE stream, and the
     // worker thread holds that lock for the entire duration of its blocking
@@ -69,18 +73,20 @@ void NativeMessaging::closeStandardInput() {
 #endif
 }
 
-void NativeMessaging::readMessages() {
-    while (true) {
+void NativeMessaging::readMessages()
+{
+    while (true)
+    {
         // Native Messaging uses a 4-byte unsigned integer
         // containing the size of the JSON message.
         std::uint32_t messageLength = 0;
 
         std::cin.read(
             reinterpret_cast<char *>(&messageLength),
-            sizeof(messageLength)
-            );
+            sizeof(messageLength));
 
-        if (!std::cin) {
+        if (!std::cin)
+        {
             emit finished();
             return;
         }
@@ -88,7 +94,8 @@ void NativeMessaging::readMessages() {
         // Prevent absurdly large messages.
         constexpr std::uint32_t maxMessageSize = 1024 * 1024;
 
-        if (messageLength > maxMessageSize) {
+        if (messageLength > maxMessageSize)
+        {
             emit errorOccurred("Native message is too large");
             emit finished();
             return;
@@ -98,34 +105,32 @@ void NativeMessaging::readMessages() {
 
         std::cin.read(
             message.data(),
-            static_cast<std::streamsize>(messageLength)
-            );
+            static_cast<std::streamsize>(messageLength));
 
-        if (!std::cin) {
+        if (!std::cin)
+        {
             emit finished();
             return;
         }
 
         emit messageReceived(
-            QByteArray::fromStdString(message)
-            );
+            QByteArray::fromStdString(message));
     }
 }
 
-void NativeMessaging::sendMessage(const QByteArray &message) {
+void NativeMessaging::sendMessage(const QByteArray &message)
+{
     QMutexLocker locker(&m_writeMutex);
 
     const std::uint32_t messageLength = static_cast<std::uint32_t>(message.size());
 
     std::cout.write(
         reinterpret_cast<const char *>(&messageLength),
-        sizeof(messageLength)
-        );
+        sizeof(messageLength));
 
     std::cout.write(
         message.constData(),
-        message.size()
-        );
+        message.size());
 
     std::cout.flush();
 }

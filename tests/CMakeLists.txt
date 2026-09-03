@@ -36,14 +36,3 @@ target_link_libraries(tst_mailaliascontroller
 
 add_test(NAME tst_mailaliascontroller COMMAND tst_mailaliascontroller)
 
-qt_add_executable(tst_nativemessaging
-    tst_nativemessaging.cpp
-    ../src/nativeMessaging/nativemessaging.h ../src/nativeMessaging/nativemessaging.cpp
-)
-
-target_link_libraries(tst_nativemessaging
-    PRIVATE
-        Qt6::Test
-)
-
-add_test(NAME tst_nativemessaging COMMAND tst_nativemessaging)

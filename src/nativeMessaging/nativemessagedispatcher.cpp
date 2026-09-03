@@ -10,22 +10,26 @@
 NativeMessageDispatcher::NativeMessageDispatcher(QObject *parent)
     : QObject{parent} {}
 
-QByteArray NativeMessageDispatcher::dispatch(const QByteArray &request) const {
+QByteArray NativeMessageDispatcher::dispatch(const QByteArray &request) const
+{
   QJsonParseError parseError;
   const QJsonDocument doc = QJsonDocument::fromJson(request, &parseError);
 
-  if (parseError.error != QJsonParseError::NoError || !doc.isObject()) {
+  if (parseError.error != QJsonParseError::NoError || !doc.isObject())
+  {
     return errorResponse("Request JSON is invalid");
   }
 
   const QJsonObject object = doc.object();
   const QString type = object.value("type").toString();
 
-  if (type == "GET_ENTRIES") {
+  if (type == "GET_ENTRIES")
+  {
     return handleGetEntries(object);
   }
 
-  if (type == "GET_PASSWORD") {
+  if (type == "GET_PASSWORD")
+  {
     return handleGetPassword(object);
   }
 
@@ -33,8 +37,10 @@ QByteArray NativeMessageDispatcher::dispatch(const QByteArray &request) const {
 }
 
 QByteArray
-NativeMessageDispatcher::handleGetEntries(const QJsonObject &request) const {
-  if (!request.value("url").isString()) {
+NativeMessageDispatcher::handleGetEntries(const QJsonObject &request) const
+{
+  if (!request.value("url").isString())
+  {
     return errorResponse("Invalid Request");
   }
 
@@ -44,14 +50,15 @@ NativeMessageDispatcher::handleGetEntries(const QJsonObject &request) const {
 
   QJsonArray entriesArray;
 
-  try {
+  try
+  {
     auto entries = controller.getWebsitesByUrl(requestHost);
 
-    for (const auto &websiteEntry : entries) {
+    for (const auto &websiteEntry : entries)
+    {
       QJsonObject entryObject;
-      entryObject["id"] = websiteEntry.getId();
-      entryObject["username"] =
-          websiteEntry.getUsername() + QString::number(websiteEntry.getId());
+      entryObject["id"] = QString::number(websiteEntry.getId());
+      entryObject["username"] = websiteEntry.getUsername();
       entriesArray.append(entryObject);
     }
 
@@ -60,40 +67,57 @@ NativeMessageDispatcher::handleGetEntries(const QJsonObject &request) const {
     response["entries"] = entriesArray;
 
     return QJsonDocument(response).toJson(QJsonDocument::Compact);
-  } catch (VaultNotUnlockedError &e) {
+  }
+  catch (VaultNotUnlockedError &e)
+  {
     return errorResponse("No vault unlocked, please unlock a vault first");
-  } catch (std::exception &e) {
+  }
+  catch (std::exception &e)
+  {
     return errorResponse("Failed to get entries from the Vault");
   }
 }
 
 QByteArray
-NativeMessageDispatcher::handleGetPassword(const QJsonObject &request) const {
-  if (request.value("id").isString()) {
+NativeMessageDispatcher::handleGetPassword(const QJsonObject &request) const
+{
+  if (!request.value("id").isString())
+  {
     return errorResponse("Invalid Request");
   }
 
-  const qint64 id = request.value("id").toVariant().toLongLong();
+  bool ok = false;
+  const qint64 id = request.value("id").toString().toLongLong(&ok);
+
+  if (!ok)
+  {
+    return errorResponse("Invalid ID");
+  }
 
   const VaultController &controller = VaultController::getInstance();
 
-  try {
-    qDebug() << "ID: " << id;
+  try
+  {
     const QWebsite websiteEntry = controller.getWebsiteById(id);
     QJsonObject response;
     response["type"] = "PASSWORD";
     response["password"] = websiteEntry.getPassword();
 
     return QJsonDocument(response).toJson(QJsonDocument::Compact);
-  } catch (VaultNotUnlockedError &e) {
+  }
+  catch (VaultNotUnlockedError &e)
+  {
     return errorResponse("No vault unlocked, please unlock a vault first");
-  } catch (std::exception &e) {
+  }
+  catch (std::exception &e)
+  {
     return errorResponse("No password matching entry id found: " +
-                         QString::number(id));
+                         request.value("id").toVariant().toString());
   }
 }
 
-QByteArray NativeMessageDispatcher::errorResponse(const QString &code) {
+QByteArray NativeMessageDispatcher::errorResponse(const QString &code)
+{
   QJsonObject response;
   response["type"] = "ERROR";
   response["code"] = code;
