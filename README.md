@@ -22,11 +22,12 @@ Keypr is a cross-platform password manager built with Qt6/C++. This repository h
     - [Automatically updating the submodules when pulling](#automatically-updating-the-submodules-when-pulling)
     - [Updating the submodules in the repository](#updating-the-submodules-in-the-repository)
     - [Dependencies](#dependencies)
+    - [Configure vcpkg](#configure-vcpkg)
     - [Build steps](#build-steps)
     - [Running the tests](#running-the-tests)
   - [Native Messaging](#native-messaging)
     - [Host installation](#host-installation)
-    - [qt_client request flow](#qt_client-request-flow)
+    - [qt\_client request flow](#qt_client-request-flow)
   - [Contributions and Workflow](#contributions-and-workflow)
     - [Contributing](#contributing)
     - [Workflow of the project](#workflow-of-the-project)
@@ -180,6 +181,13 @@ git clone https://github.com/microsoft/vcpkg.git "$HOME/vcpkg"
 "$HOME/vcpkg/bootstrap-vcpkg.sh"
 export VCPKG_ROOT="$HOME/vcpkg"
 ```
+
+> [!NOTE] On macos, you may need to set environment > variables that might look like this:
+> ```bash
+> export VCPKG_ROOT="/Users/<user>/vcpkg"
+> export PATH="$VCPKG_ROOT:$PATH"
+> export CMAKE_PREFIX_PATH="/Users/<user>/Qt/6.11.2/macos"
+> ```
 
 On Windows, clone the repository, run `bootstrap-vcpkg.bat`, and set
 `VCPKG_ROOT` to the vcpkg directory. For PowerShell:
