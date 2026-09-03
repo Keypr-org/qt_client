@@ -23,7 +23,10 @@ Keypr is a cross-platform password manager built with Qt6/C++. This repository h
     - [Updating the submodules in the repository](#updating-the-submodules-in-the-repository)
     - [Dependencies](#dependencies)
     - [Build steps](#build-steps)
+    - [Running the tests](#running-the-tests)
   - [Native Messaging](#native-messaging)
+    - [Host installation](#host-installation)
+    - [qt_client request flow](#qt_client-request-flow)
   - [Contributions and Workflow](#contributions-and-workflow)
     - [Contributing](#contributing)
     - [Workflow of the project](#workflow-of-the-project)
@@ -106,12 +109,15 @@ Open the password generator from a form to create a strong password; the generat
 
 ### Using email aliases
 
-For email aliases, we are using the [Postscale](https://postscale.io) service. To generate email aliases through the application, here are the steps to follow:
-1. Register to Postscale
-2. Follow the `Getting Started` instruction until the `adding a domain` step
-3. Get your API key and target email your wish emails to be redirected to
-4. Paste those informations inside the `Settings` window inside Keypr
-5. Click generate alias inside a WEB entry and enjoy !
+Email aliases use the [Postscale](https://postscale.io) service. To generate an alias:
+
+1. Register with Postscale.
+2. Follow Postscale's **Getting Started** instructions through the **Adding a domain** step.
+3. Obtain your API key and the destination address to which aliases should forward mail.
+4. Enter both values in Keypr's **Settings** window.
+5. Open a Website entry and choose **Generate alias**.
+
+This feature requires network access to Postscale; vault data is otherwise processed locally.
 
 ## How to Build from Source
 
@@ -119,9 +125,9 @@ For email aliases, we are using the [Postscale](https://postscale.io) service. T
 
 ```bash
 # HTTPS
-git clone --recurse-submodules https://github.com/Keypr-org/core.git
+git clone --recurse-submodules https://github.com/Keypr-org/qt_client.git
 # SSH
-git clone --recurse-submodules git@github.com:Keypr-org/core.git
+git clone --recurse-submodules git@github.com:Keypr-org/qt_client.git
 ```
 
 ### Updating the repository and its submodules
@@ -150,44 +156,149 @@ git push
 
 ### Dependencies
 
-- CMake >= 3.16
+- CMake >= 3.21 (required by the `keypr-core` submodule; a recent CMake is
+  recommended for the presets below)
 - A C++20 compiler
 - Qt6 >= 6.5 (Widgets, Test, Network components)
-- [vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-bash), used to fetch `gtest`, `libsodium` and `nlohmann-json` (for both `qt_client` and the `keypr-core` submodule)
+- [vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-bash), used to fetch `gtest`, `libsodium` and `nlohmann-json`
+
+The CMake presets expect `VCPKG_ROOT` to point to the vcpkg installation. The
+repository pins the vcpkg registry baseline in
+[`vcpkg-configuration.json`](vcpkg-configuration.json), so use a checkout of
+vcpkg with manifest mode enabled rather than installing dependencies globally.
+Qt is found through the normal CMake/Qt installation mechanisms; the CI
+workflow installs Qt before configuring the project.
+
+### Configure vcpkg
+
+If vcpkg is not installed, clone it and bootstrap it by following the
+[official installation procedure](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started):
+
+```bash
+# Linux/macOS
+git clone https://github.com/microsoft/vcpkg.git "$HOME/vcpkg"
+"$HOME/vcpkg/bootstrap-vcpkg.sh"
+export VCPKG_ROOT="$HOME/vcpkg"
+```
+
+On Windows, clone the repository, run `bootstrap-vcpkg.bat`, and set
+`VCPKG_ROOT` to the vcpkg directory. For PowerShell:
+
+```powershell
+git clone https://github.com/microsoft/vcpkg.git "$HOME\vcpkg"
+& "$HOME\vcpkg\bootstrap-vcpkg.bat"
+$env:VCPKG_ROOT = "$HOME\vcpkg"
+```
+
+To keep `VCPKG_ROOT` across terminal sessions, add it to your shell profile
+(`~/.profile`, `~/.zshrc`, or the Windows environment variables). The first
+CMake configure/build command automatically installs the dependencies declared
+in [`vcpkg.json`](vcpkg.json) into the vcpkg manifest build tree.
 
 ### Build steps
 
-Configure the project, pointing CMake at your vcpkg toolchain file:
+The repository provides configure, build, test and workflow presets in
+[CMakePresets.json](CMakePresets.json). Set `VCPKG_ROOT` first, then run the
+complete debug workflow (configure, build and test) or the release workflow:
 
 ```bash
-cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake
+# Debug workflow: configure, build and test
+cmake --workflow --preset default
+
+# Release workflow: configure and build, without tests
+cmake --workflow --preset release
 ```
 
-Build it:
-
-```bash
-# Build the debug version
-cmake --build --workflow default
-
-# Build the release version
-cmake --build --workflow release
-```
-
-You can also direclty build the project inside QT Creator, which is the easiest option, by opening the `CMakeLists.txt` file and **configuring the project with the vcpkg toolchain file**. You can do so by going to `Projects` > `Build & Run`, select your build kit > `CMake` > `CMake Toolchain File` and select the vcpkg toolchain file. Then you can build the project by clicking on the `Build` button.
+To run individual preset steps instead:
 
 ```
+cmake --preset debug
+cmake --build --preset debug
+ctest --preset default
+```
+
+You can also build in Qt Creator by opening `CMakeLists.txt` and configuring
+the project with the vcpkg toolchain file:
+`Projects` > `Build & Run` > your kit > `CMake` > `CMake Toolchain File`.
+
+The post-build step generates and registers the Native Messaging host manifest.
+If no supported Chromium-based browser profile exists yet, CMake prints a
+warning; build again after installing or creating the browser profile.
 
 ### Running the tests
 
-Tests are built with the project (Qt Test + GoogleTest for `keypr-core`). Run them via `ctest` from the build directory:
+The debug workflow builds the two qt_client Qt Test executables and the
+`keypr-core` tests. Run the configured test preset, or run CTest directly from
+the debug build directory:
 
 ```bash
-ctest --test-dir build
+ctest --preset default
+# equivalent:
+ctest --test-dir build/debug --output-on-failure
 ```
 
 ## Native Messaging
 
-The application supports [Native Messaging](https://developer.chrome.com/docs/apps/nativeMessaging/) for browser extensions. The application behaves as a native messaging host, allowing extensions to communicate with it. The web extension will open an instance of the application if it is not already running, and send messages to it. The application will respond with the requested data, such as credentials for a specific website (email + password).
+Keypr supports [Chromium Native Messaging](https://developer.chrome.com/docs/apps/nativeMessaging/)
+for the browser extension. The host name is `com.keypr.native`, and the
+generated manifest allows only the extension origin
+`chrome-extension://lfmecfelolhliggpdajjbpciggaapmgb/`. Firefox is not registered
+by the current installer.
+
+> **Known Windows limitation:** Native Messaging currently does not work on
+> Windows. Chromium-based browsers on Windows refuse to launch `qt_client`,
+> which is a GUI executable, as a Native Messaging host. This is a known issue
+> and has not been fixed yet.
+
+### Host installation
+
+Every successful build runs `installer/register_native_host.cmake` as a
+post-build step. It generates a manifest from
+`installer/native-messaging/com.keypr.native.json.in`, replacing its `path`
+with the built executable:
+
+- **Windows:** copies the manifest beside `qt_client.exe` and registers that
+  file in the per-user registry locations used by supported Chromium-based
+  browsers. The host still cannot be launched by those browsers because of the
+  Windows GUI-executable limitation above.
+- **Linux:** installs it under `NativeMessagingHosts` in each detected browser
+  configuration directory under `$XDG_CONFIG_HOME` (or `~/.config`).
+- **macOS:** installs it under each detected browser's
+  `NativeMessagingHosts` directory in `~/Library/Application Support`.
+
+The browser must have the extension installed and its origin must match the
+manifest. On Linux and macOS, the executable must remain at the manifest's
+`path`; rebuilding updates the manifest to the new build path.
+
+### qt_client request flow
+
+1. When the extension calls `chrome.runtime.connectNative("com.keypr.native")`,
+   the browser starts a new `qt_client` process and connects the host's
+   standard input/output pipes to the browser.
+2. `main.cpp` first tries to connect to the local server
+   `com.keypr.native.instance`. If no primary process answers within 200 ms,
+   this process becomes the primary instance, creates the normal Keypr window,
+   starts the Native Messaging reader and starts the local server.
+3. If a primary process is already running, the newly started process becomes a
+   bridge. It does not create a window. `NativeMessageBridge` forwards framed
+   messages between the browser's stdio and the primary process over a
+   `QLocalSocket`, then exits when either side disconnects.
+4. `NativeMessaging` reads and writes the browser pipe. Each message is framed
+   with a 4-byte unsigned little-endian length followed by that many bytes of
+   JSON. Reads run on a worker thread; writes are mutex-protected and flushed
+   immediately. Messages larger than 1 MiB are rejected.
+5. The primary `NativeMessageDispatcher` parses the JSON and handles:
+
+   | Request | Required field | Response |
+   |---|---|---|
+   | `{"type":"GET_ENTRIES","url":"https://example.com"}` | `url` | `{"type":"ENTRIES","entries":[{"id":"...","username":"..."}]}` |
+   | `{"type":"GET_PASSWORD","id":"..."}` | `id` (string) | `{"type":"PASSWORD","password":"..."}` |
+
+   Invalid JSON, unknown request types, a locked vault, and lookup failures
+   produce `{"type":"ERROR","code":"..."}` responses. `GET_ENTRIES` matches
+   the URL host against Website entries; `GET_PASSWORD` returns the password
+   for the selected Website entry ID. The dispatcher never unlocks a vault or
+   stores credentials itself; it uses the existing `VaultController`.
 
 ## Contributions and Workflow
 
@@ -197,21 +308,40 @@ Contributions are welcome! Please read our contribution guidelines before submit
 
 ### Workflow of the project
 
-For the development of this specific repository, we will use [this](.github/workflows/package-for-release.yml) workflow.
+This repository uses two GitHub Actions workflows:
+[build-and-test.yml](.github/workflows/build-and-test.yml) validates changes,
+while [package-for-release.yml](.github/workflows/package-for-release.yml)
+builds distributable archives and publishes releases.
 
-**What it does :**
+**Build and test (`build-and-test.yml`):**
 
-- On push or on a pull request to the `main` branch, it will build the project and run the tests. If every steps are successful, it will create artifacts available for download. Those artifacts are executables for Windows, MacOS and Linux. The artifacts are zipped and available for download in the `Latest build` realease of the repository (tagged as Pre-release).
-- On a tagged push/pull request (verisoned tag starting like v.* p.ex: v1.0.2), it will build the project and run the tests. If every steps are successful, it will create artifacts available for download. The workflow will then create a release with the versioned tag and attach the artifacts to the release. The release will be available in the `Releases` section of the repository tagged as `Latest`.
+- Runs on pushes and pull requests targeting `develop`, and can also be
+  started manually.
+- Builds and tests Linux x64, Windows x64 and macOS arm64 configurations.
+- Uploads un-packaged build artifacts; this workflow does not publish a release.
+
+**Packaging and release (`package-for-release.yml`):**
+
+- Runs on pushes to `main`, pushes of tags matching `v*`, pull requests
+  targeting `main`, and manual dispatches.
+- Builds and tests Linux x64, Windows x64 and macOS arm64. It packages an
+  AppImage for Linux and ZIP archives for Windows and macOS.
+- A push to `main` updates the rolling pre-release tagged `latest-main`.
+- A pushed version tag creates an official release with the same tag and
+  uploads the three platform archives. Pull requests build and test, but do not
+  publish releases.
 
 #### Example of a versioned tag: `v1.0.2`
 
 ```bash
-# This will create a tag v1.0.2 and push it to the remote repository creating a release with the tag v1.0.2 and attaching the artifacts to the release.
+# This creates v1.0.2 and pushes it, causing the packaging workflow to create
+# a release and attach the platform archives.
 git tag v1.0.2 && git push origin --tags
 ```
----
 
 ## AI Usage
 
-Parts of this project's documentation and/or code have been assisted by AI tools. AI-assisted contributions are carefully reviewed by us before being merged, same as any other contribution. We've used AI to mainly help for reasearch, PR summaries and documentation.
+Parts of this project's documentation and/or code have been assisted by AI
+tools. AI-assisted contributions are carefully reviewed before being merged,
+like any other contribution. AI has mainly been used for research, pull
+request summaries and documentation.
