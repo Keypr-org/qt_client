@@ -91,11 +91,36 @@ void NativeMessaging::readMessages()
         std::array<char, sizeof(messageLength)> lengthBytes;
         for (char &byte : lengthBytes)
         {
-            pollfd input = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
-            while (!m_stopRequested && poll(&input, 1, 100) < 0 && errno == EINTR)
+            while (!m_stopRequested)
             {
+                pollfd input = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
+                const int pollResult = poll(&input, 1, 100);
+                if (pollResult < 0 && errno == EINTR)
+                {
+                    continue;
+                }
+                if (pollResult < 0)
+                {
+                    emit finished();
+                    return;
+                }
+                if (pollResult == 0)
+                {
+                    continue;
+                }
+                const ssize_t bytesRead = read(STDIN_FILENO, &byte, 1);
+                if (bytesRead == 1)
+                {
+                    break;
+                }
+                if (bytesRead < 0 && errno == EINTR)
+                {
+                    continue;
+                }
+                emit finished();
+                return;
             }
-            if (m_stopRequested || poll(&input, 1, 0) <= 0 || read(STDIN_FILENO, &byte, 1) != 1)
+            if (m_stopRequested)
             {
                 emit finished();
                 return;
@@ -126,11 +151,36 @@ void NativeMessaging::readMessages()
         std::string message(messageLength, '\0');
         for (char &byte : message)
         {
-            pollfd input = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
-            while (!m_stopRequested && poll(&input, 1, 100) < 0 && errno == EINTR)
+            while (!m_stopRequested)
             {
+                pollfd input = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
+                const int pollResult = poll(&input, 1, 100);
+                if (pollResult < 0 && errno == EINTR)
+                {
+                    continue;
+                }
+                if (pollResult < 0)
+                {
+                    emit finished();
+                    return;
+                }
+                if (pollResult == 0)
+                {
+                    continue;
+                }
+                const ssize_t bytesRead = read(STDIN_FILENO, &byte, 1);
+                if (bytesRead == 1)
+                {
+                    break;
+                }
+                if (bytesRead < 0 && errno == EINTR)
+                {
+                    continue;
+                }
+                emit finished();
+                return;
             }
-            if (m_stopRequested || poll(&input, 1, 0) <= 0 || read(STDIN_FILENO, &byte, 1) != 1)
+            if (m_stopRequested)
             {
                 emit finished();
                 return;
