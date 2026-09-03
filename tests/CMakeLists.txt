@@ -35,3 +35,4 @@ target_link_libraries(tst_mailaliascontroller
 )
 
 add_test(NAME tst_mailaliascontroller COMMAND tst_mailaliascontroller)
+
