@@ -3,14 +3,18 @@
 #include <QThread>
 #include <QMutexLocker>
 
+#include <array>
 #include <cstdint>
 #include <cstdio>
+#include <cerrno>
+#include <cstring>
 #include <iostream>
 #include <string>
 
 #ifdef Q_OS_WIN
 #include <io.h>
 #else
+#include <poll.h>
 #include <unistd.h>
 #endif
 
@@ -26,13 +30,11 @@ NativeMessaging::~NativeMessaging()
 
 void NativeMessaging::start()
 {
+    m_stopRequested = false;
     m_thread = QThread::create([this]()
                                { readMessages(); });
 
     m_thread->setParent(this);
-
-    connect(m_thread, &QThread::finished,
-            m_thread, &QObject::deleteLater);
 
     m_thread->start();
 }
@@ -44,20 +46,17 @@ void NativeMessaging::stop()
         return;
     }
 
-    if (m_thread->isRunning())
+    QThread *thread = m_thread;
+    m_thread = nullptr;
+
+    if (thread->isRunning())
     {
-        // Best-effort: closing the descriptor unblocks the read loop on some
-        // platforms/setups, but POSIX leaves the effect of closing an fd
-        // while another thread is blocked reading it unspecified, so it
-        // isn't reliable everywhere. Don't wait forever for Chrome to close
-        // its end of the pipe either way: bound the wait so quitting stays
-        // fast regardless. If the thread is still blocked afterwards, it
-        // gets reclaimed when the process exits.
+        m_stopRequested = true;
         closeStandardInput();
-        m_thread->wait(500);
+        thread->wait();
     }
 
-    m_thread = nullptr;
+    delete thread;
 }
 
 void NativeMessaging::closeStandardInput()
@@ -81,15 +80,29 @@ void NativeMessaging::readMessages()
         // containing the size of the JSON message.
         std::uint32_t messageLength = 0;
 
-        std::cin.read(
-            reinterpret_cast<char *>(&messageLength),
-            sizeof(messageLength));
-
-        if (!std::cin)
+#ifdef Q_OS_WIN
+        std::cin.read(reinterpret_cast<char *>(&messageLength), sizeof(messageLength));
+        if (!std::cin || m_stopRequested)
         {
             emit finished();
             return;
         }
+#else
+        std::array<char, sizeof(messageLength)> lengthBytes;
+        for (char &byte : lengthBytes)
+        {
+            pollfd input = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
+            while (!m_stopRequested && poll(&input, 1, 100) < 0 && errno == EINTR)
+            {
+            }
+            if (m_stopRequested || poll(&input, 1, 0) <= 0 || read(STDIN_FILENO, &byte, 1) != 1)
+            {
+                emit finished();
+                return;
+            }
+        }
+        std::memcpy(&messageLength, lengthBytes.data(), sizeof(messageLength));
+#endif
 
         // Prevent absurdly large messages.
         constexpr std::uint32_t maxMessageSize = 1024 * 1024;
@@ -101,17 +114,29 @@ void NativeMessaging::readMessages()
             return;
         }
 
+#ifdef Q_OS_WIN
         std::string message(messageLength, '\0');
-
-        std::cin.read(
-            message.data(),
-            static_cast<std::streamsize>(messageLength));
-
-        if (!std::cin)
+        std::cin.read(message.data(), static_cast<std::streamsize>(messageLength));
+        if (!std::cin || m_stopRequested)
         {
             emit finished();
             return;
         }
+#else
+        std::string message(messageLength, '\0');
+        for (char &byte : message)
+        {
+            pollfd input = {.fd = STDIN_FILENO, .events = POLLIN, .revents = 0};
+            while (!m_stopRequested && poll(&input, 1, 100) < 0 && errno == EINTR)
+            {
+            }
+            if (m_stopRequested || poll(&input, 1, 0) <= 0 || read(STDIN_FILENO, &byte, 1) != 1)
+            {
+                emit finished();
+                return;
+            }
+        }
+#endif
 
         emit messageReceived(
             QByteArray::fromStdString(message));

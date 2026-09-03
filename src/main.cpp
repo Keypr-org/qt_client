@@ -120,6 +120,7 @@ namespace
     {
       VaultStorageSetupDialog setupDialog;
       setupDialog.exec();
+      config = AppConfig::load();
     }
 
     // Create controller instance so we ensure it has a valid state with the

@@ -85,20 +85,7 @@ bool VaultController::lockVault(const QString &filename)
         {
             throw VaultNotUnlockedError("Path to vaults is not set. Please provide a path to the vaults.");
         }
-        std::string vaultName = session->getName();
-        std::transform(vaultName.begin(), vaultName.end(), vaultName.begin(),
-                       [](unsigned char c)
-                       {
-                           if (std::isalnum(c))
-                           {
-                               return static_cast<char>(std::tolower(c));
-                           }
-                           else
-                           {
-                               return '-';
-                           }
-                       });
-        path = pathToVaults + vaultName + ".kvdb";
+        path = vaultFilePath(QString::fromStdString(session->getName())).toStdString();
     }
     else
     {

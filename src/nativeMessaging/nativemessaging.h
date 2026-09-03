@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QMutex>
 
+#include <atomic>
 #include <cstdint>
 
 class QThread;
@@ -17,10 +18,9 @@ public:
 
     void start();
 
-    // Tries to unblock the read loop (parked in a blocking stdin read) and
-    // waits briefly for it to finish. Called on app quit so shutdown doesn't
-    // hang waiting for Chrome to close the pipe on its own; the wait is
-    // bounded, so quitting stays fast even if the thread stays blocked.
+    // Requests the read loop to stop and waits for its worker thread to finish.
+    // The POSIX reader polls stdin so this does not depend on Chrome closing
+    // the native-messaging pipe.
     void stop();
 
 public slots:
@@ -40,6 +40,7 @@ private:
 
     QThread *m_thread = nullptr;
     QMutex m_writeMutex;
+    std::atomic_bool m_stopRequested = false;
 };
 
 #endif // NATIVEMESSAGING_H
